@@ -40,7 +40,8 @@
     "@types/react": "^18.3.16",
     "@types/react-dom": "^18.3.5",
     "@types/react-router-dom": "^5.3.3",
+    "@types/semver": "^7.5.8",
     "@types/testing-library__react": "^10.0.1",
-    "typescript": "^5.7.2"
+    "typescript": "^4.9.5"
   }
 }
