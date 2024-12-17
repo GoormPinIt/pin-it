@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TbAdjustmentsHorizontal } from 'react-icons/tb';
 import { FaCheck } from 'react-icons/fa6';
@@ -100,7 +100,7 @@ const Mypage = (): JSX.Element => {
 
   const [selectedTab, setSelectedTab] = useState<'created' | 'saved'>('saved');
   const [isSortOpen, setIsSortOpen] = useState(false);
-  const [selectedSort, setSelectedSort] = useState<string | null>();
+  const [selectedSort, setSelectedSort] = useState<string | null>('최신순');
   const [boardDataState, setBoardDataState] = useState<BoardData[]>(boardData);
 
   const sortOptions = ['최신순', '알파벳순'];
@@ -169,6 +169,17 @@ const Mypage = (): JSX.Element => {
     'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
     'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
   ];
+
+  useEffect(() => {
+    const fixedBoard = boardData.find((board) => board.id === 'all-pins');
+    const restBoards = boardData.filter((board) => board.id !== 'all-pins');
+
+    const sortedData = restBoards.sort(
+      (a, b) => parseInt(a.updatedTime) - parseInt(b.updatedTime)
+    );
+
+    setBoardDataState([fixedBoard!, ...sortedData]);
+  }, []);
 
   const handleTabChange = (tab: 'created' | 'saved') => {
     setSelectedTab(tab);
