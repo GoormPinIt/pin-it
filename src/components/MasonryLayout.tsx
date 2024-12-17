@@ -6,14 +6,17 @@ type MasonryLayoutProps = {
 
 const MasonryLayout = ({ images }: MasonryLayoutProps) => {
   const [columnCount, setColumnCount] = useState<number>(6);
-  const gap = 20;
+  const [heights] = useState<number[]>(() =>
+    images.map(() => {
+      const heights = [200, 250, 300, 350, 400];
+      return heights[Math.floor(Math.random() * heights.length)];
+    })
+  );
 
   const updateColumnCount = () => {
     const columnWidth = 224;
-    const gapSize = gap;
-    const newColumnCount = Math.floor(
-      window.innerWidth / (columnWidth + gapSize)
-    );
+    const gap = 20;
+    const newColumnCount = Math.floor(window.innerWidth / (columnWidth + gap));
     setColumnCount(newColumnCount);
   };
 
@@ -23,27 +26,22 @@ const MasonryLayout = ({ images }: MasonryLayoutProps) => {
     return () => window.removeEventListener('resize', updateColumnCount);
   }, []);
 
-  const getRandomHeight = (): number => {
-    const heights = [200, 250, 300, 350, 400];
-    return heights[Math.floor(Math.random() * heights.length)];
-  };
-
   return (
     <div
       style={{
         columnCount: columnCount,
-        columnGap: `${gap}px`,
+        columnGap: '16px',
       }}
     >
-      {images.map((src: string, index: number) => (
+      {images.map((src, index) => (
         <img
           key={index}
           src={src}
           alt={`Image ${index + 1}`}
           style={{
             width: '100%',
-            height: `${getRandomHeight()}px`,
-            marginBottom: `${gap}px`,
+            height: `${heights[index]}px`,
+            marginBottom: '16px',
             objectFit: 'cover',
             borderRadius: '1rem',
           }}
