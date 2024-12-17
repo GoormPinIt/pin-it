@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { TbAdjustmentsHorizontal } from 'react-icons/tb';
+import { FaCheck } from 'react-icons/fa6';
 import GridBoard from '../components/GridBoard';
 import MasonryLayout from '../components/MasonryLayout';
 
@@ -38,7 +40,7 @@ const boardData: BoardData[] = [
     id: 'cats',
     title: '고양이',
     pinCount: 6,
-    updatedTime: '1시간',
+    updatedTime: '5시간',
     images: [
       'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
       'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
@@ -97,6 +99,11 @@ const Mypage = (): JSX.Element => {
   const navigate = useNavigate();
 
   const [selectedTab, setSelectedTab] = useState<'created' | 'saved'>('saved');
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [selectedSort, setSelectedSort] = useState<string | null>();
+  const [boardDataState, setBoardDataState] = useState<BoardData[]>(boardData);
+
+  const sortOptions = ['최신순', '알파벳순'];
 
   const savedPinImages: string[] = [
     'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
@@ -171,6 +178,28 @@ const Mypage = (): JSX.Element => {
     navigate(`/board/${id}`);
   };
 
+  const handleSortChange = (option: string) => {
+    setSelectedSort(option);
+    setIsSortOpen(false);
+
+    // '모든 핀'은 항상 맨 앞에
+    const fixedBoard = boardDataState.find((board) => board.id === 'all-pins');
+    const restBoards = boardDataState.filter(
+      (board) => board.id !== 'all-pins'
+    );
+
+    const sortedData = restBoards.sort((a, b) => {
+      if (option === '최신순') {
+        return parseInt(a.updatedTime) - parseInt(b.updatedTime);
+      } else if (option === '알파벳순') {
+        return a.title.localeCompare(b.title);
+      }
+      return 0;
+    });
+
+    setBoardDataState([fixedBoard!, ...sortedData]);
+  };
+
   return (
     <div className="p-4">
       <div className="pb-4 mb-6 text-center">
@@ -217,14 +246,38 @@ const Mypage = (): JSX.Element => {
 
       {selectedTab === 'saved' ? (
         <>
-          <div className="flex flex-row flex-wrap gap-5 border-b-2 pb-8">
-            {boardData.map((board: BoardData) => (
-              <Board
-                key={board.id}
-                {...board}
-                onBoardClick={handleBoardClick}
+          <div className="flex flex-col gap-2">
+            <div>
+              <TbAdjustmentsHorizontal
+                size={40}
+                onClick={() => setIsSortOpen((prev) => !prev)}
+                className="cursor-pointer"
               />
-            ))}
+
+              {isSortOpen && (
+                <div className="absolute mt-2 bg-white border rounded shadow-md z-10">
+                  {sortOptions.map((option) => (
+                    <div
+                      key={option}
+                      onClick={() => handleSortChange(option)}
+                      className="p-2 hover:bg-gray-200 flex justify-between items-center cursor-pointer"
+                    >
+                      {option} {selectedSort === option && <FaCheck />}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-row flex-wrap gap-5 border-b-2 pb-8">
+              {boardDataState.map((board: BoardData) => (
+                <Board
+                  key={board.id}
+                  {...board}
+                  onBoardClick={handleBoardClick}
+                />
+              ))}
+            </div>
           </div>
 
           <div className="pt-4">
