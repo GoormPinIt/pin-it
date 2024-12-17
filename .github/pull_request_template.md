@@ -3,7 +3,6 @@
 PR 올리기 전에 확인해주세요!
 
 -   [ ] 커밋 컨벤션 준수 [Commit 메시지 규칙](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#commit)
--   [ ] 변경사항에 대한 테스트를 추가
 -   [ ] 문서를 추가하거나 업데이트
 
 ---
