@@ -96,6 +96,7 @@ const Mypage = (): JSX.Element => {
   const navigate = useNavigate();
 
   const [columnCount, setColumnCount] = useState<number>(6);
+  const [selectedTab, setSelectedTab] = useState<'created' | 'saved'>('saved');
 
   const updateColumnCount = (): void => {
     const columnWidth = 224;
@@ -153,6 +154,10 @@ const Mypage = (): JSX.Element => {
     return heights[Math.floor(Math.random() * heights.length)];
   };
 
+  const handleTabChange = (tab: 'created' | 'saved') => {
+    setSelectedTab(tab);
+  };
+
   const handleBoardClick = (id: string): void => {
     navigate(`/board/${id}`);
   };
@@ -178,34 +183,88 @@ const Mypage = (): JSX.Element => {
         </div>
       </div>
 
-      <div className="flex flex-row flex-wrap gap-5">
-        {boardData.map((board: BoardData) => (
-          <Board key={board.id} {...board} onBoardClick={handleBoardClick} />
-        ))}
+      <div className="flex mb-4 justify-center">
+        <button
+          onClick={() => handleTabChange('created')}
+          className={`px-4 py-2 font-medium ${
+            selectedTab === 'created'
+              ? 'border-b-2 border-black'
+              : 'text-gray-500'
+          }`}
+        >
+          생성됨
+        </button>
+        <button
+          onClick={() => handleTabChange('saved')}
+          className={`px-4 py-2 font-medium ${
+            selectedTab === 'saved'
+              ? 'border-b-2 border-black'
+              : 'text-gray-500'
+          }`}
+        >
+          저장됨
+        </button>
       </div>
 
-      <div
-        className="mt-8 pt-4 border-t-2"
-        style={{
-          columnCount: columnCount,
-          columnGap: '1rem',
-        }}
-      >
-        {pinImages.map((src: string, index: number) => (
-          <img
-            key={index}
-            src={src}
-            alt={`Image ${index + 1}`}
+      {selectedTab === 'saved' ? (
+        <>
+          <div className="flex flex-row flex-wrap gap-5 border-b-2 pb-8">
+            {boardData.map((board: BoardData) => (
+              <Board
+                key={board.id}
+                {...board}
+                onBoardClick={handleBoardClick}
+              />
+            ))}
+          </div>
+
+          <div
+            className="mt-4"
             style={{
-              width: '100%',
-              height: `${getRandomHeight()}px`,
-              marginBottom: '1rem',
-              objectFit: 'cover',
-              borderRadius: '1rem',
+              columnCount: columnCount,
+              columnGap: '1rem',
             }}
-          />
-        ))}
-      </div>
+          >
+            {pinImages.map((src: string, index: number) => (
+              <img
+                key={index}
+                src={src}
+                alt={`Image ${index + 1}`}
+                style={{
+                  width: '100%',
+                  height: `${getRandomHeight()}px`,
+                  marginBottom: '1rem',
+                  objectFit: 'cover',
+                  borderRadius: '1rem',
+                }}
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <div
+          className="mt-8 pt-4"
+          style={{
+            columnCount: columnCount,
+            columnGap: '1rem',
+          }}
+        >
+          {pinImages.map((src: string, index: number) => (
+            <img
+              key={index}
+              src={src}
+              alt={`Image ${index + 1}`}
+              style={{
+                width: '100%',
+                height: `${getRandomHeight()}px`,
+                marginBottom: '1rem',
+                objectFit: 'cover',
+                borderRadius: '1rem',
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
