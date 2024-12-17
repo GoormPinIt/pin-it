@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import GridBoard from '../components/GridBoard';
 
 type BoardData = {
@@ -7,6 +8,10 @@ type BoardData = {
   pinCount: number;
   updatedTime: string;
   images: string[];
+};
+
+type BoardProps = BoardData & {
+  onBoardClick: (id: string) => void;
 };
 
 // 더미 보드 데이터
@@ -53,12 +58,17 @@ const boardData: BoardData[] = [
 ];
 
 const Board = ({
+  id,
   title,
   pinCount,
   updatedTime,
   images,
-}: Omit<BoardData, 'id'>): JSX.Element => (
-  <div className="w-56 flex flex-col">
+  onBoardClick,
+}: BoardProps): JSX.Element => (
+  <div
+    className="w-56 flex flex-col cursor-pointer"
+    onClick={() => onBoardClick(id)}
+  >
     {title === '모든 핀' ? (
       <div className="relative w-full h-40">
         {images.slice(0, 5).map((image, index) => (
@@ -83,6 +93,8 @@ const Board = ({
 );
 
 const Mypage = (): JSX.Element => {
+  const navigate = useNavigate();
+
   const [columnCount, setColumnCount] = useState<number>(6);
 
   const updateColumnCount = (): void => {
@@ -141,6 +153,10 @@ const Mypage = (): JSX.Element => {
     return heights[Math.floor(Math.random() * heights.length)];
   };
 
+  const handleBoardClick = (id: string): void => {
+    navigate(`/board/${id}`);
+  };
+
   return (
     <div className="p-4">
       <div className="pb-4 mb-6 text-center">
@@ -163,8 +179,8 @@ const Mypage = (): JSX.Element => {
       </div>
 
       <div className="flex flex-row flex-wrap gap-5">
-        {boardData.map(({ id, ...board }) => (
-          <Board key={id} {...board} />
+        {boardData.map((board: BoardData) => (
+          <Board key={board.id} {...board} onBoardClick={handleBoardClick} />
         ))}
       </div>
 
