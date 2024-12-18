@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TbAdjustmentsHorizontal } from 'react-icons/tb';
 import { FaCheck, FaPlus } from 'react-icons/fa6';
+import { FaSearch } from 'react-icons/fa';
 import GridBoard from '../components/GridBoard';
 import MasonryLayout from '../components/MasonryLayout';
 
@@ -95,6 +96,33 @@ const Board = ({
   </div>
 );
 
+const followingList = [
+  {
+    id: 'user1',
+    name: '홍길동',
+    userId: 'hong123',
+    profileImage:
+      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
+    added: false,
+  },
+  {
+    id: 'user2',
+    name: '김철수',
+    userId: 'chulsoo456',
+    profileImage:
+      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
+    added: false,
+  },
+  {
+    id: 'user3',
+    name: '이영희',
+    userId: 'younghee789',
+    profileImage:
+      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
+    added: false,
+  },
+];
+
 const Mypage = (): JSX.Element => {
   const navigate = useNavigate();
 
@@ -103,6 +131,7 @@ const Mypage = (): JSX.Element => {
   const [selectedSort, setSelectedSort] = useState<string | null>('최신순');
   const [boardDataState, setBoardDataState] = useState<BoardData[]>(boardData);
   const [isPlusOpen, setIsPlusOpen] = useState(false);
+  const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
 
   const sortOptions = ['최신순', '알파벳순'];
 
@@ -212,6 +241,118 @@ const Mypage = (): JSX.Element => {
     setBoardDataState([fixedBoard!, ...sortedData]);
   };
 
+  const BoardModal = () => {
+    const [following, setFollowing] = useState(followingList);
+
+    const handleAddUser = (id: string) => {
+      setFollowing((prev) =>
+        prev.map((user) =>
+          user.id === id ? { ...user, added: !user.added } : user
+        )
+      );
+    };
+
+    return (
+      <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-20">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+          <h2 className="text-2xl font-semibold m-4 text-center">
+            보드 만들기
+          </h2>
+
+          <label htmlFor="boardName" className="block font-medium mb-1">
+            이름
+          </label>
+          <input
+            id="boardName"
+            type="text"
+            placeholder="예: '가고 싶은 곳' 또는 '요리법'"
+            className="w-full p-2 border rounded-xl mb-4"
+          />
+
+          <div className="flex gap-2 mb-6">
+            <input
+              id="privateBoard"
+              type="checkbox"
+              className="w-6 h-6 mt-2 cursor-pointer"
+            />
+            <div className="flex flex-col justify-center leading-tight">
+              <label
+                htmlFor="privateBoard"
+                className="font-semibold text-base cursor-pointer"
+              >
+                비밀보드로 유지
+              </label>
+              <p className="text-gray-500 text-sm mt-1">
+                회원님과 참여자만 볼 수 있습니다.
+              </p>
+            </div>
+          </div>
+
+          <div className="relative w-full mb-4">
+            <label htmlFor="addUser" className="block font-medium mb-1">
+              참여자 추가
+            </label>
+            <div>
+              <FaSearch className="absolute left-3 top-12 transform -translate-y-1/2 text-gray-400" />
+              <input
+                id="addUser"
+                type="text"
+                placeholder="이름 또는 이메일 검색"
+                className="w-full p-2 pl-10 border rounded-xl mb-4"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {following.map((user) => (
+              <div
+                key={user.id}
+                className="flex items-center justify-between p-2 rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <img
+                    src={user.profileImage}
+                    alt="profile"
+                    className="w-10 h-10 rounded-full"
+                  />
+                  <div>
+                    <p className="font-semibold">{user.name}</p>
+                    <p className="text-gray-500 text-sm">@{user.userId}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleAddUser(user.id)}
+                  className={`px-4 py-2 rounded-full ${
+                    user.added
+                      ? 'bg-black text-white'
+                      : 'bg-gray-200 hover:bg-gray-300'
+                  }`}
+                >
+                  {user.added ? '추가됨' : '추가'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-end gap-2 mt-4">
+            <button
+              onClick={() => setIsBoardModalOpen(false)}
+              className="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300"
+            >
+              취소
+            </button>
+            <button
+              onClick={() => alert('보드 만들기')}
+              className="px-4 py-2 bg-[#e60023] text-white rounded-full hover:bg-[#cc001f]"
+            >
+              만들기
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="p-4">
       <div className="pb-4 mb-6 text-center">
@@ -302,6 +443,7 @@ const Mypage = (): JSX.Element => {
                     </div>
                     <div
                       onClick={() => {
+                        setIsBoardModalOpen(true);
                         setIsPlusOpen(false);
                       }}
                       className="p-2 hover:bg-gray-200 cursor-pointer"
@@ -313,6 +455,7 @@ const Mypage = (): JSX.Element => {
               </div>
             </div>
 
+            {isBoardModalOpen && <BoardModal />}
             <div className="flex flex-row flex-wrap gap-5 border-b-2 pb-8">
               {boardDataState.map((board: BoardData) => (
                 <Board
