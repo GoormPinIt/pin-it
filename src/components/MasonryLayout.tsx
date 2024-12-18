@@ -6,12 +6,6 @@ type MasonryLayoutProps = {
 
 const MasonryLayout = ({ images }: MasonryLayoutProps) => {
   const [columnCount, setColumnCount] = useState<number>(6);
-  const [heights] = useState<number[]>(() =>
-    images.map(() => {
-      const heights = [200, 250, 300, 350, 400];
-      return heights[Math.floor(Math.random() * heights.length)];
-    })
-  );
 
   const updateColumnCount = () => {
     const columnWidth = 224;
@@ -40,7 +34,7 @@ const MasonryLayout = ({ images }: MasonryLayoutProps) => {
           alt={`Image ${index + 1}`}
           style={{
             width: '100%',
-            height: `${heights[index]}px`,
+            display: 'block',
             marginBottom: '16px',
             objectFit: 'cover',
             borderRadius: '1rem',
