@@ -23,18 +23,14 @@ const boardData: BoardData[] = [
   {
     id: 'all-pins',
     title: '모든 핀',
-    pinCount: 9,
+    pinCount: 20,
     updatedTime: '1시간',
     images: [
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
+      'https://i.pinimg.com/736x/54/3e/06/543e063d80e1d601886d60af8a09b968.jpg',
+      'https://i.pinimg.com/736x/7c/fd/c1/7cfdc13a222c1502dc1a66e6cb7438d1.jpg',
+      'https://i.pinimg.com/736x/09/47/1b/09471b72c946fc47908b9f3bb85b1f64.jpg',
+      'https://i.pinimg.com/736x/6e/f4/1a/6ef41a60399d8fc42419559e843d933e.jpg',
+      'https://i.pinimg.com/736x/03/32/6d/03326de049c83e53656769e547d4f576.jpg',
     ],
   },
   {
@@ -43,20 +39,20 @@ const boardData: BoardData[] = [
     pinCount: 6,
     updatedTime: '5시간',
     images: [
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
+      'https://i.pinimg.com/736x/61/85/83/6185831e07299cfa0307981325abbfd1.jpg',
+      'https://images.unsplash.com/photo-1533743983669-94fa5c4338ec?q=80&w=2592&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      'https://images.unsplash.com/photo-1445499348736-29b6cdfc03b9?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     ],
   },
   {
     id: 'travel',
     title: '여행',
-    pinCount: 8,
-    updatedTime: '2시간',
+    pinCount: 3,
+    updatedTime: '1시간',
     images: [
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
+      'https://i.pinimg.com/736x/35/27/ab/3527ab03980bb14b74d256feaed42760.jpg',
+      'https://i.pinimg.com/736x/a5/8f/b8/a58fb8936c319d851a12e8912d87f48f.jpg',
+      'https://i.pinimg.com/736x/44/a8/34/44a8349122f3305efca85ac8aed033df.jpg',
     ],
   },
 ];
@@ -101,24 +97,21 @@ const followingList = [
     id: 'user1',
     name: '홍길동',
     userId: 'hong123',
-    profileImage:
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
+    profileImage: 'https://i.imgur.com/kh6YvD2.png',
     added: false,
   },
   {
     id: 'user2',
     name: '김철수',
     userId: 'chulsoo456',
-    profileImage:
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
+    profileImage: 'https://i.imgur.com/Wm1lSoJ.png',
     added: false,
   },
   {
     id: 'user3',
     name: '이영희',
     userId: 'younghee789',
-    profileImage:
-      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
+    profileImage: 'https://i.imgur.com/samzPtR.png',
     added: false,
   },
 ];
@@ -136,68 +129,31 @@ const Mypage = (): JSX.Element => {
   const sortOptions = ['최신순', '알파벳순'];
 
   const savedPinImages: string[] = [
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
+    'https://i.pinimg.com/736x/09/47/1b/09471b72c946fc47908b9f3bb85b1f64.jpg',
+    'https://i.pinimg.com/736x/9a/4b/61/9a4b617c9677ce65cfd85f31feb4af74.jpg',
+    'https://i.pinimg.com/736x/36/3c/85/363c85a67e17eed2c614abd4bbd46261.jpg',
+    'https://i.pinimg.com/736x/5d/d6/46/5dd646324b252dfc7d773b2a3a793ec0.jpg',
+    'https://i.pinimg.com/736x/40/87/9d/40879de94afa2902165eb59fcc3d4ff6.jpg',
+    'https://i.pinimg.com/736x/7d/de/63/7dde636d316b7f683aac5fd20ce0e760.jpg',
+    'https://i.pinimg.com/736x/03/32/6d/03326de049c83e53656769e547d4f576.jpg',
+    'https://i.pinimg.com/736x/54/3e/06/543e063d80e1d601886d60af8a09b968.jpg',
+    'https://i.pinimg.com/736x/7c/fd/c1/7cfdc13a222c1502dc1a66e6cb7438d1.jpg',
+    'https://i.pinimg.com/736x/6e/f4/1a/6ef41a60399d8fc42419559e843d933e.jpg',
+    'https://i.pinimg.com/736x/b8/d4/27/b8d427a981bff1a50d1b210ebe503f2a.jpg',
+    'https://i.pinimg.com/736x/f2/11/59/f21159ef03eca3070c0186551c377372.jpg',
+    'https://i.pinimg.com/736x/44/70/91/44709169168e363452d9b845a70b3310.jpg',
+    'https://i.pinimg.com/736x/e6/2c/45/e62c4517d4e1e90a6171e8a6f2055f2d.jpg',
   ];
 
   const createdPinImages: string[] = [
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
-    'https://media.istockphoto.com/id/1147544807/ko/%EB%B2%A1%ED%84%B0/%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%EC%8D%B8%EB%84%A4%EC%9D%BC-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B2%A1%ED%84%B0-%EA%B7%B8%EB%9E%98%ED%94%BD.jpg?s=612x612&w=0&k=20&c=d0Ddt3qdtkhxPvpInjBRzLWFjODlfSh3IkKAB6YZwC8=',
+    'https://i.pinimg.com/736x/cb/c1/21/cbc12157a8d415d7b5e95a8c7e018214.jpg',
+    'https://i.pinimg.com/736x/70/e5/7f/70e57f22745920241995c6aebdff4cd3.jpg',
+    'https://i.pinimg.com/736x/ee/55/87/ee55872a05b8bef7675d3d91dfbc67a5.jpg',
+    'https://i.pinimg.com/736x/32/66/3f/32663f58c71251f8b9f42979365ce714.jpg',
+    'https://i.pinimg.com/736x/e8/7a/ca/e87acad49b06cc11c10a720f5d34bc02.jpg',
+    'https://i.pinimg.com/736x/60/16/ed/6016ede8877e0eb31f17b1f9aa15cbe2.jpg',
+    'https://i.pinimg.com/736x/b6/44/23/b644230eb959aee6c1687d876c89b838.jpg',
+    'https://i.pinimg.com/736x/52/eb/5d/52eb5d7849985734aebf138e4f918c43.jpg',
   ];
 
   useEffect(() => {
@@ -357,12 +313,12 @@ const Mypage = (): JSX.Element => {
     <div className="p-4">
       <div className="pb-4 mb-6 text-center">
         <img
-          src="https://www.svgrepo.com/show/508699/landscape-placeholder.svg"
+          src="https://codeit-images.s3.ap-northeast-2.amazonaws.com/images/631fe801a470e661c7810b5a/IMG_1357.jpg_k2RPEh"
           alt="프로필 사진"
           className="w-32 h-32 object-cover rounded-full bg-gray-200 mx-auto"
         />
-        <h2 className="text-2xl font-bold mt-2">이름</h2>
-        <p className="text-gray-600 text-sm">아이디</p>
+        <h2 className="text-2xl font-bold mt-2">황효주</h2>
+        <p className="text-gray-600 text-sm">@hjoo830</p>
         <p>팔로워 1명 · 팔로잉 1명</p>
         <div className="mt-4 flex justify-center gap-4">
           <button className="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300">
