@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TbAdjustmentsHorizontal } from 'react-icons/tb';
-import { FaCheck } from 'react-icons/fa6';
+import { FaCheck, FaPlus } from 'react-icons/fa6';
 import GridBoard from '../components/GridBoard';
 import MasonryLayout from '../components/MasonryLayout';
 
@@ -102,6 +102,7 @@ const Mypage = (): JSX.Element => {
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [selectedSort, setSelectedSort] = useState<string | null>('최신순');
   const [boardDataState, setBoardDataState] = useState<BoardData[]>(boardData);
+  const [isPlusOpen, setIsPlusOpen] = useState(false);
 
   const sortOptions = ['최신순', '알파벳순'];
 
@@ -258,26 +259,58 @@ const Mypage = (): JSX.Element => {
       {selectedTab === 'saved' ? (
         <>
           <div className="flex flex-col gap-2">
-            <div>
-              <TbAdjustmentsHorizontal
-                size={40}
-                onClick={() => setIsSortOpen((prev) => !prev)}
-                className="cursor-pointer"
-              />
+            <div className="flex justify-between relative">
+              <div>
+                <TbAdjustmentsHorizontal
+                  size={30}
+                  onClick={() => setIsSortOpen((prev) => !prev)}
+                  className="cursor-pointer"
+                />
 
-              {isSortOpen && (
-                <div className="absolute mt-2 bg-white border rounded shadow-md z-10">
-                  {sortOptions.map((option) => (
+                {isSortOpen && (
+                  <div className="absolute mt-2 bg-white border rounded shadow-md z-10">
+                    {sortOptions.map((option) => (
+                      <div
+                        key={option}
+                        onClick={() => handleSortChange(option)}
+                        className="p-2 hover:bg-gray-200 flex justify-between items-center cursor-pointer"
+                      >
+                        {option} {selectedSort === option && <FaCheck />}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <FaPlus
+                  size={30}
+                  onClick={() => setIsPlusOpen((prev) => !prev)}
+                  className="cursor-pointer"
+                />
+
+                {isPlusOpen && (
+                  <div className="absolute right-0 mt-2 bg-white border rounded shadow-md">
                     <div
-                      key={option}
-                      onClick={() => handleSortChange(option)}
-                      className="p-2 hover:bg-gray-200 flex justify-between items-center cursor-pointer"
+                      onClick={() => {
+                        navigate('/create-pin');
+                        setIsPlusOpen(false);
+                      }}
+                      className="p-2 hover:bg-gray-200 cursor-pointer"
                     >
-                      {option} {selectedSort === option && <FaCheck />}
+                      핀 만들기
                     </div>
-                  ))}
-                </div>
-              )}
+                    <div
+                      onClick={() => {
+                        setIsPlusOpen(false);
+                      }}
+                      className="p-2 hover:bg-gray-200 cursor-pointer"
+                    >
+                      보드 만들기
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex flex-row flex-wrap gap-5 border-b-2 pb-8">
