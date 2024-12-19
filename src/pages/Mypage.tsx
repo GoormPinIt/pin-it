@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { TbAdjustmentsHorizontal } from 'react-icons/tb';
 import { FaCheck, FaPlus } from 'react-icons/fa6';
 import { FaSearch } from 'react-icons/fa';
+import { IoClose } from 'react-icons/io5';
 import GridBoard from '../components/GridBoard';
 import MasonryLayout from '../components/MasonryLayout';
 
@@ -92,7 +93,7 @@ const Board = ({
   </div>
 );
 
-const followingList = [
+const followerList = [
   {
     id: 'user1',
     name: '홍길동',
@@ -125,6 +126,24 @@ const Mypage = (): JSX.Element => {
   const [boardDataState, setBoardDataState] = useState<BoardData[]>(boardData);
   const [isPlusOpen, setIsPlusOpen] = useState(false);
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
+  const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
+  const [isFollowerModal, setIsFollowerModal] = useState(false);
+  const [followingList, setFollowingList] = useState([
+    {
+      id: 'user1',
+      name: '홍길동',
+      userId: 'hong123',
+      profileImage: 'https://i.imgur.com/kh6YvD2.png',
+      added: false,
+    },
+    {
+      id: 'user2',
+      name: '김철수',
+      userId: 'chulsoo456',
+      profileImage: 'https://i.imgur.com/Wm1lSoJ.png',
+      added: false,
+    },
+  ]);
 
   const sortOptions = ['최신순', '알파벳순'];
 
@@ -309,6 +328,73 @@ const Mypage = (): JSX.Element => {
     );
   };
 
+  const FollowModal = ({ isFollower }: { isFollower: boolean }) => {
+    const data = isFollower ? followerList : followingList;
+
+    const handleFollowToggle = (id: string) => {
+      setFollowingList((prev) => {
+        const isFollowing = prev.some((user) => user.id === id);
+
+        if (isFollowing) {
+          return prev.filter((user) => user.id !== id);
+        } else {
+          const userToAdd = followerList.find((user) => user.id === id);
+          return userToAdd ? [...prev, userToAdd] : prev;
+        }
+      });
+    };
+
+    return (
+      <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-20">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+          <h2 className="text-2xl font-semibold m-4 text-center relative">
+            {isFollower ? `팔로워 ${data.length}명` : `팔로잉 ${data.length}명`}
+            <IoClose
+              size={30}
+              onClick={() => setIsFollowModalOpen(false)}
+              className="absolute top-0 right-0 cursor-pointer"
+            />
+          </h2>
+          <div className="flex flex-col gap-3">
+            {data.map((user) => {
+              const isFollowing = followingList.some(
+                (followingUser) => followingUser.id === user.id
+              );
+
+              return (
+                <div
+                  key={user.id}
+                  className="flex items-center justify-between p-2 rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={user.profileImage}
+                      alt="profile"
+                      className="w-10 h-10 rounded-full"
+                    />
+                    <p className="font-semibold">{user.name}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleFollowToggle(user.id)}
+                      className={`px-4 py-2 rounded-full ${
+                        isFollowing
+                          ? 'bg-black text-white'
+                          : 'bg-[#e60023] text-white hover:bg-[#cc001f]'
+                      }`}
+                    >
+                      {isFollowing ? '언팔로우' : '팔로우'}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="p-4">
       <div className="pb-4 mb-6 text-center">
@@ -319,7 +405,28 @@ const Mypage = (): JSX.Element => {
         />
         <h2 className="text-2xl font-bold mt-2">황효주</h2>
         <p className="text-gray-600 text-sm">@hjoo830</p>
-        <p>팔로워 1명 · 팔로잉 1명</p>
+        <div className="flex justify-center">
+          <p
+            onClick={() => {
+              setIsFollowModalOpen(true);
+              setIsFollowerModal(true);
+            }}
+            className="cursor-pointer"
+          >
+            팔로워 {followerList.length}명
+          </p>
+          <p className="pl-2 pr-2">·</p>
+          <p
+            onClick={() => {
+              setIsFollowModalOpen(true);
+              setIsFollowerModal(false);
+            }}
+            className="cursor-pointer"
+          >
+            팔로잉 {followingList.length}명
+          </p>
+        </div>
+
         <div className="mt-4 flex justify-center gap-4">
           <button className="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300">
             공유
@@ -410,8 +517,8 @@ const Mypage = (): JSX.Element => {
                 )}
               </div>
             </div>
-
             {isBoardModalOpen && <BoardModal />}
+            {isFollowModalOpen && <FollowModal isFollower={isFollowerModal} />}
             <div className="flex flex-row flex-wrap gap-5 border-b-2 pb-8">
               {boardDataState.map((board: BoardData) => (
                 <Board
