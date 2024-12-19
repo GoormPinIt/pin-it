@@ -42,9 +42,9 @@ const Sidebar: React.FC = () => {
             </div>
 
             {/* 메인 컨텐츠 */}
-            <div className={`ml-${isExpanded ? '[256px]' : '[80px]'} p-4 transition-all duration-300`}>
+            {/* <div className={`ml-${isExpanded ? '[256px]' : '[80px]'} p-4 transition-all duration-300`}>
                 <h2 className="text-2xl font-semibold">메인 콘텐츠 영역</h2>
-            </div>
+            </div> */}
         </div>
     );
 };

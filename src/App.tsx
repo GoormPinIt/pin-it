@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Mypage from './pages/Mypage';
 import PinBuilder from './pages/PinBuilder';
+import PinPage from './pages/PinPage';
 
 const App = (): JSX.Element => {
     return (
@@ -14,6 +15,7 @@ const App = (): JSX.Element => {
                 <Route path="/mypage" element={<Mypage />} />
                 <Route path="/mypage" element={<Mypage />} />
                 <Route path="/pin-creation-tool" element={<PinBuilder />} />
+                <Route path="/pin" element={<PinPage />} />
             </Routes>
         </Router>
     );
