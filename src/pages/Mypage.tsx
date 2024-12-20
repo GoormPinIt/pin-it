@@ -134,7 +134,7 @@ const Mypage = (): JSX.Element => {
     followers: { id: string; name: string; profileImage: string }[];
     following: { id: string; name: string; profileImage: string }[];
     createdPins: PinData[];
-    savedPins: string[];
+    savedPins: PinData[];
     createdBoards: string[];
   }>({
     id: '',
@@ -214,6 +214,25 @@ const Mypage = (): JSX.Element => {
             link: pin.link,
           }));
 
+        const savedPinData = await Promise.all(
+          savedPins.map(async (pinId: string) => {
+            const pinDocRef = doc(db, 'pins', pinId);
+            const pinDoc = await getDoc(pinDocRef);
+            return pinDoc.exists() ? { id: pinDoc.id, ...pinDoc.data() } : null;
+          }),
+        );
+
+        const validSavedPins = savedPinData
+          .filter((pin): pin is DocumentData => pin !== null)
+          .map((pin) => ({
+            id: pin.id,
+            imageUrl: pin.imageUrl,
+            creatorId: pin.creatorId,
+            title: pin.title,
+            description: pin.description,
+            link: pin.link,
+          }));
+
         setUserData({
           id,
           name,
@@ -233,7 +252,7 @@ const Mypage = (): JSX.Element => {
               profileImage: f.profileImage,
             })),
           createdPins: validCreatedPins,
-          savedPins,
+          savedPins: validSavedPins,
           createdBoards,
         });
       } catch (error) {
@@ -247,23 +266,6 @@ const Mypage = (): JSX.Element => {
   console.log(userData);
 
   const sortOptions = ['최신순', '알파벳순'];
-
-  const savedPinImages: string[] = [
-    'https://i.pinimg.com/736x/09/47/1b/09471b72c946fc47908b9f3bb85b1f64.jpg',
-    'https://i.pinimg.com/736x/9a/4b/61/9a4b617c9677ce65cfd85f31feb4af74.jpg',
-    'https://i.pinimg.com/736x/36/3c/85/363c85a67e17eed2c614abd4bbd46261.jpg',
-    'https://i.pinimg.com/736x/5d/d6/46/5dd646324b252dfc7d773b2a3a793ec0.jpg',
-    'https://i.pinimg.com/736x/40/87/9d/40879de94afa2902165eb59fcc3d4ff6.jpg',
-    'https://i.pinimg.com/736x/7d/de/63/7dde636d316b7f683aac5fd20ce0e760.jpg',
-    'https://i.pinimg.com/736x/03/32/6d/03326de049c83e53656769e547d4f576.jpg',
-    'https://i.pinimg.com/736x/54/3e/06/543e063d80e1d601886d60af8a09b968.jpg',
-    'https://i.pinimg.com/736x/7c/fd/c1/7cfdc13a222c1502dc1a66e6cb7438d1.jpg',
-    'https://i.pinimg.com/736x/6e/f4/1a/6ef41a60399d8fc42419559e843d933e.jpg',
-    'https://i.pinimg.com/736x/b8/d4/27/b8d427a981bff1a50d1b210ebe503f2a.jpg',
-    'https://i.pinimg.com/736x/f2/11/59/f21159ef03eca3070c0186551c377372.jpg',
-    'https://i.pinimg.com/736x/44/70/91/44709169168e363452d9b845a70b3310.jpg',
-    'https://i.pinimg.com/736x/e6/2c/45/e62c4517d4e1e90a6171e8a6f2055f2d.jpg',
-  ];
 
   useEffect(() => {
     const fixedBoard = boardData.find((board) => board.id === 'all-pins');
@@ -703,7 +705,9 @@ const Mypage = (): JSX.Element => {
           </div>
 
           <div className="pt-4">
-            <MasonryLayout images={savedPinImages} />
+            <MasonryLayout
+              images={userData.savedPins.map((pin) => pin.imageUrl)}
+            />
           </div>
         </>
       ) : (
