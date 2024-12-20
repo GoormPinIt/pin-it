@@ -139,7 +139,7 @@ const Mypage = (): JSX.Element => {
   });
 
   // 로그인 후 uid 가져오는 로직 추가하기
-  const uid: string = '1'; // 임시로 1번 유저
+  const uid = '1'; // 임시로 1번 유저
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -168,7 +168,7 @@ const Mypage = (): JSX.Element => {
             const followerDocRef = doc(db, 'users', id);
             const followerDoc = await getDoc(followerDocRef);
             return followerDoc.exists() ? { id, ...followerDoc.data() } : null;
-          })
+          }),
         );
 
         const followingData = await Promise.all(
@@ -178,7 +178,7 @@ const Mypage = (): JSX.Element => {
             return followingDoc.exists()
               ? { id, ...followingDoc.data() }
               : null;
-          })
+          }),
         );
 
         setUserData({
@@ -247,7 +247,7 @@ const Mypage = (): JSX.Element => {
     const restBoards = boardData.filter((board) => board.id !== 'all-pins');
 
     const sortedData = restBoards.sort(
-      (a, b) => parseInt(a.updatedTime) - parseInt(b.updatedTime)
+      (a, b) => parseInt(a.updatedTime) - parseInt(b.updatedTime),
     );
 
     setBoardDataState([fixedBoard!, ...sortedData]);
@@ -268,7 +268,7 @@ const Mypage = (): JSX.Element => {
     // '모든 핀'은 항상 맨 앞에
     const fixedBoard = boardDataState.find((board) => board.id === 'all-pins');
     const restBoards = boardDataState.filter(
-      (board) => board.id !== 'all-pins'
+      (board) => board.id !== 'all-pins',
     );
 
     const sortedData = restBoards.sort((a, b) => {
@@ -297,8 +297,8 @@ const Mypage = (): JSX.Element => {
           userData.following.filter(
             (user) =>
               user.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-              user.id.toLowerCase().includes(lowerCaseSearchTerm)
-          )
+              user.id.toLowerCase().includes(lowerCaseSearchTerm),
+          ),
         );
       }
     }, [searchTerm, userData.following]);
@@ -307,7 +307,7 @@ const Mypage = (): JSX.Element => {
       setSelectedUsers((prev) =>
         prev.includes(id)
           ? prev.filter((userId) => userId !== id)
-          : [...prev, id]
+          : [...prev, id],
       );
     };
 
@@ -405,7 +405,7 @@ const Mypage = (): JSX.Element => {
             <button
               onClick={() => {
                 alert(
-                  `보드가 생성되었습니다. 참여자: ${selectedUsers.join(', ')}`
+                  `보드가 생성되었습니다. 참여자: ${selectedUsers.join(', ')}`,
                 );
                 setIsBoardModalOpen(false);
               }}
@@ -507,7 +507,7 @@ const Mypage = (): JSX.Element => {
           <div className="flex flex-col gap-3">
             {data.map((user) => {
               const isFollowing = userData.following.some(
-                (followingUser) => followingUser.id === user.id
+                (followingUser) => followingUser.id === user.id,
               );
 
               return (

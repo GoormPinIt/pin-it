@@ -1,18 +1,17 @@
-import Head from "./Head";
-import {Sec1, Sec2, Sec3, Sec4, Sec5} from "./Section";
+import Head from './Head';
+import { Sec1, Sec2, Sec3, Sec4, Sec5 } from './Section';
 
 const PreLogin = (): JSX.Element => {
-    return(
+  return (
     <div className="relative scroll-smooth">
-    <Head/>
-    <Sec1/>
-    <Sec2/>
-    <Sec3/>
-    <Sec4/>
-    <Sec5/>
+      <Head />
+      <Sec1 />
+      <Sec2 />
+      <Sec3 />
+      <Sec4 />
+      <Sec5 />
     </div>
-    )
-  };
-  
-  export default PreLogin;
+  );
+};
 
+export default PreLogin;
