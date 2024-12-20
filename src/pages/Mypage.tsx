@@ -6,6 +6,19 @@ import { FaSearch } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import GridBoard from '../components/GridBoard';
 import MasonryLayout from '../components/MasonryLayout';
+import {
+  doc,
+  getDoc,
+  getDocs,
+  DocumentData,
+  updateDoc,
+  arrayRemove,
+  arrayUnion,
+  query,
+  where,
+  collection,
+} from 'firebase/firestore';
+import { db } from '../firebase';
 
 type BoardData = {
   id: string;
@@ -93,30 +106,6 @@ const Board = ({
   </div>
 );
 
-const followerList = [
-  {
-    id: 'user1',
-    name: '홍길동',
-    userId: 'hong123',
-    profileImage: 'https://i.imgur.com/kh6YvD2.png',
-    added: false,
-  },
-  {
-    id: 'user2',
-    name: '김철수',
-    userId: 'chulsoo456',
-    profileImage: 'https://i.imgur.com/Wm1lSoJ.png',
-    added: false,
-  },
-  {
-    id: 'user3',
-    name: '이영희',
-    userId: 'younghee789',
-    profileImage: 'https://i.imgur.com/samzPtR.png',
-    added: false,
-  },
-];
-
 const Mypage = (): JSX.Element => {
   const navigate = useNavigate();
 
@@ -128,22 +117,100 @@ const Mypage = (): JSX.Element => {
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
   const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
   const [isFollowerModal, setIsFollowerModal] = useState(false);
-  const [followingList, setFollowingList] = useState([
-    {
-      id: 'user1',
-      name: '홍길동',
-      userId: 'hong123',
-      profileImage: 'https://i.imgur.com/kh6YvD2.png',
-      added: false,
-    },
-    {
-      id: 'user2',
-      name: '김철수',
-      userId: 'chulsoo456',
-      profileImage: 'https://i.imgur.com/Wm1lSoJ.png',
-      added: false,
-    },
-  ]);
+
+  const [userData, setUserData] = useState<{
+    id: string;
+    name: string;
+    profileImage: string;
+    followers: { id: string; name: string; profileImage: string }[];
+    following: { id: string; name: string; profileImage: string }[];
+    createdPins: string[];
+    savedPins: string[];
+    createdBoards: string[];
+  }>({
+    id: '',
+    name: '',
+    profileImage: '',
+    followers: [],
+    following: [],
+    createdPins: [],
+    savedPins: [],
+    createdBoards: [],
+  });
+
+  // 로그인 후 uid 가져오는 로직 추가하기
+  const uid: string = '1'; // 임시로 1번 유저
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userDocRef = doc(db, 'users', uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (!userDoc.exists()) {
+          console.error('유저 데이터가 존재하지 않습니다.');
+          return;
+        }
+
+        const {
+          id,
+          name,
+          profileImage,
+          followers,
+          following,
+          createdPins,
+          savedPins,
+          createdBoards,
+        } = userDoc.data();
+
+        const followerData = await Promise.all(
+          followers.map(async (id: string) => {
+            const followerDocRef = doc(db, 'users', id);
+            const followerDoc = await getDoc(followerDocRef);
+            return followerDoc.exists() ? { id, ...followerDoc.data() } : null;
+          })
+        );
+
+        const followingData = await Promise.all(
+          following.map(async (id: string) => {
+            const followingDocRef = doc(db, 'users', id);
+            const followingDoc = await getDoc(followingDocRef);
+            return followingDoc.exists()
+              ? { id, ...followingDoc.data() }
+              : null;
+          })
+        );
+
+        setUserData({
+          id,
+          name,
+          profileImage,
+          followers: followerData
+            .filter((f): f is DocumentData => f !== null)
+            .map((f) => ({
+              id: f.id,
+              name: f.name,
+              profileImage: f.profileImage,
+            })),
+          following: followingData
+            .filter((f): f is DocumentData => f !== null)
+            .map((f) => ({
+              id: f.id,
+              name: f.name,
+              profileImage: f.profileImage,
+            })),
+          createdPins,
+          savedPins,
+          createdBoards,
+        });
+      } catch (error) {
+        console.error('유저 데이터를 가져오는 중 오류 발생:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+  console.log(userData);
 
   const sortOptions = ['최신순', '알파벳순'];
 
@@ -217,13 +284,30 @@ const Mypage = (): JSX.Element => {
   };
 
   const BoardModal = () => {
-    const [following, setFollowing] = useState(followingList);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filteredUsers, setFilteredUsers] = useState(userData.following);
+    const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+
+    useEffect(() => {
+      if (searchTerm === '') {
+        setFilteredUsers(userData.following);
+      } else {
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+        setFilteredUsers(
+          userData.following.filter(
+            (user) =>
+              user.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+              user.id.toLowerCase().includes(lowerCaseSearchTerm)
+          )
+        );
+      }
+    }, [searchTerm, userData.following]);
 
     const handleAddUser = (id: string) => {
-      setFollowing((prev) =>
-        prev.map((user) =>
-          user.id === id ? { ...user, added: !user.added } : user
-        )
+      setSelectedUsers((prev) =>
+        prev.includes(id)
+          ? prev.filter((userId) => userId !== id)
+          : [...prev, id]
       );
     };
 
@@ -272,6 +356,8 @@ const Mypage = (): JSX.Element => {
               <input
                 id="addUser"
                 type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="이름 또는 이메일 검색"
                 className="w-full p-2 pl-10 border rounded-xl mb-4"
               />
@@ -279,7 +365,7 @@ const Mypage = (): JSX.Element => {
           </div>
 
           <div className="flex flex-col gap-3">
-            {following.map((user) => (
+            {filteredUsers.map((user) => (
               <div
                 key={user.id}
                 className="flex items-center justify-between p-2 rounded-lg"
@@ -292,18 +378,18 @@ const Mypage = (): JSX.Element => {
                   />
                   <div>
                     <p className="font-semibold">{user.name}</p>
-                    <p className="text-gray-500 text-sm">@{user.userId}</p>
+                    <p className="text-gray-500 text-sm">@{user.id}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => handleAddUser(user.id)}
                   className={`px-4 py-2 rounded-full ${
-                    user.added
+                    selectedUsers.includes(user.id)
                       ? 'bg-black text-white'
                       : 'bg-gray-200 hover:bg-gray-300'
                   }`}
                 >
-                  {user.added ? '추가됨' : '추가'}
+                  {selectedUsers.includes(user.id) ? '추가됨' : '추가'}
                 </button>
               </div>
             ))}
@@ -317,7 +403,12 @@ const Mypage = (): JSX.Element => {
               취소
             </button>
             <button
-              onClick={() => alert('보드 만들기')}
+              onClick={() => {
+                alert(
+                  `보드가 생성되었습니다. 참여자: ${selectedUsers.join(', ')}`
+                );
+                setIsBoardModalOpen(false);
+              }}
               className="px-4 py-2 bg-[#e60023] text-white rounded-full hover:bg-[#cc001f]"
             >
               만들기
@@ -329,19 +420,77 @@ const Mypage = (): JSX.Element => {
   };
 
   const FollowModal = ({ isFollower }: { isFollower: boolean }) => {
-    const data = isFollower ? followerList : followingList;
+    const data = isFollower ? userData.followers : userData.following;
 
-    const handleFollowToggle = (id: string) => {
-      setFollowingList((prev) => {
-        const isFollowing = prev.some((user) => user.id === id);
+    const handleFollowToggle = async (id: string) => {
+      try {
+        const currentUserId = uid;
+
+        // Firestore 쿼리로 입력된 id에 해당하는 문서 가져오기
+        const userQuery = query(collection(db, 'users'), where('id', '==', id));
+        const userSnapshot = await getDocs(userQuery);
+
+        if (userSnapshot.empty) {
+          console.error('해당 사용자 ID를 찾을 수 없습니다.');
+          return;
+        }
+
+        // Firestore 문서의 uid 가져오기
+        const targetDoc = userSnapshot.docs[0];
+        const targetUid = targetDoc.id;
+
+        const targetUserRef = doc(db, 'users', targetUid);
+        const currentUserRef = doc(db, 'users', currentUserId);
+
+        const targetUserDoc = await getDoc(targetUserRef);
+
+        if (!targetUserDoc.exists()) {
+          console.error('해당 사용자 데이터를 찾을 수 없습니다.');
+          return;
+        }
+
+        const isFollowing = userData.following.some((user) => user.id === id);
 
         if (isFollowing) {
-          return prev.filter((user) => user.id !== id);
+          // 언팔로우
+          await Promise.all([
+            updateDoc(targetUserRef, {
+              followers: arrayRemove(currentUserId),
+            }),
+            updateDoc(currentUserRef, {
+              following: arrayRemove(targetUid),
+            }),
+          ]);
+
+          setUserData((prev) => ({
+            ...prev,
+            following: prev.following.filter((user) => user.id !== id),
+          }));
         } else {
-          const userToAdd = followerList.find((user) => user.id === id);
-          return userToAdd ? [...prev, userToAdd] : prev;
+          // 팔로우
+          await Promise.all([
+            updateDoc(targetUserRef, {
+              followers: arrayUnion(currentUserId),
+            }),
+            updateDoc(currentUserRef, {
+              following: arrayUnion(targetUid),
+            }),
+          ]);
+
+          const newFollowingUser = {
+            id: targetUserDoc.data().id,
+            name: targetUserDoc.data().name,
+            profileImage: targetUserDoc.data().profileImage,
+          };
+
+          setUserData((prev) => ({
+            ...prev,
+            following: [...prev.following, newFollowingUser],
+          }));
         }
-      });
+      } catch (error) {
+        console.error('팔로우/언팔로우 처리 중 오류 발생:', error);
+      }
     };
 
     return (
@@ -357,7 +506,7 @@ const Mypage = (): JSX.Element => {
           </h2>
           <div className="flex flex-col gap-3">
             {data.map((user) => {
-              const isFollowing = followingList.some(
+              const isFollowing = userData.following.some(
                 (followingUser) => followingUser.id === user.id
               );
 
@@ -399,12 +548,12 @@ const Mypage = (): JSX.Element => {
     <div className="p-4">
       <div className="pb-4 mb-6 text-center">
         <img
-          src="https://codeit-images.s3.ap-northeast-2.amazonaws.com/images/631fe801a470e661c7810b5a/IMG_1357.jpg_k2RPEh"
+          src={userData.profileImage}
           alt="프로필 사진"
           className="w-32 h-32 object-cover rounded-full bg-gray-200 mx-auto"
         />
-        <h2 className="text-2xl font-bold mt-2">황효주</h2>
-        <p className="text-gray-600 text-sm">@hjoo830</p>
+        <h2 className="text-2xl font-bold mt-2">{userData.name}</h2>
+        <p className="text-gray-600 text-sm">@{userData.id}</p>
         <div className="flex justify-center">
           <p
             onClick={() => {
@@ -413,7 +562,7 @@ const Mypage = (): JSX.Element => {
             }}
             className="cursor-pointer"
           >
-            팔로워 {followerList.length}명
+            팔로워 {userData.followers.length}명
           </p>
           <p className="pl-2 pr-2">·</p>
           <p
@@ -423,7 +572,7 @@ const Mypage = (): JSX.Element => {
             }}
             className="cursor-pointer"
           >
-            팔로잉 {followingList.length}명
+            팔로잉 {userData.following.length}명
           </p>
         </div>
 
