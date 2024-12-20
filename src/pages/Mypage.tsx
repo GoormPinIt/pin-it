@@ -106,6 +106,15 @@ const Board = ({
   </div>
 );
 
+type PinData = {
+  id: string;
+  imageUrl: string;
+  creatorId: string;
+  title?: string;
+  description?: string;
+  link?: string;
+};
+
 const Mypage = (): JSX.Element => {
   const navigate = useNavigate();
 
@@ -124,7 +133,7 @@ const Mypage = (): JSX.Element => {
     profileImage: string;
     followers: { id: string; name: string; profileImage: string }[];
     following: { id: string; name: string; profileImage: string }[];
-    createdPins: string[];
+    createdPins: PinData[];
     savedPins: string[];
     createdBoards: string[];
   }>({
@@ -181,6 +190,30 @@ const Mypage = (): JSX.Element => {
           }),
         );
 
+        const createdPinData = await Promise.all(
+          createdPins.map(async (pinId: string) => {
+            const pinDocRef = doc(db, 'pins', pinId); // 핀 문서 참조
+            const pinDoc = await getDoc(pinDocRef);
+
+            if (pinDoc.exists()) {
+              return { id: pinDoc.id, ...pinDoc.data() }; // 문서 ID를 `id`로 추가
+            } else {
+              return null;
+            }
+          }),
+        );
+
+        const validCreatedPins = createdPinData
+          .filter((pin): pin is DocumentData => pin !== null)
+          .map((pin) => ({
+            id: pin.id,
+            imageUrl: pin.imageUrl,
+            creatorId: pin.creatorId,
+            title: pin.title,
+            description: pin.description,
+            link: pin.link,
+          }));
+
         setUserData({
           id,
           name,
@@ -199,7 +232,7 @@ const Mypage = (): JSX.Element => {
               name: f.name,
               profileImage: f.profileImage,
             })),
-          createdPins,
+          createdPins: validCreatedPins,
           savedPins,
           createdBoards,
         });
@@ -210,6 +243,7 @@ const Mypage = (): JSX.Element => {
 
     fetchUserData();
   }, []);
+
   console.log(userData);
 
   const sortOptions = ['최신순', '알파벳순'];
@@ -229,17 +263,6 @@ const Mypage = (): JSX.Element => {
     'https://i.pinimg.com/736x/f2/11/59/f21159ef03eca3070c0186551c377372.jpg',
     'https://i.pinimg.com/736x/44/70/91/44709169168e363452d9b845a70b3310.jpg',
     'https://i.pinimg.com/736x/e6/2c/45/e62c4517d4e1e90a6171e8a6f2055f2d.jpg',
-  ];
-
-  const createdPinImages: string[] = [
-    'https://i.pinimg.com/736x/cb/c1/21/cbc12157a8d415d7b5e95a8c7e018214.jpg',
-    'https://i.pinimg.com/736x/70/e5/7f/70e57f22745920241995c6aebdff4cd3.jpg',
-    'https://i.pinimg.com/736x/ee/55/87/ee55872a05b8bef7675d3d91dfbc67a5.jpg',
-    'https://i.pinimg.com/736x/32/66/3f/32663f58c71251f8b9f42979365ce714.jpg',
-    'https://i.pinimg.com/736x/e8/7a/ca/e87acad49b06cc11c10a720f5d34bc02.jpg',
-    'https://i.pinimg.com/736x/60/16/ed/6016ede8877e0eb31f17b1f9aa15cbe2.jpg',
-    'https://i.pinimg.com/736x/b6/44/23/b644230eb959aee6c1687d876c89b838.jpg',
-    'https://i.pinimg.com/736x/52/eb/5d/52eb5d7849985734aebf138e4f918c43.jpg',
   ];
 
   useEffect(() => {
@@ -685,7 +708,9 @@ const Mypage = (): JSX.Element => {
         </>
       ) : (
         <div className="pt-4">
-          <MasonryLayout images={createdPinImages} />
+          <MasonryLayout
+            images={userData.createdPins.map((pin) => pin.imageUrl)}
+          />
         </div>
       )}
     </div>
