@@ -1,14 +1,13 @@
-
-import PinterestLayout from "../../components/PinterestLayout";
-import PreLogin from "./PreLogin/PreLogin";
+import PinterestLayout from '../../components/PinterestLayout';
+import PreLogin from './PreLogin/PreLogin';
 
 const Home = (): JSX.Element => {
-  return(
+  return (
     <>
-    {/* <PreLogin /> */}
-    <PinterestLayout/>
+      {/* <PreLogin /> */}
+      <PinterestLayout />
     </>
-  )
+  );
 };
 
 export default Home;

@@ -6,7 +6,13 @@ interface ButtonProps {
 }
 
 const Button: React.FC<ButtonProps> = ({ children, className = '' }) => {
-  return <button  className={`bg-pinit-red px-3 py-3 text-white rounded-3xl font-bold text-lg hover:bg-rose-800 duration-75 ${className}`}>{children}</button>;
+  return (
+    <button
+      className={`bg-pinit-red px-3 py-3 text-white rounded-3xl font-bold text-lg hover:bg-rose-800 duration-75 ${className}`}
+    >
+      {children}
+    </button>
+  );
 };
 
 export default Button;

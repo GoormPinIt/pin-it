@@ -3,8 +3,8 @@ import cardsReducer from './slices/CardsImgSlice';
 
 const store = configureStore({
   reducer: {
-    cards: cardsReducer
-  }
+    cards: cardsReducer,
+  },
 });
 
 export type RootState = ReturnType<typeof store.getState>;
