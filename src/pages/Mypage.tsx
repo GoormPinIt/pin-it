@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
+import { ko } from 'date-fns/locale';
 import { TbAdjustmentsHorizontal } from 'react-icons/tb';
 import { FaCheck, FaPlus } from 'react-icons/fa6';
 import { FaSearch } from 'react-icons/fa';
@@ -32,6 +34,12 @@ type BoardProps = BoardData & {
   onBoardClick: (id: string) => void;
 };
 
+const formatRelativeTime = (timestamp: any): string => {
+  if (!timestamp) return '';
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  return formatDistanceToNow(date, { addSuffix: true, locale: ko });
+};
+
 const Board = ({
   id,
   title,
@@ -62,7 +70,7 @@ const Board = ({
     <h3 className="text-lg font-semibold mt-2">{title}</h3>
     <div className="flex gap-2">
       <p>핀 {pinCount}개</p>
-      <p className="text-gray-500">{updatedTime}</p>
+      <p className="text-gray-500">{formatRelativeTime(updatedTime)}</p>
     </div>
   </div>
 );
@@ -184,7 +192,7 @@ const Mypage = (): JSX.Element => {
               id: boardDoc.id,
               title: board.title || '제목 없음',
               pinCount: (board.pins || []).length,
-              updatedTime: board.updatedTime?.toDate().toLocaleString() || '',
+              updatedTime: board.updatedTime?.toDate(),
               images: pinsData.filter((url): url is string => url !== null),
             };
           }),
