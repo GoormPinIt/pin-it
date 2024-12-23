@@ -47,33 +47,50 @@ const Board = ({
   updatedTime,
   images,
   onBoardClick,
-}: BoardProps): JSX.Element => (
-  <div
-    className="w-56 flex flex-col cursor-pointer"
-    onClick={() => onBoardClick(id)}
-  >
-    {title === '모든 핀' ? (
-      <div className="relative w-full h-40">
-        {images.slice(0, 5).map((image, index) => (
-          <img
-            key={index}
-            src={image}
-            alt={`핀${5 - index}`}
-            className="absolute w-3/5 h-full object-cover rounded-2xl border-2 border-white"
-            style={{ left: `${index * 23}px`, zIndex: 5 - index }}
-          />
-        ))}
+}: BoardProps): JSX.Element => {
+  const filledImages =
+    images.length < 5
+      ? [...images, ...Array(5 - images.length).fill(null)]
+      : images.slice(0, 5);
+
+  return (
+    <div
+      className="w-56 flex flex-col cursor-pointer"
+      onClick={() => onBoardClick(id)}
+    >
+      {title === '모든 핀' ? (
+        <div className="relative w-full h-40">
+          {filledImages
+            .slice(0, 5)
+            .map((image, index) =>
+              image ? (
+                <img
+                  key={index}
+                  src={image}
+                  alt={`핀${5 - index}`}
+                  className="absolute w-3/5 h-full object-cover rounded-2xl border-2 border-white"
+                  style={{ left: `${index * 23}px`, zIndex: 5 - index }}
+                />
+              ) : (
+                <div
+                  key={index}
+                  className="absolute w-3/5 h-full bg-gray-200 rounded-2xl border-2 border-white"
+                  style={{ left: `${index * 23}px`, zIndex: 5 - index }}
+                />
+              ),
+            )}
+        </div>
+      ) : (
+        <GridBoard images={images} />
+      )}
+      <h3 className="text-lg font-semibold mt-2">{title}</h3>
+      <div className="flex gap-2">
+        <p>핀 {pinCount}개</p>
+        <p className="text-gray-500">{formatRelativeTime(updatedTime)}</p>
       </div>
-    ) : (
-      <GridBoard images={images} />
-    )}
-    <h3 className="text-lg font-semibold mt-2">{title}</h3>
-    <div className="flex gap-2">
-      <p>핀 {pinCount}개</p>
-      <p className="text-gray-500">{formatRelativeTime(updatedTime)}</p>
     </div>
-  </div>
-);
+  );
+};
 
 type PinData = {
   id: string;
