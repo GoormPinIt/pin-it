@@ -32,45 +32,6 @@ type BoardProps = BoardData & {
   onBoardClick: (id: string) => void;
 };
 
-// 더미 보드 데이터
-const boardData: BoardData[] = [
-  {
-    id: 'all-pins',
-    title: '모든 핀',
-    pinCount: 20,
-    updatedTime: '1시간',
-    images: [
-      'https://i.pinimg.com/736x/54/3e/06/543e063d80e1d601886d60af8a09b968.jpg',
-      'https://i.pinimg.com/736x/7c/fd/c1/7cfdc13a222c1502dc1a66e6cb7438d1.jpg',
-      'https://i.pinimg.com/736x/09/47/1b/09471b72c946fc47908b9f3bb85b1f64.jpg',
-      'https://i.pinimg.com/736x/6e/f4/1a/6ef41a60399d8fc42419559e843d933e.jpg',
-      'https://i.pinimg.com/736x/03/32/6d/03326de049c83e53656769e547d4f576.jpg',
-    ],
-  },
-  {
-    id: 'cats',
-    title: '고양이',
-    pinCount: 6,
-    updatedTime: '5시간',
-    images: [
-      'https://i.pinimg.com/736x/61/85/83/6185831e07299cfa0307981325abbfd1.jpg',
-      'https://images.unsplash.com/photo-1533743983669-94fa5c4338ec?q=80&w=2592&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      'https://images.unsplash.com/photo-1445499348736-29b6cdfc03b9?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    ],
-  },
-  {
-    id: 'travel',
-    title: '여행',
-    pinCount: 3,
-    updatedTime: '1시간',
-    images: [
-      'https://i.pinimg.com/736x/35/27/ab/3527ab03980bb14b74d256feaed42760.jpg',
-      'https://i.pinimg.com/736x/a5/8f/b8/a58fb8936c319d851a12e8912d87f48f.jpg',
-      'https://i.pinimg.com/736x/44/a8/34/44a8349122f3305efca85ac8aed033df.jpg',
-    ],
-  },
-];
-
 const Board = ({
   id,
   title,
@@ -121,7 +82,7 @@ const Mypage = (): JSX.Element => {
   const [selectedTab, setSelectedTab] = useState<'created' | 'saved'>('saved');
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [selectedSort, setSelectedSort] = useState<string | null>('최신순');
-  const [boardDataState, setBoardDataState] = useState<BoardData[]>(boardData);
+  const [boardDataState, setBoardDataState] = useState<BoardData[]>([]);
   const [isPlusOpen, setIsPlusOpen] = useState(false);
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
   const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
@@ -172,6 +133,63 @@ const Mypage = (): JSX.Element => {
           createdBoards,
         } = userDoc.data();
 
+        const allPinIds = [...new Set([...createdPins, ...savedPins])];
+        const allPinsData = await Promise.all(
+          allPinIds.map(async (pinId: string) => {
+            const pinDocRef = doc(db, 'pins', pinId);
+            const pinDoc = await getDoc(pinDocRef);
+
+            if (pinDoc.exists()) {
+              const pinData = pinDoc.data() as { imageUrl: string };
+              return pinData.imageUrl;
+            } else {
+              console.warn(`핀 ID ${pinId}를 찾을 수 없습니다.`);
+              return null;
+            }
+          }),
+        );
+
+        const allPinsBoard: BoardData = {
+          id: 'all-pins',
+          title: '모든 핀',
+          pinCount: allPinIds.length,
+          updatedTime: '',
+          images: allPinsData.filter((url): url is string => url !== null),
+        };
+
+        const boardQuery = query(
+          collection(db, 'boards'),
+          where('ownerId', '==', uid),
+        );
+        const boardSnapshot = await getDocs(boardQuery);
+
+        const boardsData: BoardData[] = await Promise.all(
+          boardSnapshot.docs.map(async (boardDoc) => {
+            const board = boardDoc.data();
+            const pinsData = await Promise.all(
+              (board.pins || []).map(async (pinId: string) => {
+                const pinDocRef = doc(db, 'pins', pinId);
+                const pinDoc = await getDoc(pinDocRef);
+
+                if (pinDoc.exists()) {
+                  const pinData = pinDoc.data() as { imageUrl: string };
+                  return pinData.imageUrl;
+                } else {
+                  return null;
+                }
+              }),
+            );
+
+            return {
+              id: boardDoc.id,
+              title: board.title || '제목 없음',
+              pinCount: (board.pins || []).length,
+              updatedTime: board.updatedTime?.toDate().toLocaleString() || '',
+              images: pinsData.filter((url): url is string => url !== null),
+            };
+          }),
+        );
+
         const followerData = await Promise.all(
           followers.map(async (id: string) => {
             const followerDocRef = doc(db, 'users', id);
@@ -192,11 +210,11 @@ const Mypage = (): JSX.Element => {
 
         const createdPinData = await Promise.all(
           createdPins.map(async (pinId: string) => {
-            const pinDocRef = doc(db, 'pins', pinId); // 핀 문서 참조
+            const pinDocRef = doc(db, 'pins', pinId);
             const pinDoc = await getDoc(pinDocRef);
 
             if (pinDoc.exists()) {
-              return { id: pinDoc.id, ...pinDoc.data() }; // 문서 ID를 `id`로 추가
+              return { id: pinDoc.id, ...pinDoc.data() };
             } else {
               return null;
             }
@@ -255,8 +273,10 @@ const Mypage = (): JSX.Element => {
           savedPins: validSavedPins,
           createdBoards,
         });
+
+        setBoardDataState([allPinsBoard, ...boardsData]);
       } catch (error) {
-        console.error('유저 데이터를 가져오는 중 오류 발생:', error);
+        console.error('데이터를 가져오는 중 오류 발생:', error);
       }
     };
 
@@ -266,17 +286,6 @@ const Mypage = (): JSX.Element => {
   console.log(userData);
 
   const sortOptions = ['최신순', '알파벳순'];
-
-  useEffect(() => {
-    const fixedBoard = boardData.find((board) => board.id === 'all-pins');
-    const restBoards = boardData.filter((board) => board.id !== 'all-pins');
-
-    const sortedData = restBoards.sort(
-      (a, b) => parseInt(a.updatedTime) - parseInt(b.updatedTime),
-    );
-
-    setBoardDataState([fixedBoard!, ...sortedData]);
-  }, []);
 
   const handleTabChange = (tab: 'created' | 'saved') => {
     setSelectedTab(tab);
