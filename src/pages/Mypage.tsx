@@ -282,7 +282,18 @@ const Mypage = (): JSX.Element => {
           createdBoards,
         });
 
-        setBoardDataState([allPinsBoard, ...boardsData]);
+        setBoardDataState(() => {
+          const fixedBoard = allPinsBoard;
+          const restBoards = boardsData;
+
+          const sortedBoards = restBoards.sort((a, b) => {
+            const timeA = new Date(a.updatedTime).getTime();
+            const timeB = new Date(b.updatedTime).getTime();
+            return timeB - timeA;
+          });
+
+          return [fixedBoard, ...sortedBoards];
+        });
       } catch (error) {
         console.error('데이터를 가져오는 중 오류 발생:', error);
       }
@@ -315,7 +326,9 @@ const Mypage = (): JSX.Element => {
 
     const sortedData = restBoards.sort((a, b) => {
       if (option === '최신순') {
-        return parseInt(a.updatedTime) - parseInt(b.updatedTime);
+        const timeA = new Date(a.updatedTime).getTime();
+        const timeB = new Date(b.updatedTime).getTime();
+        return timeB - timeA;
       } else if (option === '알파벳순') {
         return a.title.localeCompare(b.title);
       }
