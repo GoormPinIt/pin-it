@@ -16,10 +16,10 @@ const App = (): JSX.Element => {
   return (
     <Provider store={store}>
       <Router>
-        <div className="flex">
+        <div>
+            
+          <div className="flex">
           <Sidebar />
-
-          <div className="flex-1 ml-10">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />

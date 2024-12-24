@@ -50,7 +50,7 @@ const NavBar:React.FC = () => {
   }
 
     return (
-        <div className="fixed  w-10 h-screen bg-gray-100 flex flex-col border-r-2">
+        <div className="sticky top-0 left-0  w-10 h-screen bg-gray-100 flex flex-col border-r-2">
             <div className='flex-1 flex flex-col'>
                 <button
                 className='px-3 py-4' onClick={handleHomeClick}
