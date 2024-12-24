@@ -16,8 +16,6 @@ const App = (): JSX.Element => {
   return (
     <Provider store={store}>
       <Router>
-        <div>
-            
           <div className="flex">
           <Sidebar />
             <Routes>
@@ -25,11 +23,10 @@ const App = (): JSX.Element => {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/mypage" element={<Mypage />} />
-              <Route path="/boardDetail" element={<ProfileBoardDetail />} />
               <Route path="/board/:boardId" element={<BoardDetails />} />
+              <Route path="/boardDetail" element={<ProfileBoardDetail />} />
             </Routes>
           </div>
-        </div>
       </Router>
     </Provider>
   );
