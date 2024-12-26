@@ -6,6 +6,7 @@ import { TbAdjustmentsHorizontal } from 'react-icons/tb';
 import { FaCheck, FaPlus } from 'react-icons/fa6';
 import { FaSearch } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
+import { FaLink } from 'react-icons/fa';
 import GridBoard from '../components/GridBoard';
 import MasonryLayout from '../components/MasonryLayout';
 import {
@@ -101,6 +102,12 @@ type PinData = {
   link?: string;
 };
 
+type User = {
+  id: string;
+  name: string;
+  profileImage: string;
+};
+
 const Mypage = (): JSX.Element => {
   const navigate = useNavigate();
 
@@ -112,6 +119,7 @@ const Mypage = (): JSX.Element => {
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
   const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
   const [isFollowerModal, setIsFollowerModal] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const [userData, setUserData] = useState<{
     id: string;
@@ -322,6 +330,10 @@ const Mypage = (): JSX.Element => {
   console.log(userData);
 
   const sortOptions = ['최신순', '알파벳순'];
+
+  const handleShareClick = () => {
+    setIsShareModalOpen((prev) => !prev);
+  };
 
   const handleTabChange = (tab: 'created' | 'saved') => {
     setSelectedTab(tab);
@@ -616,6 +628,126 @@ const Mypage = (): JSX.Element => {
     );
   };
 
+  const ShareModal = () => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+
+    useEffect(() => {
+      const fetchAllUsers = async () => {
+        if (searchTerm === '') {
+          setFilteredUsers(userData.following);
+        } else {
+          const usersQuery = query(
+            collection(db, 'users'),
+            where('name', '>=', searchTerm),
+            where('name', '<=', searchTerm + '\uf8ff'),
+          );
+
+          const userSnapshot = await getDocs(usersQuery);
+          const allUsers = userSnapshot.docs.map((doc) => ({
+            id: doc.data().id,
+            name: doc.data().name || '',
+            profileImage: doc.data().profileImage || '',
+          }));
+
+          setFilteredUsers(allUsers);
+        }
+      };
+
+      fetchAllUsers();
+    }, [searchTerm, userData.following]);
+
+    const handleSend = (id: string) => {
+      alert(`${id}에게 내 프로필을 보냈습니다.`);
+      // 메시지로 내 프로필 보내는 로직 추가하기
+    };
+
+    return (
+      <div
+        className="bg-white p-6 rounded-xl shadow-lg w-96 absolute top-11"
+        style={{ left: '40%', boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.1)' }}
+      >
+        <p className="mb-4 text-center">공유</p>
+        <div className="flex justify-evenly mb-4 pb-4 border-b-2">
+          <button className="flex flex-col items-center">
+            <FaLink className="w-10 h-10 mb-2 bg-gray-200 rounded-full pl-3 pr-3" />
+            <span className="text-xs">링크 복사</span>
+          </button>
+          <button className="flex flex-col items-center">
+            <img
+              src="https://cdn.pixabay.com/photo/2021/12/10/16/38/whatsapp-6860919_1280.png"
+              alt="WhatsApp"
+              className="w-10 h-10 rounded-full mb-2"
+            />
+            <span className="text-xs">WhatsApp</span>
+          </button>
+          <button className="flex flex-col items-center">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Facebook_Messenger_logo_2020.svg/2048px-Facebook_Messenger_logo_2020.svg.png"
+              alt="FacebookMessenger"
+              className="w-10 h-10 mb-2"
+            />
+            <span className="text-xs">Messenger</span>
+          </button>
+          <button className="flex flex-col items-center">
+            <img
+              src="https://i.namu.wiki/i/NmLLiCcgR5wYhqo1OWGwIKDhraZMpJdcNjGfUzBqFB38iVBE3f6TMnr1OzwvduJBRepDa_73Bw3Eh5_crIUqag.svg"
+              alt="Facebook"
+              className="w-10 h-10 mb-2"
+            />
+            <span className="text-xs">Facebook</span>
+          </button>
+
+          <button className="flex flex-col items-center">
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRo9rzArm7GEm9dZBAFHhS_BSPvuBiuPnXwcg&s"
+              alt="Twitter"
+              className="w-10 h-10 mb-2"
+            />
+            <span className="text-xs">X</span>
+          </button>
+        </div>
+        <div className="relative">
+          <FaSearch className="absolute left-3 top-1/4 text-gray-500" />
+          <input
+            id="searchUser"
+            type="text"
+            placeholder="이름 또는 이메일 검색"
+            className="w-full p-2 pl-10 border-2 border-gray-300 rounded-full mb-4"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-3 max-h-60 overflow-y-auto">
+          {filteredUsers.map((user) => (
+            <div
+              key={user.id}
+              className="flex items-center justify-between p-2"
+            >
+              <div className="flex items-center gap-3">
+                <img
+                  src={user.profileImage || 'https://via.placeholder.com/50'}
+                  alt="profile"
+                  className="w-10 h-10 rounded-full"
+                />
+                <div>
+                  <p className="font-semibold">{user.name}</p>
+                  <p className="text-gray-500 text-sm">@{user.id}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => handleSend(user.id)}
+                className="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300"
+              >
+                보내기
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="p-4">
       <div className="pb-4 mb-6 text-center">
@@ -648,10 +780,18 @@ const Mypage = (): JSX.Element => {
           </p>
         </div>
 
-        <div className="mt-4 flex justify-center gap-4">
-          <button className="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300">
+        <div className="mt-4 flex justify-center gap-4 relative">
+          <button
+            onClick={handleShareClick}
+            className={`px-4 py-2 rounded-full ${
+              isShareModalOpen
+                ? 'bg-black text-white'
+                : 'bg-gray-200 hover:bg-gray-300'
+            }`}
+          >
             공유
           </button>
+          {isShareModalOpen && <ShareModal />}
           <button className="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300">
             프로필 수정
           </button>
