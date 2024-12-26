@@ -52,7 +52,10 @@ const NavBar: React.FC = () => {
     toggleModal('message', '메시지');
   };
 
-  const handleSettingClick = () => {};
+  const handleSettingClick = () => {
+    console.log('설정 구현');
+  };
+
   const closeModal = () => {
     setModalState({ isOpen: false, title: '', type: null });
   };
