@@ -88,7 +88,7 @@ const LoginForm: React.FC = () => {
           </div>
           <button
             type="submit"
-            className="w-full px-4 py-2 mt-4 text-white bg-red-600 rounded-3xl hover:bg-red-700 "
+            className="w-full px-4 py-2 mt-4 text-white bg-btn_red rounded-3xl hover:bg-btn_h_red "
           >
             로그인
           </button>
@@ -96,14 +96,14 @@ const LoginForm: React.FC = () => {
         <div>
           <button
             onClick={handleGoogleLogin}
-            className="w-full px-4 py-2 mt-4 text-white bg-gray-300 rounded-3xl hover:bg-gray-400"
+            className="w-full px-4 py-2 mt-4 text-white bg-btn_gray rounded-3xl hover:bg-btn_h_gray"
           >
             Google로 로그인
           </button>
         </div>
         <div className="text-center mt-4">
           <span>계정이 없으신가요? </span>
-          <Link to="/signup" className="text-red-600 hover:underline">
+          <Link to="/signup" className="text-t2_red hover:underline">
             회원가입
           </Link>
         </div>

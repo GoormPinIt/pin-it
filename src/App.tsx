@@ -7,11 +7,13 @@ import Login from './pages/Login';
 import Mypage from './pages/Mypage';
 import BoardDetails from './pages/BoardDetails';
 import SignUp from './pages/Signup';
+import Header from './components/Header';
 
 const App = (): JSX.Element => {
   return (
     <Provider store={store}>
       <Router>
+        <Header />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
