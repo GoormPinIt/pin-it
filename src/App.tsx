@@ -9,11 +9,13 @@ import BoardDetails from './pages/BoardDetails';
 import SignUp from './pages/Signup';
 import Sidebar from './components/NavBar';
 import ProfileBoardDetail from './pages/ProfileBoardDetail';
+import Header from './components/Header';
 
 const App = (): JSX.Element => {
   return (
     <Provider store={store}>
       <Router>
+        <Header />
         <div className="flex">
           <Sidebar />
           <Routes>
