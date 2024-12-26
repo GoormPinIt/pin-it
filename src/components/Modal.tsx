@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { IoClose } from 'react-icons/io5';
 import { FaRegPenToSquare } from 'react-icons/fa6';
-// import LiveMessage from './LiveMessage';
+import LiveMessage from './LiveMessage';
 
 interface ModalProps {
   isOpen: boolean;
@@ -17,16 +17,18 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, messages }) => {
     setLiveMessage(sender);
   };
 
-  // const closeChatRoom = () => {
-  //   setLiveMessage(null);
-  // };
+  const closeChatRoom = () => {
+    setLiveMessage(null);
+  };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed top-0 left-12 w-full h-full rounded-lg bg-opacity-50 z-50 flex justify-start items-center">
       <div className="w-[180px] h-[98%] bg-white shadow-lg rounded-md">
-        {liveMessage ? null : ( // <LiveMessage sender={liveMessage} onClose={closeChatRoom} />
+        {liveMessage ? (
+          <LiveMessage sender={liveMessage} onClose={closeChatRoom} />
+        ) : (
           <div>
             <div className="p-1 flex justify-between items-center">
               <button className="text-gray-800" onClick={onClose}>
