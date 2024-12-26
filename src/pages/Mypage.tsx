@@ -369,22 +369,32 @@ const Mypage = (): JSX.Element => {
 
   const BoardModal = () => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [filteredUsers, setFilteredUsers] = useState(userData.following);
+    const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
     useEffect(() => {
-      if (searchTerm === '') {
-        setFilteredUsers(userData.following);
-      } else {
-        const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        setFilteredUsers(
-          userData.following.filter(
-            (user) =>
-              user.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-              user.id.toLowerCase().includes(lowerCaseSearchTerm),
-          ),
-        );
-      }
+      const fetchAllUsers = async () => {
+        if (searchTerm === '') {
+          setFilteredUsers(userData.following);
+        } else {
+          const usersQuery = query(
+            collection(db, 'users'),
+            where('name', '>=', searchTerm),
+            where('name', '<=', searchTerm + '\uf8ff'),
+          );
+
+          const userSnapshot = await getDocs(usersQuery);
+          const allUsers = userSnapshot.docs.map((doc) => ({
+            id: doc.data().id,
+            name: doc.data().name || '',
+            profileImage: doc.data().profileImage || '',
+          }));
+
+          setFilteredUsers(allUsers);
+        }
+      };
+
+      fetchAllUsers();
     }, [searchTerm, userData.following]);
 
     const handleAddUser = (id: string) => {
@@ -443,12 +453,12 @@ const Mypage = (): JSX.Element => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="이름 또는 이메일 검색"
-                className="w-full p-2 pl-10 border rounded-xl mb-4"
+                className="w-full p-2 pl-10 border-2 border-gray-300 rounded-full mb-4"
               />
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 max-h-60 overflow-y-auto">
             {filteredUsers.map((user) => (
               <div
                 key={user.id}
