@@ -480,7 +480,7 @@ const Mypage = (): JSX.Element => {
                   className={`px-4 py-2 rounded-full ${
                     selectedUsers.includes(user.id)
                       ? 'bg-black text-white'
-                      : 'bg-gray-200 hover:bg-gray-300'
+                      : 'bg-btn_gray hover:bg-btn_h_gray'
                   }`}
                 >
                   {selectedUsers.includes(user.id) ? '추가됨' : '추가'}
@@ -492,7 +492,7 @@ const Mypage = (): JSX.Element => {
           <div className="flex justify-end gap-2 mt-4">
             <button
               onClick={() => setIsBoardModalOpen(false)}
-              className="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300"
+              className="px-4 py-2 bg-btn_gray rounded-full hover:bg-btn_h_gray"
             >
               취소
             </button>
@@ -503,7 +503,7 @@ const Mypage = (): JSX.Element => {
                 );
                 setIsBoardModalOpen(false);
               }}
-              className="px-4 py-2 bg-[#e60023] text-white rounded-full hover:bg-[#cc001f]"
+              className="px-4 py-2 bg-btn_red text-white rounded-full hover:bg-btn_h_red"
             >
               만들기
             </button>
@@ -623,7 +623,7 @@ const Mypage = (): JSX.Element => {
                       className={`px-4 py-2 rounded-full ${
                         isFollowing
                           ? 'bg-black text-white'
-                          : 'bg-[#e60023] text-white hover:bg-[#cc001f]'
+                          : 'bg-btn_red text-white hover:bg-btn_h_red'
                       }`}
                     >
                       {isFollowing ? '언팔로우' : '팔로우'}
@@ -747,7 +747,7 @@ const Mypage = (): JSX.Element => {
               </div>
               <button
                 onClick={() => handleSend(user.id)}
-                className="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300"
+                className="px-4 py-2 bg-btn_gray rounded-full hover:bg-btn_h_gray"
               >
                 보내기
               </button>
@@ -796,13 +796,13 @@ const Mypage = (): JSX.Element => {
             className={`px-4 py-2 rounded-full ${
               isShareModalOpen
                 ? 'bg-black text-white'
-                : 'bg-gray-200 hover:bg-gray-300'
+                : 'bg-btn_gray hover:bg-btn_h_gray'
             }`}
           >
             공유
           </button>
           {isShareModalOpen && <ShareModal />}
-          <button className="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300">
+          <button className="px-4 py-2 bg-btn_gray rounded-full hover:bg-btn_h_gray">
             프로필 수정
           </button>
         </div>
@@ -848,7 +848,7 @@ const Mypage = (): JSX.Element => {
                       <div
                         key={option}
                         onClick={() => handleSortChange(option)}
-                        className="p-2 hover:bg-gray-200 flex justify-between items-center cursor-pointer"
+                        className="p-2 hover:bg-btn_h_gray flex justify-between items-center cursor-pointer"
                       >
                         {option} {selectedSort === option && <FaCheck />}
                       </div>
@@ -871,7 +871,7 @@ const Mypage = (): JSX.Element => {
                         navigate('/create-pin');
                         setIsPlusOpen(false);
                       }}
-                      className="p-2 hover:bg-gray-200 cursor-pointer"
+                      className="p-2 hover:bg-btn_h_gray cursor-pointer"
                     >
                       핀 만들기
                     </div>
@@ -880,7 +880,7 @@ const Mypage = (): JSX.Element => {
                         setIsBoardModalOpen(true);
                         setIsPlusOpen(false);
                       }}
-                      className="p-2 hover:bg-gray-200 cursor-pointer"
+                      className="p-2 hover:bg-btn_h_gray cursor-pointer"
                     >
                       보드 만들기
                     </div>
