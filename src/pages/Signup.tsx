@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
+import { doc, setDoc } from 'firebase/firestore';
 
 const SignUp: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -12,14 +13,12 @@ const SignUp: React.FC = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 비밀번호 일치 확인
     if (password !== confirmPassword) {
       alert('비밀번호가 일치하지 않습니다.');
       return;
     }
 
     try {
-      // Firebase 회원가입 메서드
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -27,14 +26,22 @@ const SignUp: React.FC = () => {
       );
 
       const user = userCredential.user;
+
+      // Firestore에 사용자 정보 저장
+      await setDoc(doc(db, 'users', user.uid), {
+        email: user.email,
+        uid: user.uid,
+        createdAt: new Date(),
+      });
+
       console.log('회원가입 성공:', user);
       alert('회원가입 성공!');
-      navigate('/login'); // 로그인 페이지로 이동
+      navigate('/login');
     } catch (error: unknown) {
       if (error instanceof Error) {
-        alert(`로그인 실패: ${error.message}`);
+        alert(`회원가입 실패: ${error.message}`);
       } else {
-        alert('로그인 실패: 알 수 없는 오류가 발생했습니다.');
+        alert('회원가입 실패: 알 수 없는 오류가 발생했습니다.');
       }
     }
   };
