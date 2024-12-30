@@ -10,12 +10,16 @@ import SignUp from './pages/Signup';
 import Sidebar from './components/NavBar';
 import ProfileBoardDetail from './pages/ProfileBoardDetail';
 import Header from './components/Header';
+import LandingPage from './pages/LandingPage';
 
 const App = (): JSX.Element => {
   return (
     <Provider store={store}>
       <Router>
-        <Header />
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+        </Routes>
+        {/* <Header />
         <div className="flex">
           <Sidebar />
           <Routes>
@@ -26,7 +30,7 @@ const App = (): JSX.Element => {
             <Route path="/board/:boardId" element={<BoardDetails />} />
             <Route path="/boardDetail" element={<ProfileBoardDetail />} />
           </Routes>
-        </div>
+        </div> */}
       </Router>
     </Provider>
   );

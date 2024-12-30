@@ -1,7 +1,12 @@
-import React from 'react';
+import PinterestLayout from '../components/PinterestLayout';
+import Landing from './LandingPage';
 
 const Home = (): JSX.Element => {
-  return <p>메인 페이지</p>;
+  return (
+    <>
+      <PinterestLayout />
+    </>
+  );
 };
 
 export default Home;

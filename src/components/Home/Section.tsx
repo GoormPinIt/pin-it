@@ -1,31 +1,32 @@
 import React from 'react';
-import Images from '../../../components/Home/Images';
-import Indicator from '../../../components/Home/Indicator';
-import TextCarousel from '../../../components/Home/TextCarousel';
-import { SlArrowDownCircle } from 'react-icons/sl';
-import Button from '../../../components/Button';
+import Images from './Images';
+import Indicator from './Indicator';
+import TextCarousel from './TextCarousel';
+import { IoIosArrowDropdownCircle } from 'react-icons/io';
+import Button from '../Button';
 import { FiSearch } from 'react-icons/fi';
-import CardImg from '../../../components/Home/CardImg';
+import CardImg from './CardImg';
 import './Style.css';
-const Sec1 = () => {
+
+const Sec1: React.FC = () => {
   return (
-    <div className=" flex-col justify-items-center overflow-x-hidden mt-20 h-screen bg-white relative">
-      <h2 className="text-5xl py-3 mt-7">Get your next</h2>
+    <div className=" flex-col justify-items-center overflow-x-hidden h-screen bg-white relative">
+      <h2 className="text-5xl py-3 pt-32">다음</h2>
       <TextCarousel />
       <Indicator />
       <Images />
-      <SlArrowDownCircle className="text-5xl bg-cyan-400 rounded-full text-white relative z-40 animate-bounce mb-3" />
+      <IoIosArrowDropdownCircle className="text-5xl rounded-full text-white relative z-40 animate-bounce mb-3" />
       <div className="w-full  h-24 absolute bottom-16 bg-gradient-to-t from-white/80 to-transparent"></div>
-      <div className="w-full text-center py-6 bg-pinit-yellow font-bold mt-auto ">
-        Here's how it works
+      <div className="w-full text-center absolute bottom-0 py-6 bg-pinit_yellow font-bold mt-auto ">
+        방식은 다음과 같습니다
       </div>
     </div>
   );
 };
 
-const Sec2 = () => {
+const Sec2: React.FC = () => {
   return (
-    <div className="bg-bg-pink flex justify-center items-center h-screen">
+    <div className="bg-pinit_yellow flex justify-center items-center h-screen">
       <div className="flex-1 m-auto relative">
         <img
           className="w-2/5 h-96 rounded-3xl mx-auto z-20 relative"
@@ -51,51 +52,51 @@ const Sec2 = () => {
           <FiSearch className="pr-3 font-bold text-4xl" />
           <span className="text-2xl text-rose-950 font-semibold">
             {' '}
-            easy chicken dinner
+            닭고기로 만드는 손쉬운 저녁 메뉴
           </span>
         </div>
       </div>
-      <div className="flex-1 items-center text-center">
-        <h1 className="text-5xl text-t2-pink font-bold my-4">
-          Search for an idea
-        </h1>
+      <div className="flex-1 items-center text-center text-t2_red">
+        <h1 className="text-5xl font-bold my-4">아이디어 검색</h1>
         <p className="text-center text-2xl w-1/2 text-t2-pink mx-auto my-4">
-          What do you want to try next? Think of something you're into - such as
-          'easy chicken dinner' - and see what you find.
+          어떤 것을 시도해 보고 싶으세요? &apos;닭고기로 만드는 간단한 저녁
+          메뉴&apos;와 같이 관심 있는 내용을 검색하고 결과를 확인해 보세요.
         </p>
-        <Button>Explore</Button>
+        <Button className="px-5 py-3">탐색</Button>
       </div>
     </div>
   );
 };
 
-const Sec3 = () => {
+const Sec3: React.FC = () => {
   return (
-    <div className="bg-bg-green flex justify-center items-center h-screen">
-      <div className="flex-1 items-center text-center text-t3-green">
-        <h1 className="text-5xl font-bold my-4">Save ideas you like</h1>
+    <div className="bg-pinit_mint flex justify-center items-center h-screen">
+      <div className="flex-1 items-center text-center text-t3_green">
+        <h1 className="text-5xl font-bold my-4">
+          좋아하는 아이디어를 저장하세요.
+        </h1>
         <p className="text-center text-2xl w-1/2 mx-auto my-4">
-          Collect your favourites so you can get back to them later.
+          나중에 다시 볼 수 있도록 좋아하는 콘텐츠를 수집하세요.
         </p>
-        <Button>Explore</Button>
+        <Button className="px-5 py-3">탐색</Button>
       </div>
 
       <div className="w-1/2 h-full relative flex flex-wrap justify-start items-start mt-48">
         <div className="flex w-full">
           <CardImg
-            className="w-96 h-96 backdrop-opacity-90 object-fill text-5xl"
-            text="Fern future home vibes"
+            className="w-96 h-96 backdrop-opacity-90 object-fill text-5xl rounded-3xl"
+            text="집 분위기 바꾸기: 양치식물"
             link="https://i.pinimg.com/736x/07/4f/72/074f729bd6f33ad88733b5de8353b9ed.jpg"
           />
           <div className="flex flex-col ml-10">
             <CardImg
-              className="w-52 h-52 object-fill text-xl text-left mb-10"
-              text="My Scandinavian bedroom"
+              className="w-52 h-52 object-fill text-xl text-left mb-10 rounded-3xl"
+              text="스칸디나비아풍 침실"
               link="https://i.pinimg.com/736x/3a/e2/6e/3ae26e5b6f93e9d35b2e72e12ec7eced.jpg"
             />
             <CardImg
-              className="w-44 h-44 object-fill text-xl text-left"
-              text="The decking of my dreams"
+              className="w-44 h-44 object-fill text-xl text-left rounded-3xl"
+              text="꿈의 데크"
               link="https://i.pinimg.com/736x/d1/84/f5/d184f5e6fcb73f471f4e59fef62670d9.jpg"
             />
           </div>
@@ -103,13 +104,13 @@ const Sec3 = () => {
 
         <div className="grid grid-cols-2 w-full -mt-24">
           <CardImg
-            className="w-60 h-60 ml-24 object-fill text-3xl text-left"
-            text="Serve my drinks in style"
+            className="w-60 h-60 ml-24 object-fill text-3xl text-left rounded-3xl"
+            text="멋진 음료 서빙"
             link="https://i.pinimg.com/736x/f9/1e/3e/f91e3e620cedc23ccd85180d90be4b24.jpg"
           />
           <CardImg
-            className="w-60 h-60 mt-10  object-fill text-xl text-left"
-            text="Our bathroom upgrade"
+            className="w-60 h-60 mt-10  object-fill text-xl text-left rounded-3xl"
+            text="화장실 업그레이드"
             link="https://i.pinimg.com/736x/3e/75/eb/3e75eb95dc4642761bf05603828e3caf.jpg"
           />
         </div>
@@ -118,9 +119,9 @@ const Sec3 = () => {
   );
 };
 
-const Sec4 = () => {
+const Sec4: React.FC = () => {
   return (
-    <div className="bg-bg-mint flex justify-center items-center h-screen">
+    <div className="bg-pinit_pink flex justify-center items-center h-screen">
       <div className="w-1/2 h-full object-fill relative">
         <img
           className="w-full h-full object-cover"
@@ -144,43 +145,43 @@ const Sec4 = () => {
           </div>
         </div>
       </div>
-      <div className="flex-1 items-center text-center">
+      <div className="flex-1 items-center text-center text-t2_red">
         <h1 className="text-5xl text-t2-pink font-bold my-4">
-          See it, Make it, <br /> Try it, do it
+          구매하고, 만들고, <br /> 시도하고, 실행하세요.
         </h1>
-        <p className="text-center text-2xl w-1/2 text-t2-pink mx-auto my-4">
-          The best part of Pinterest is discovering new things and ideas from
-          people around the world.
+        <p className="text-center text-2xl w-1/2 mx-auto my-4">
+          무엇보다도 Pinterest에서는 전 세계 사람들의 아이디어와 새로운 것을
+          발견할 수 있습니다.
         </p>
-        <Button>Explore</Button>
+        <Button className="px-5 py-3">Explore</Button>
       </div>
     </div>
   );
 };
 
-const Sec5 = () => {
+const Sec5: React.FC = () => {
   return (
     <div className="relative backImg flex justify-around items-center h-screen bg-blend-darken">
       <div className="absolute inset-0 bg-black bg-opacity-50"></div>
       <div className="flex-2 items-center text-center z-10">
-        <h1 className="text-6xl text-white font-semibold my-4 ">
-          Sign up to get <br /> your ideas
+        <h1 className="text-6xl text-white font-semibold my-4 text-left leading-snug">
+          가입하여 더 많은 <br />
+          아이디어를 <br />
+          만나 보세요
         </h1>
       </div>
       <div className="bg-white rounded-3xl w-1/4 h-3/4 z-10 flex-2"></div>
       <div className="absolute w-full bg-white gap-4 flex justify-center items-center bottom-0 h-10 text-sm font-semibold">
-        <span>Terms of Service</span>
-        <span>Privacy Policy</span>
-        <span>Help</span>
-        <span>iPhone app</span>
-        <span>Android app</span>
-        <span>Users</span>
-        <span>Collections</span>
-        <span>Shopping</span>
-        <span>Today</span>
-        <span>Explore</span>
-        <span>Watch</span>
-        <span>Shop</span>
+        <span>서비스 약관</span>
+        <span>개인정보처리방침</span>
+        <span>도움말</span>
+        <span>iPhone 앱</span>
+        <span>Android 앱</span>
+        <span>사용자</span>
+        <span>컬렉션</span>
+        <span>쇼핑</span>
+        <span>오늘</span>
+        <span>탐색</span>
       </div>
     </div>
   );
