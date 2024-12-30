@@ -641,6 +641,7 @@ const Mypage = (): JSX.Element => {
   const ShareModal = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
       const fetchAllUsers = async () => {
@@ -672,6 +673,19 @@ const Mypage = (): JSX.Element => {
       // 메시지로 내 프로필 보내는 로직 추가하기
     };
 
+    const handleCopyLink = () => {
+      const currentUrl = window.location.href;
+      navigator.clipboard
+        .writeText(currentUrl)
+        .then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 3000);
+        })
+        .catch((err) => {
+          console.error('링크 복사 실패:', err);
+        });
+    };
+
     return (
       <div
         className="bg-white p-6 rounded-xl shadow-lg w-96 absolute top-11"
@@ -679,9 +693,14 @@ const Mypage = (): JSX.Element => {
       >
         <p className="mb-4 text-center">공유</p>
         <div className="flex justify-evenly mb-4 pb-4 border-b-2">
-          <button className="flex flex-col items-center">
+          <button
+            className="flex flex-col items-center"
+            onClick={handleCopyLink}
+          >
             <FaLink className="w-10 h-10 mb-2 bg-gray-200 rounded-full pl-3 pr-3" />
-            <span className="text-xs">링크 복사</span>
+            <span className="text-xs">
+              {copied ? '복사 완료' : '링크 복사'}
+            </span>
           </button>
           <button className="flex flex-col items-center">
             <img
