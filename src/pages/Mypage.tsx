@@ -686,6 +686,16 @@ const Mypage = (): JSX.Element => {
         });
     };
 
+    const handleTwitterShare = () => {
+      const text = 'Pinterest에서 꼭 팔로우해야 할 사람을 찾았습니다.';
+
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        text,
+      )}&url=${encodeURIComponent(currentUrl)}&via=pinterest`;
+
+      window.open(twitterUrl, 'twitter-share-dialog', 'width=600,height=400');
+    };
+
     return (
       <div
         className="bg-white p-6 rounded-xl shadow-lg w-96 absolute top-11"
@@ -732,7 +742,10 @@ const Mypage = (): JSX.Element => {
             <span className="text-xs">Facebook</span>
           </button>
 
-          <button className="flex flex-col items-center">
+          <button
+            className="flex flex-col items-center"
+            onClick={handleTwitterShare}
+          >
             <img
               src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRo9rzArm7GEm9dZBAFHhS_BSPvuBiuPnXwcg&s"
               alt="Twitter"
