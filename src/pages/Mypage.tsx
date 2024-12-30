@@ -642,6 +642,7 @@ const Mypage = (): JSX.Element => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [copied, setCopied] = useState(false);
+    const currentUrl = window.location.href;
 
     useEffect(() => {
       const fetchAllUsers = async () => {
@@ -674,7 +675,6 @@ const Mypage = (): JSX.Element => {
     };
 
     const handleCopyLink = () => {
-      const currentUrl = window.location.href;
       navigator.clipboard
         .writeText(currentUrl)
         .then(() => {
@@ -702,14 +702,19 @@ const Mypage = (): JSX.Element => {
               {copied ? '복사 완료' : '링크 복사'}
             </span>
           </button>
-          <button className="flex flex-col items-center">
+          <a
+            href={`https://web.whatsapp.com/send?text=${encodeURIComponent(currentUrl)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-col items-center"
+          >
             <img
               src="https://cdn.pixabay.com/photo/2021/12/10/16/38/whatsapp-6860919_1280.png"
               alt="WhatsApp"
               className="w-10 h-10 rounded-full mb-2"
             />
             <span className="text-xs">WhatsApp</span>
-          </button>
+          </a>
           <button className="flex flex-col items-center">
             <img
               src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Facebook_Messenger_logo_2020.svg/2048px-Facebook_Messenger_logo_2020.svg.png"
