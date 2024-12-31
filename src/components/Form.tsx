@@ -4,7 +4,7 @@ import UserTag from './UserTag';
 
 const Form: React.FC = () => {
     return (
-        <div className="bg-white rounded-2xl">
+        <div className="bg-white rounded-2xl ">
             <UploadImage />
         </div>
     );
