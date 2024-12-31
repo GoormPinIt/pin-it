@@ -11,43 +11,64 @@ const PinBuilder = () => {
     const [imgFile, setImgFile] = useState<File | null>(null); // 파일
     const [uploadedfile, setUploadedfile] = useState<string>(''); // 업로드한 파일
     const [title, setTitle] = useState<string>('');
+    const [board, setBoard] = useState<string>('');
+    const [link, setLink] = useState<string>('');
+    const [allowComments, setAllowComments] = useState<boolean>(true);
+    const [showSimilarProducts, setShowSimilarProducts] = useState<boolean>(true);
+    const [tag, setTag] = useState<string>('');
     const [imgDes, setImgDes] = useState<string>(''); // 업로드한 파일 설명
     const name = localStorage.getItem('user_name');
 
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+    const [isImageUploaded, setIsImageUploaded] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleChangeFile = (event: ChangeEvent<HTMLInputElement>) => {
-        console.log('File change event triggered'); // 이벤트 발생 확인
+    const handleInputChange = (field: string, value: string) => {
+        switch (field) {
+            case 'title':
+                setTitle(value);
+                break;
+            case 'description':
+                setImgDes(value);
+                break;
+            case 'link':
+                setLink(value);
+                break;
+            case 'board':
+                setBoard(value);
+                break;
 
-        if (event.target.files && event.target.files[0]) {
-            const file = event.target.files[0];
-            console.log('File selected:', file.name); // 선택된 파일 정보 로깅
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                if (e.target && typeof e.target.result === 'string') {
-                    console.log('File read successfully'); // 파일 읽기 성공 로그
-                    setImgBase64(e.target.result);
-                }
-            };
-            reader.onerror = (e) => {
-                console.error('Error reading file:', e); // 파일 읽기 오류 로그
-            };
-            reader.readAsDataURL(file);
-            setImgFile(file);
-        } else {
-            console.log('No file selected'); // 파일 선택되지 않음 로그
+            case 'tag':
+                setTag(value);
+                break;
         }
     };
 
-    // useEffect(() => {
-    //     const fileInput = fileInputRef.current;
-    //     if (fileInput) {
-    //         fileInput.addEventListener('change', handleChangeFile);
-    //         return () => fileInput.removeEventListener('change', handleChangeFile);
-    //     }
-    // }, []);
+    const handleChangeFile = (event: ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files[0]) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (e.target && typeof e.target.result === 'string') {
+                    setImgBase64(e.target.result);
+                    setIsImageUploaded(true);
+                }
+            };
+            reader.readAsDataURL(file);
+            setImgFile(file);
+        }
+    };
+
+    const handleSubmit = () => {
+        console.log('Title:', title);
+        console.log('Description:', imgDes);
+        console.log('Image File:', imgFile);
+        console.log('link:', link);
+        console.log('board:', board);
+        console.log('tag:', tag);
+        console.log('allowComments:', allowComments);
+        console.log('showSimilarProducts:', showSimilarProducts);
+    };
 
     return (
         <div className="pin-builder-container">
@@ -56,8 +77,13 @@ const PinBuilder = () => {
             <div className="pin-builder-main">
                 <Sidebar />
                 <div className="pin-builder-bar">
-                    <div className="pin-builder-bar-space"></div>
+                    {/* <div className="pin-builder-bar-space"></div> */}
                     <h1 className="pin-builder-title">핀 만들기</h1>
+                    {isImageUploaded && (
+                        <button className="pin-builder-publish-button" onClick={handleSubmit}>
+                            게시
+                        </button>
+                    )}
                 </div>
 
                 <div className="pin-builder-content">
@@ -104,11 +130,38 @@ const PinBuilder = () => {
                         <div className="pin-builder-second-area">
                             <div className="pin-builder-second-area-content">
                                 <form className="pin-builder-form">
-                                    <InputField label="제목" placeholder="제목 추가" />
-                                    <InputField label="설명" placeholder="자세한 설명을 추가하세요." textarea />
-                                    <InputField label="링크" placeholder="링크 추가" type="url" />
-                                    <InputField label="보드" placeholder="보드 선택" />
-                                    <InputField label="태그된 주제 (0)개" placeholder="태그 검색" />
+                                    <InputField
+                                        label="제목"
+                                        placeholder="제목 추가"
+                                        disabled={!isImageUploaded}
+                                        onChange={(e) => handleInputChange('title', e.target.value)}
+                                    />
+                                    <InputField
+                                        label="설명"
+                                        placeholder="자세한 설명을 추가하세요."
+                                        textarea
+                                        disabled={!isImageUploaded}
+                                        onChange={(e) => handleInputChange('description', e.target.value)}
+                                    />
+                                    <InputField
+                                        label="링크"
+                                        placeholder="링크 추가"
+                                        type="url"
+                                        disabled={!isImageUploaded}
+                                        onChange={(e) => handleInputChange('link', e.target.value)}
+                                    />
+                                    <InputField
+                                        label="보드"
+                                        placeholder="보드 선택"
+                                        disabled={!isImageUploaded}
+                                        onChange={(e) => handleInputChange('board', e.target.value)}
+                                    />
+                                    <InputField
+                                        label="태그된 주제 (0)개"
+                                        placeholder="태그 검색"
+                                        disabled={!isImageUploaded}
+                                        onChange={(e) => handleInputChange('tag', e.target.value)}
+                                    />
                                     <p className="pin-builder-note">
                                         걱정하지 마세요. 사람들에게 태그는 보여지지 않습니다.
                                     </p>

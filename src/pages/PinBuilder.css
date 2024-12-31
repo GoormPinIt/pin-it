@@ -17,7 +17,7 @@
 
 /* 상단 바 */
 .pin-builder-bar {
-    @apply flex items-center border-t border-b border-gray-200 fixed top-[80px] left-0 h-[81px] w-full z-10 bg-white;
+    @apply flex items-center border-t border-b border-gray-200 fixed top-[80px] left-0 h-[81px] w-full z-10 bg-white justify-between;
 }
 
 .pin-builder-bar-space {
@@ -25,7 +25,7 @@
 }
 
 .pin-builder-title {
-    @apply text-xl font-semibold text-gray-900;
+    @apply text-xl font-semibold text-gray-900 ml-28;
 }
 
 /* 콘텐츠 */
@@ -91,4 +91,20 @@
 
 .pin-builder-warning {
     @apply text-sm text-[#767676] pb-[16px];
+}
+
+.pin-builder-publish-button {
+    @apply bg-[#e60023] hover:bg-red-700 
+    text-white 
+    font-semibold
+    font-sans text-base 
+    rounded-full
+    transition-transform transform hover:scale-105 
+    cursor-pointer 
+    border-0 
+    flex items-center justify-center 
+    px-4 py-3 
+    mr-5
+    min-h-[48px] min-w-[60px] 
+    box-border;
 }
