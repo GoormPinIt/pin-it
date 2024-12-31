@@ -10,6 +10,7 @@ import Mypage from './pages/Mypage';
 import BoardDetails from './pages/BoardDetails';
 import SignUp from './pages/Signup';
 
+
 const App = (): JSX.Element => {
     return (
         <Provider store={store}>

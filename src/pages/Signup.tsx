@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase';
+import { useNavigate } from 'react-router-dom';
 
 const SignUp: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -14,7 +14,7 @@ const SignUp: React.FC = () => {
 
     // 비밀번호 일치 확인
     if (password !== confirmPassword) {
-      alert("비밀번호가 일치하지 않습니다.");
+      alert('비밀번호가 일치하지 않습니다.');
       return;
     }
 
@@ -23,18 +23,18 @@ const SignUp: React.FC = () => {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
 
       const user = userCredential.user;
-      console.log("회원가입 성공:", user);
-      alert("회원가입 성공!");
-      navigate("/login"); // 로그인 페이지로 이동
+      console.log('회원가입 성공:', user);
+      alert('회원가입 성공!');
+      navigate('/login'); // 로그인 페이지로 이동
     } catch (error: unknown) {
       if (error instanceof Error) {
         alert(`로그인 실패: ${error.message}`);
       } else {
-        alert("로그인 실패: 알 수 없는 오류가 발생했습니다.");
+        alert('로그인 실패: 알 수 없는 오류가 발생했습니다.');
       }
     }
   };
@@ -76,7 +76,7 @@ const SignUp: React.FC = () => {
           </div>
           <button
             type="submit"
-            className="w-full px-4 py-2 mt-4 text-white bg-red-600 rounded-3xl hover:bg-red-700"
+            className="w-full px-4 py-2 mt-4 text-white bg-btn_red rounded-3xl hover:bg-btn_h_red"
           >
             회원가입
           </button>
