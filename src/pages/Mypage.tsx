@@ -776,7 +776,7 @@ const Mypage = (): JSX.Element => {
             onClick={handleFacebookShare}
           >
             <img
-              src="https://i.namu.wiki/i/NmLLiCcgR5wYhqo1OWGwIKDhraZMpJdcNjGfUzBqFB38iVBE3f6TMnr1OzwvduJBRepDa_73Bw3Eh5_crIUqag.svg"
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Facebook_f_logo_%282019%29.svg/1280px-Facebook_f_logo_%282019%29.svg.png"
               alt="Facebook"
               className="w-10 h-10 mb-2"
             />
