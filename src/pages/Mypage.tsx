@@ -707,6 +707,30 @@ const Mypage = (): JSX.Element => {
       window.open(facebookUrl, 'facebook-share-dialog', 'width=600,height=400');
     };
 
+    const handleMessengerShare = () => {
+      const currentUrl = 'https://example.com'; // Open Graph 태그가 있는 URL 이어야 공유 시 링크가 뜸. 현재 로컬호스트는 링크가 안떠서 임시 URL
+
+      const messengerUrl = `fb-messenger://share?link=${encodeURIComponent(
+        currentUrl,
+      )}&app_id=${facebookAppId}`;
+
+      const browserMessengerUrl = `https://www.facebook.com/dialog/send?link=${encodeURIComponent(
+        currentUrl,
+      )}&app_id=${facebookAppId}&redirect_uri=${encodeURIComponent(currentUrl)}`;
+
+      if (navigator.userAgent.match(/FBAN|FBAV/i)) {
+        // Messenger 앱이 설치된 경우 실행
+        window.open(messengerUrl, '_blank');
+      } else {
+        // 일반 웹 브라우저 환경
+        window.open(
+          browserMessengerUrl,
+          'messenger-share-dialog',
+          'width=600,height=400',
+        );
+      }
+    };
+
     return (
       <div
         className="bg-white p-6 rounded-xl shadow-lg w-96 absolute top-11"
@@ -736,7 +760,10 @@ const Mypage = (): JSX.Element => {
             />
             <span className="text-xs">WhatsApp</span>
           </a>
-          <button className="flex flex-col items-center">
+          <button
+            className="flex flex-col items-center"
+            onClick={handleMessengerShare}
+          >
             <img
               src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Facebook_Messenger_logo_2020.svg/2048px-Facebook_Messenger_logo_2020.svg.png"
               alt="FacebookMessenger"
