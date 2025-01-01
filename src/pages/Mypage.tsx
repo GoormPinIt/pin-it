@@ -141,6 +141,9 @@ const Mypage = (): JSX.Element => {
     createdBoards: [],
   });
 
+  const defaultProfileImage =
+    'https://i.pinimg.com/736x/3b/73/a1/3b73a13983f88f8b84e130bb3fb29e17.jpg';
+
   // 로그인 후 uid 가져오는 로직 추가하기
   const uid = '1'; // 임시로 1번 유저
 
@@ -466,7 +469,7 @@ const Mypage = (): JSX.Element => {
               >
                 <div className="flex items-center gap-3">
                   <img
-                    src={user.profileImage}
+                    src={user.profileImage || defaultProfileImage}
                     alt="profile"
                     className="w-10 h-10 rounded-full"
                   />
@@ -611,7 +614,7 @@ const Mypage = (): JSX.Element => {
                 >
                   <div className="flex items-center gap-3">
                     <img
-                      src={user.profileImage}
+                      src={user.profileImage || defaultProfileImage}
                       alt="profile"
                       className="w-10 h-10 rounded-full"
                     />
@@ -814,7 +817,7 @@ const Mypage = (): JSX.Element => {
             >
               <div className="flex items-center gap-3">
                 <img
-                  src={user.profileImage || 'https://via.placeholder.com/50'}
+                  src={user.profileImage || defaultProfileImage}
                   alt="profile"
                   className="w-10 h-10 rounded-full"
                 />
@@ -840,7 +843,7 @@ const Mypage = (): JSX.Element => {
     <div className="p-4">
       <div className="pb-4 mb-6 text-center">
         <img
-          src={userData.profileImage}
+          src={userData.profileImage || defaultProfileImage}
           alt="프로필 사진"
           className="w-32 h-32 object-cover rounded-full bg-gray-200 mx-auto"
         />
