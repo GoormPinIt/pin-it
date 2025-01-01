@@ -643,6 +643,7 @@ const Mypage = (): JSX.Element => {
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [copied, setCopied] = useState(false);
     const currentUrl = window.location.href;
+    const facebookAppId = process.env.REACT_APP_FACEBOOK_APP_ID;
 
     useEffect(() => {
       const fetchAllUsers = async () => {
@@ -696,6 +697,16 @@ const Mypage = (): JSX.Element => {
       window.open(twitterUrl, 'twitter-share-dialog', 'width=600,height=400');
     };
 
+    const handleFacebookShare = () => {
+      const currentUrl = 'https://example.com'; // Open Graph 태그가 있는 URL 이어야 공유 시 링크가 뜸. 현재 로컬호스트는 링크가 안떠서 임시 URL
+
+      const facebookUrl = `https://www.facebook.com/dialog/share?app_id=${facebookAppId}&href=${encodeURIComponent(
+        currentUrl,
+      )}&display=popup`;
+
+      window.open(facebookUrl, 'facebook-share-dialog', 'width=600,height=400');
+    };
+
     return (
       <div
         className="bg-white p-6 rounded-xl shadow-lg w-96 absolute top-11"
@@ -733,7 +744,10 @@ const Mypage = (): JSX.Element => {
             />
             <span className="text-xs">Messenger</span>
           </button>
-          <button className="flex flex-col items-center">
+          <button
+            className="flex flex-col items-center"
+            onClick={handleFacebookShare}
+          >
             <img
               src="https://i.namu.wiki/i/NmLLiCcgR5wYhqo1OWGwIKDhraZMpJdcNjGfUzBqFB38iVBE3f6TMnr1OzwvduJBRepDa_73Bw3Eh5_crIUqag.svg"
               alt="Facebook"
