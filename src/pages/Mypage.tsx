@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
+import { ko } from 'date-fns/locale';
 import { TbAdjustmentsHorizontal } from 'react-icons/tb';
 import { FaCheck, FaPlus } from 'react-icons/fa6';
 import { FaSearch } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
+import { FaLink } from 'react-icons/fa';
 import GridBoard from '../components/GridBoard';
 import MasonryLayout from '../components/MasonryLayout';
 import {
@@ -32,44 +35,11 @@ type BoardProps = BoardData & {
   onBoardClick: (id: string) => void;
 };
 
-// 더미 보드 데이터
-const boardData: BoardData[] = [
-  {
-    id: 'all-pins',
-    title: '모든 핀',
-    pinCount: 20,
-    updatedTime: '1시간',
-    images: [
-      'https://i.pinimg.com/736x/54/3e/06/543e063d80e1d601886d60af8a09b968.jpg',
-      'https://i.pinimg.com/736x/7c/fd/c1/7cfdc13a222c1502dc1a66e6cb7438d1.jpg',
-      'https://i.pinimg.com/736x/09/47/1b/09471b72c946fc47908b9f3bb85b1f64.jpg',
-      'https://i.pinimg.com/736x/6e/f4/1a/6ef41a60399d8fc42419559e843d933e.jpg',
-      'https://i.pinimg.com/736x/03/32/6d/03326de049c83e53656769e547d4f576.jpg',
-    ],
-  },
-  {
-    id: 'cats',
-    title: '고양이',
-    pinCount: 6,
-    updatedTime: '5시간',
-    images: [
-      'https://i.pinimg.com/736x/61/85/83/6185831e07299cfa0307981325abbfd1.jpg',
-      'https://images.unsplash.com/photo-1533743983669-94fa5c4338ec?q=80&w=2592&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      'https://images.unsplash.com/photo-1445499348736-29b6cdfc03b9?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    ],
-  },
-  {
-    id: 'travel',
-    title: '여행',
-    pinCount: 3,
-    updatedTime: '1시간',
-    images: [
-      'https://i.pinimg.com/736x/35/27/ab/3527ab03980bb14b74d256feaed42760.jpg',
-      'https://i.pinimg.com/736x/a5/8f/b8/a58fb8936c319d851a12e8912d87f48f.jpg',
-      'https://i.pinimg.com/736x/44/a8/34/44a8349122f3305efca85ac8aed033df.jpg',
-    ],
-  },
-];
+const formatRelativeTime = (timestamp: any): string => {
+  if (!timestamp) return '';
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  return formatDistanceToNow(date, { addSuffix: true, locale: ko });
+};
 
 const Board = ({
   id,
@@ -78,33 +48,65 @@ const Board = ({
   updatedTime,
   images,
   onBoardClick,
-}: BoardProps): JSX.Element => (
-  <div
-    className="w-56 flex flex-col cursor-pointer"
-    onClick={() => onBoardClick(id)}
-  >
-    {title === '모든 핀' ? (
-      <div className="relative w-full h-40">
-        {images.slice(0, 5).map((image, index) => (
-          <img
-            key={index}
-            src={image}
-            alt={`핀${5 - index}`}
-            className="absolute w-3/5 h-full object-cover rounded-2xl border-2 border-white"
-            style={{ left: `${index * 23}px`, zIndex: 5 - index }}
-          />
-        ))}
+}: BoardProps): JSX.Element => {
+  const filledImages =
+    images.length < 5
+      ? [...images, ...Array(5 - images.length).fill(null)]
+      : images.slice(0, 5);
+
+  return (
+    <div
+      className="w-56 flex flex-col cursor-pointer"
+      onClick={() => onBoardClick(id)}
+    >
+      {title === '모든 핀' ? (
+        <div className="relative w-full h-40">
+          {filledImages
+            .slice(0, 5)
+            .map((image, index) =>
+              image ? (
+                <img
+                  key={index}
+                  src={image}
+                  alt={`핀${5 - index}`}
+                  className="absolute w-3/5 h-full object-cover rounded-2xl border-2 border-white"
+                  style={{ left: `${index * 23}px`, zIndex: 5 - index }}
+                />
+              ) : (
+                <div
+                  key={index}
+                  className="absolute w-3/5 h-full bg-gray-200 rounded-2xl border-2 border-white"
+                  style={{ left: `${index * 23}px`, zIndex: 5 - index }}
+                />
+              ),
+            )}
+        </div>
+      ) : (
+        <GridBoard images={images} />
+      )}
+      <h3 className="text-lg font-semibold mt-2">{title}</h3>
+      <div className="flex gap-2">
+        <p>핀 {pinCount}개</p>
+        <p className="text-gray-500">{formatRelativeTime(updatedTime)}</p>
       </div>
-    ) : (
-      <GridBoard images={images} />
-    )}
-    <h3 className="text-lg font-semibold mt-2">{title}</h3>
-    <div className="flex gap-2">
-      <p>핀 {pinCount}개</p>
-      <p className="text-gray-500">{updatedTime}</p>
     </div>
-  </div>
-);
+  );
+};
+
+type PinData = {
+  id: string;
+  imageUrl: string;
+  creatorId: string;
+  title?: string;
+  description?: string;
+  link?: string;
+};
+
+type User = {
+  id: string;
+  name: string;
+  profileImage: string;
+};
 
 const Mypage = (): JSX.Element => {
   const navigate = useNavigate();
@@ -112,11 +114,12 @@ const Mypage = (): JSX.Element => {
   const [selectedTab, setSelectedTab] = useState<'created' | 'saved'>('saved');
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [selectedSort, setSelectedSort] = useState<string | null>('최신순');
-  const [boardDataState, setBoardDataState] = useState<BoardData[]>(boardData);
+  const [boardDataState, setBoardDataState] = useState<BoardData[]>([]);
   const [isPlusOpen, setIsPlusOpen] = useState(false);
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
   const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
   const [isFollowerModal, setIsFollowerModal] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const [userData, setUserData] = useState<{
     id: string;
@@ -124,8 +127,8 @@ const Mypage = (): JSX.Element => {
     profileImage: string;
     followers: { id: string; name: string; profileImage: string }[];
     following: { id: string; name: string; profileImage: string }[];
-    createdPins: string[];
-    savedPins: string[];
+    createdPins: PinData[];
+    savedPins: PinData[];
     createdBoards: string[];
   }>({
     id: '',
@@ -163,6 +166,63 @@ const Mypage = (): JSX.Element => {
           createdBoards,
         } = userDoc.data();
 
+        const allPinIds = [...new Set([...createdPins, ...savedPins])];
+        const allPinsData = await Promise.all(
+          allPinIds.map(async (pinId: string) => {
+            const pinDocRef = doc(db, 'pins', pinId);
+            const pinDoc = await getDoc(pinDocRef);
+
+            if (pinDoc.exists()) {
+              const pinData = pinDoc.data() as { imageUrl: string };
+              return pinData.imageUrl;
+            } else {
+              console.warn(`핀 ID ${pinId}를 찾을 수 없습니다.`);
+              return null;
+            }
+          }),
+        );
+
+        const allPinsBoard: BoardData = {
+          id: 'all-pins',
+          title: '모든 핀',
+          pinCount: allPinIds.length,
+          updatedTime: '',
+          images: allPinsData.filter((url): url is string => url !== null),
+        };
+
+        const boardQuery = query(
+          collection(db, 'boards'),
+          where('ownerId', '==', uid),
+        );
+        const boardSnapshot = await getDocs(boardQuery);
+
+        const boardsData: BoardData[] = await Promise.all(
+          boardSnapshot.docs.map(async (boardDoc) => {
+            const board = boardDoc.data();
+            const pinsData = await Promise.all(
+              (board.pins || []).map(async (pinId: string) => {
+                const pinDocRef = doc(db, 'pins', pinId);
+                const pinDoc = await getDoc(pinDocRef);
+
+                if (pinDoc.exists()) {
+                  const pinData = pinDoc.data() as { imageUrl: string };
+                  return pinData.imageUrl;
+                } else {
+                  return null;
+                }
+              }),
+            );
+
+            return {
+              id: boardDoc.id,
+              title: board.title || '제목 없음',
+              pinCount: (board.pins || []).length,
+              updatedTime: board.updatedTime?.toDate(),
+              images: pinsData.filter((url): url is string => url !== null),
+            };
+          }),
+        );
+
         const followerData = await Promise.all(
           followers.map(async (id: string) => {
             const followerDocRef = doc(db, 'users', id);
@@ -180,6 +240,49 @@ const Mypage = (): JSX.Element => {
               : null;
           }),
         );
+
+        const createdPinData = await Promise.all(
+          createdPins.map(async (pinId: string) => {
+            const pinDocRef = doc(db, 'pins', pinId);
+            const pinDoc = await getDoc(pinDocRef);
+
+            if (pinDoc.exists()) {
+              return { id: pinDoc.id, ...pinDoc.data() };
+            } else {
+              return null;
+            }
+          }),
+        );
+
+        const validCreatedPins = createdPinData
+          .filter((pin): pin is DocumentData => pin !== null)
+          .map((pin) => ({
+            id: pin.id,
+            imageUrl: pin.imageUrl,
+            creatorId: pin.creatorId,
+            title: pin.title,
+            description: pin.description,
+            link: pin.link,
+          }));
+
+        const savedPinData = await Promise.all(
+          savedPins.map(async (pinId: string) => {
+            const pinDocRef = doc(db, 'pins', pinId);
+            const pinDoc = await getDoc(pinDocRef);
+            return pinDoc.exists() ? { id: pinDoc.id, ...pinDoc.data() } : null;
+          }),
+        );
+
+        const validSavedPins = savedPinData
+          .filter((pin): pin is DocumentData => pin !== null)
+          .map((pin) => ({
+            id: pin.id,
+            imageUrl: pin.imageUrl,
+            creatorId: pin.creatorId,
+            title: pin.title,
+            description: pin.description,
+            link: pin.link,
+          }));
 
         setUserData({
           id,
@@ -199,59 +302,38 @@ const Mypage = (): JSX.Element => {
               name: f.name,
               profileImage: f.profileImage,
             })),
-          createdPins,
-          savedPins,
+          createdPins: validCreatedPins,
+          savedPins: validSavedPins,
           createdBoards,
         });
+
+        setBoardDataState(() => {
+          const fixedBoard = allPinsBoard;
+          const restBoards = boardsData;
+
+          const sortedBoards = restBoards.sort((a, b) => {
+            const timeA = new Date(a.updatedTime).getTime();
+            const timeB = new Date(b.updatedTime).getTime();
+            return timeB - timeA;
+          });
+
+          return [fixedBoard, ...sortedBoards];
+        });
       } catch (error) {
-        console.error('유저 데이터를 가져오는 중 오류 발생:', error);
+        console.error('데이터를 가져오는 중 오류 발생:', error);
       }
     };
 
     fetchUserData();
   }, []);
+
   console.log(userData);
 
   const sortOptions = ['최신순', '알파벳순'];
 
-  const savedPinImages: string[] = [
-    'https://i.pinimg.com/736x/09/47/1b/09471b72c946fc47908b9f3bb85b1f64.jpg',
-    'https://i.pinimg.com/736x/9a/4b/61/9a4b617c9677ce65cfd85f31feb4af74.jpg',
-    'https://i.pinimg.com/736x/36/3c/85/363c85a67e17eed2c614abd4bbd46261.jpg',
-    'https://i.pinimg.com/736x/5d/d6/46/5dd646324b252dfc7d773b2a3a793ec0.jpg',
-    'https://i.pinimg.com/736x/40/87/9d/40879de94afa2902165eb59fcc3d4ff6.jpg',
-    'https://i.pinimg.com/736x/7d/de/63/7dde636d316b7f683aac5fd20ce0e760.jpg',
-    'https://i.pinimg.com/736x/03/32/6d/03326de049c83e53656769e547d4f576.jpg',
-    'https://i.pinimg.com/736x/54/3e/06/543e063d80e1d601886d60af8a09b968.jpg',
-    'https://i.pinimg.com/736x/7c/fd/c1/7cfdc13a222c1502dc1a66e6cb7438d1.jpg',
-    'https://i.pinimg.com/736x/6e/f4/1a/6ef41a60399d8fc42419559e843d933e.jpg',
-    'https://i.pinimg.com/736x/b8/d4/27/b8d427a981bff1a50d1b210ebe503f2a.jpg',
-    'https://i.pinimg.com/736x/f2/11/59/f21159ef03eca3070c0186551c377372.jpg',
-    'https://i.pinimg.com/736x/44/70/91/44709169168e363452d9b845a70b3310.jpg',
-    'https://i.pinimg.com/736x/e6/2c/45/e62c4517d4e1e90a6171e8a6f2055f2d.jpg',
-  ];
-
-  const createdPinImages: string[] = [
-    'https://i.pinimg.com/736x/cb/c1/21/cbc12157a8d415d7b5e95a8c7e018214.jpg',
-    'https://i.pinimg.com/736x/70/e5/7f/70e57f22745920241995c6aebdff4cd3.jpg',
-    'https://i.pinimg.com/736x/ee/55/87/ee55872a05b8bef7675d3d91dfbc67a5.jpg',
-    'https://i.pinimg.com/736x/32/66/3f/32663f58c71251f8b9f42979365ce714.jpg',
-    'https://i.pinimg.com/736x/e8/7a/ca/e87acad49b06cc11c10a720f5d34bc02.jpg',
-    'https://i.pinimg.com/736x/60/16/ed/6016ede8877e0eb31f17b1f9aa15cbe2.jpg',
-    'https://i.pinimg.com/736x/b6/44/23/b644230eb959aee6c1687d876c89b838.jpg',
-    'https://i.pinimg.com/736x/52/eb/5d/52eb5d7849985734aebf138e4f918c43.jpg',
-  ];
-
-  useEffect(() => {
-    const fixedBoard = boardData.find((board) => board.id === 'all-pins');
-    const restBoards = boardData.filter((board) => board.id !== 'all-pins');
-
-    const sortedData = restBoards.sort(
-      (a, b) => parseInt(a.updatedTime) - parseInt(b.updatedTime),
-    );
-
-    setBoardDataState([fixedBoard!, ...sortedData]);
-  }, []);
+  const handleShareClick = () => {
+    setIsShareModalOpen((prev) => !prev);
+  };
 
   const handleTabChange = (tab: 'created' | 'saved') => {
     setSelectedTab(tab);
@@ -273,7 +355,9 @@ const Mypage = (): JSX.Element => {
 
     const sortedData = restBoards.sort((a, b) => {
       if (option === '최신순') {
-        return parseInt(a.updatedTime) - parseInt(b.updatedTime);
+        const timeA = new Date(a.updatedTime).getTime();
+        const timeB = new Date(b.updatedTime).getTime();
+        return timeB - timeA;
       } else if (option === '알파벳순') {
         return a.title.localeCompare(b.title);
       }
@@ -285,22 +369,32 @@ const Mypage = (): JSX.Element => {
 
   const BoardModal = () => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [filteredUsers, setFilteredUsers] = useState(userData.following);
+    const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
     useEffect(() => {
-      if (searchTerm === '') {
-        setFilteredUsers(userData.following);
-      } else {
-        const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        setFilteredUsers(
-          userData.following.filter(
-            (user) =>
-              user.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-              user.id.toLowerCase().includes(lowerCaseSearchTerm),
-          ),
-        );
-      }
+      const fetchAllUsers = async () => {
+        if (searchTerm === '') {
+          setFilteredUsers(userData.following);
+        } else {
+          const usersQuery = query(
+            collection(db, 'users'),
+            where('name', '>=', searchTerm),
+            where('name', '<=', searchTerm + '\uf8ff'),
+          );
+
+          const userSnapshot = await getDocs(usersQuery);
+          const allUsers = userSnapshot.docs.map((doc) => ({
+            id: doc.data().id,
+            name: doc.data().name || '',
+            profileImage: doc.data().profileImage || '',
+          }));
+
+          setFilteredUsers(allUsers);
+        }
+      };
+
+      fetchAllUsers();
     }, [searchTerm, userData.following]);
 
     const handleAddUser = (id: string) => {
@@ -359,12 +453,12 @@ const Mypage = (): JSX.Element => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="이름 또는 이메일 검색"
-                className="w-full p-2 pl-10 border rounded-xl mb-4"
+                className="w-full p-2 pl-10 border-2 border-gray-300 rounded-full mb-4"
               />
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 max-h-60 overflow-y-auto">
             {filteredUsers.map((user) => (
               <div
                 key={user.id}
@@ -386,7 +480,7 @@ const Mypage = (): JSX.Element => {
                   className={`px-4 py-2 rounded-full ${
                     selectedUsers.includes(user.id)
                       ? 'bg-black text-white'
-                      : 'bg-gray-200 hover:bg-gray-300'
+                      : 'bg-btn_gray hover:bg-btn_h_gray'
                   }`}
                 >
                   {selectedUsers.includes(user.id) ? '추가됨' : '추가'}
@@ -398,7 +492,7 @@ const Mypage = (): JSX.Element => {
           <div className="flex justify-end gap-2 mt-4">
             <button
               onClick={() => setIsBoardModalOpen(false)}
-              className="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300"
+              className="px-4 py-2 bg-btn_gray rounded-full hover:bg-btn_h_gray"
             >
               취소
             </button>
@@ -409,7 +503,7 @@ const Mypage = (): JSX.Element => {
                 );
                 setIsBoardModalOpen(false);
               }}
-              className="px-4 py-2 bg-[#e60023] text-white rounded-full hover:bg-[#cc001f]"
+              className="px-4 py-2 bg-btn_red text-white rounded-full hover:bg-btn_h_red"
             >
               만들기
             </button>
@@ -529,7 +623,7 @@ const Mypage = (): JSX.Element => {
                       className={`px-4 py-2 rounded-full ${
                         isFollowing
                           ? 'bg-black text-white'
-                          : 'bg-[#e60023] text-white hover:bg-[#cc001f]'
+                          : 'bg-btn_red text-white hover:bg-btn_h_red'
                       }`}
                     >
                       {isFollowing ? '언팔로우' : '팔로우'}
@@ -539,6 +633,126 @@ const Mypage = (): JSX.Element => {
               );
             })}
           </div>
+        </div>
+      </div>
+    );
+  };
+
+  const ShareModal = () => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+
+    useEffect(() => {
+      const fetchAllUsers = async () => {
+        if (searchTerm === '') {
+          setFilteredUsers(userData.following);
+        } else {
+          const usersQuery = query(
+            collection(db, 'users'),
+            where('name', '>=', searchTerm),
+            where('name', '<=', searchTerm + '\uf8ff'),
+          );
+
+          const userSnapshot = await getDocs(usersQuery);
+          const allUsers = userSnapshot.docs.map((doc) => ({
+            id: doc.data().id,
+            name: doc.data().name || '',
+            profileImage: doc.data().profileImage || '',
+          }));
+
+          setFilteredUsers(allUsers);
+        }
+      };
+
+      fetchAllUsers();
+    }, [searchTerm, userData.following]);
+
+    const handleSend = (id: string) => {
+      alert(`${id}에게 내 프로필을 보냈습니다.`);
+      // 메시지로 내 프로필 보내는 로직 추가하기
+    };
+
+    return (
+      <div
+        className="bg-white p-6 rounded-xl shadow-lg w-96 absolute top-11"
+        style={{ left: '40%', boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.1)' }}
+      >
+        <p className="mb-4 text-center">공유</p>
+        <div className="flex justify-evenly mb-4 pb-4 border-b-2">
+          <button className="flex flex-col items-center">
+            <FaLink className="w-10 h-10 mb-2 bg-gray-200 rounded-full pl-3 pr-3" />
+            <span className="text-xs">링크 복사</span>
+          </button>
+          <button className="flex flex-col items-center">
+            <img
+              src="https://cdn.pixabay.com/photo/2021/12/10/16/38/whatsapp-6860919_1280.png"
+              alt="WhatsApp"
+              className="w-10 h-10 rounded-full mb-2"
+            />
+            <span className="text-xs">WhatsApp</span>
+          </button>
+          <button className="flex flex-col items-center">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Facebook_Messenger_logo_2020.svg/2048px-Facebook_Messenger_logo_2020.svg.png"
+              alt="FacebookMessenger"
+              className="w-10 h-10 mb-2"
+            />
+            <span className="text-xs">Messenger</span>
+          </button>
+          <button className="flex flex-col items-center">
+            <img
+              src="https://i.namu.wiki/i/NmLLiCcgR5wYhqo1OWGwIKDhraZMpJdcNjGfUzBqFB38iVBE3f6TMnr1OzwvduJBRepDa_73Bw3Eh5_crIUqag.svg"
+              alt="Facebook"
+              className="w-10 h-10 mb-2"
+            />
+            <span className="text-xs">Facebook</span>
+          </button>
+
+          <button className="flex flex-col items-center">
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRo9rzArm7GEm9dZBAFHhS_BSPvuBiuPnXwcg&s"
+              alt="Twitter"
+              className="w-10 h-10 mb-2"
+            />
+            <span className="text-xs">X</span>
+          </button>
+        </div>
+        <div className="relative">
+          <FaSearch className="absolute left-3 top-1/4 text-gray-500" />
+          <input
+            id="searchUser"
+            type="text"
+            placeholder="이름 또는 이메일 검색"
+            className="w-full p-2 pl-10 border-2 border-gray-300 rounded-full mb-4"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-3 max-h-60 overflow-y-auto">
+          {filteredUsers.map((user) => (
+            <div
+              key={user.id}
+              className="flex items-center justify-between p-2"
+            >
+              <div className="flex items-center gap-3">
+                <img
+                  src={user.profileImage || 'https://via.placeholder.com/50'}
+                  alt="profile"
+                  className="w-10 h-10 rounded-full"
+                />
+                <div>
+                  <p className="font-semibold">{user.name}</p>
+                  <p className="text-gray-500 text-sm">@{user.id}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => handleSend(user.id)}
+                className="px-4 py-2 bg-btn_gray rounded-full hover:bg-btn_h_gray"
+              >
+                보내기
+              </button>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -576,11 +790,19 @@ const Mypage = (): JSX.Element => {
           </p>
         </div>
 
-        <div className="mt-4 flex justify-center gap-4">
-          <button className="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300">
+        <div className="mt-4 flex justify-center gap-4 relative">
+          <button
+            onClick={handleShareClick}
+            className={`px-4 py-2 rounded-full ${
+              isShareModalOpen
+                ? 'bg-black text-white'
+                : 'bg-btn_gray hover:bg-btn_h_gray'
+            }`}
+          >
             공유
           </button>
-          <button className="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300">
+          {isShareModalOpen && <ShareModal />}
+          <button className="px-4 py-2 bg-btn_gray rounded-full hover:bg-btn_h_gray">
             프로필 수정
           </button>
         </div>
@@ -626,7 +848,7 @@ const Mypage = (): JSX.Element => {
                       <div
                         key={option}
                         onClick={() => handleSortChange(option)}
-                        className="p-2 hover:bg-gray-200 flex justify-between items-center cursor-pointer"
+                        className="p-2 hover:bg-btn_h_gray flex justify-between items-center cursor-pointer"
                       >
                         {option} {selectedSort === option && <FaCheck />}
                       </div>
@@ -649,7 +871,7 @@ const Mypage = (): JSX.Element => {
                         navigate('/create-pin');
                         setIsPlusOpen(false);
                       }}
-                      className="p-2 hover:bg-gray-200 cursor-pointer"
+                      className="p-2 hover:bg-btn_h_gray cursor-pointer"
                     >
                       핀 만들기
                     </div>
@@ -658,7 +880,7 @@ const Mypage = (): JSX.Element => {
                         setIsBoardModalOpen(true);
                         setIsPlusOpen(false);
                       }}
-                      className="p-2 hover:bg-gray-200 cursor-pointer"
+                      className="p-2 hover:bg-btn_h_gray cursor-pointer"
                     >
                       보드 만들기
                     </div>
@@ -680,12 +902,16 @@ const Mypage = (): JSX.Element => {
           </div>
 
           <div className="pt-4">
-            <MasonryLayout images={savedPinImages} />
+            <MasonryLayout
+              images={userData.savedPins.map((pin) => pin.imageUrl)}
+            />
           </div>
         </>
       ) : (
         <div className="pt-4">
-          <MasonryLayout images={createdPinImages} />
+          <MasonryLayout
+            images={userData.createdPins.map((pin) => pin.imageUrl)}
+          />
         </div>
       )}
     </div>
