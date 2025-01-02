@@ -7,6 +7,9 @@ import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import logo from '../assets/pinit_logo.png';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { UserData } from '../features/authSlice';
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -17,10 +20,30 @@ const LoginForm: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      dispatch(loginSuccess(email));
-      alert('로그인 성공!');
-      navigate('/');
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      const user = userCredential.user;
+
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data() as UserData;
+        dispatch(
+          loginSuccess({
+            email: user.email || '',
+            uid: user.uid,
+          }),
+        );
+        alert('로그인 성공!');
+        navigate('/');
+      } else {
+        console.error('유저 데이터가 존재하지 않습니다.');
+        alert('사용자 정보를 찾을 수 없습니다.');
+      }
     } catch (error: unknown) {
       if (error instanceof Error) {
         alert(`로그인 실패: ${error.message}`);
@@ -38,19 +61,22 @@ const LoginForm: React.FC = () => {
       const user = result.user;
 
       // Redux 상태 업데이트
-      dispatch(loginSuccess(user.email || ''));
+      dispatch(
+        loginSuccess({
+          email: user.email || '',
+          uid: user.uid,
+        }),
+      );
 
       // 로그인 성공 후 처리 (예: 페이지 리다이렉트)
       console.log('로그인 성공:', user);
-      // 여기에 리다이렉트 로직을 추가할 수 있습니다.
     } catch (error) {
       console.error('로그인 실패:', error);
-      // 에러 처리 로직 (예: 사용자에게 에러 메시지 표시)
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen ">
+    <div className="flex items-center justify-center min-h-screen mx-auto my-0">
       <div className="w-96 rounded-3xl px-8 py-6 mt-4 text-left bg-white shadow-xl">
         <div className="flex justify-center mb-4">
           <img src={logo} alt="logo" className="w-12 h-12" />

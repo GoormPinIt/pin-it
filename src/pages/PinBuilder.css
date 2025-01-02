@@ -1,0 +1,110 @@
+/* PinBuilder.css */
+
+/* 전체 컨테이너 */
+.pin-builder-container {
+    @apply flex h-screen;
+}
+
+/* 상단 헤더 */
+.pin-builder-header {
+    @apply fixed h-[80px] bg-white z-[1000] top-0 left-0 w-full;
+}
+
+/* 메인 콘텐츠 */
+.pin-builder-main {
+    @apply flex flex-row;
+}
+
+/* 상단 바 */
+.pin-builder-bar {
+    @apply flex items-center border-t border-b border-gray-200 fixed top-[80px] left-0 h-[81px] w-full z-10 bg-white justify-between;
+}
+
+.pin-builder-bar-space {
+    @apply w-[110px];
+}
+
+.pin-builder-title {
+    @apply text-xl font-semibold text-gray-900 ml-28;
+}
+
+/* 콘텐츠 */
+.pin-builder-content {
+    @apply flex flex-col w-full items-center pt-[180px] relative ml-[79.1px];
+    @apply lg:flex-row lg:justify-center lg:items-start;
+    min-height: calc(100vh - 180px);
+}
+
+/* 내부 요소를 감싸는 새로운 컨테이너 */
+.pin-builder-inner-container {
+    @apply flex flex-col lg:flex-row lg:justify-center lg:items-start;
+    @apply lg:max-w-[1442px] lg:w-full justify-center; /* 최대 너비 설정 */
+}
+
+/* 첫 번째 영역 */
+/*여기 수정해야 함함*/
+.pin-builder-first-area {
+    /* @apply flex flex-col w-full lg:w-[721px] px-6; */
+    @apply flex flex-col w-full justify-center px-6 lg:w-[721px] lg:flex-row lg:justify-end;
+}
+
+.pin-builder-first-area-content {
+    @apply m-0 p-6 space-y-6;
+}
+
+.pin-builder-divider {
+    @apply w-[375px] border-t border-gray-200;
+}
+
+.pin-builder-save-button {
+    @apply w-[375px] py-2 text-black bg-gray-200 rounded-full hover:bg-gray-300;
+}
+
+/* 두 번째 영역 */
+.pin-builder-second-area {
+    @apply flex flex-col w-full lg:w-[721px] px-6 relative;
+}
+
+.pin-builder-second-area-content {
+    @apply m-[24px];
+}
+
+.pin-builder-form {
+    @apply space-y-6;
+}
+
+.pin-builder-note {
+    @apply text-[#767676] inline-block text-xs !m-0 !mt-2;
+}
+
+.pin-builder-options {
+    @apply flex items-center;
+}
+
+.pin-builder-options-label {
+    @apply inline-block font-semibold;
+}
+
+.pin-builder-options-icon {
+    @apply inline-block ml-[7px];
+}
+
+.pin-builder-warning {
+    @apply text-sm text-[#767676] pb-[16px];
+}
+
+.pin-builder-publish-button {
+    @apply bg-[#e60023] hover:bg-red-700 
+    text-white 
+    font-semibold
+    font-sans text-base 
+    rounded-full
+    transition-transform transform hover:scale-105 
+    cursor-pointer 
+    border-0 
+    flex items-center justify-center 
+    px-4 py-3 
+    mr-5
+    min-h-[48px] min-w-[60px] 
+    box-border;
+}
