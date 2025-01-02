@@ -8,9 +8,11 @@ import Mypage from './pages/Mypage';
 import UserProfile from './pages/UserProfilePage';
 import BoardDetails from './pages/BoardDetails';
 import SignUp from './pages/Signup';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import ProfileBoardDetail from './pages/ProfileBoardDetail';
 import PinBuilder from './pages/PinBuilder';
 import PinPage from './pages/PinPage';
-
 
 const App = (): JSX.Element => {
   return (
