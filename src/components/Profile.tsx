@@ -885,9 +885,26 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
             공유
           </button>
           {isShareModalOpen && <ShareModal />}
-          <button className="px-4 py-2 bg-btn_gray rounded-full hover:bg-btn_h_gray">
-            프로필 수정
-          </button>
+
+          <>
+            {isCurrentUser ? (
+              <button
+                className="px-4 py-2 bg-btn_gray rounded-full hover:bg-btn_h_gray"
+                onClick={() => navigate('/edit-profile')}
+              >
+                프로필 수정
+              </button>
+            ) : (
+              <div className="flex justify-center gap-4">
+                <button className="px-4 py-2 rounded-full bg-btn_gray hover:bg-btn_h_gray">
+                  메시지
+                </button>
+                <button className="px-4 py-2 rounded-full bg-btn_red text-white hover:bg-btn_h_red">
+                  팔로우
+                </button>
+              </div>
+            )}
+          </>
         </div>
       </div>
 
@@ -939,37 +956,42 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
                   </div>
                 )}
               </div>
+              <>
+                {isCurrentUser ? (
+                  <div>
+                    <FaPlus
+                      size={30}
+                      onClick={() => setIsPlusOpen((prev) => !prev)}
+                      className="cursor-pointer"
+                    />
 
-              <div>
-                <FaPlus
-                  size={30}
-                  onClick={() => setIsPlusOpen((prev) => !prev)}
-                  className="cursor-pointer"
-                />
-
-                {isPlusOpen && (
-                  <div className="absolute right-0 mt-2 bg-white border rounded shadow-md">
-                    <div
-                      onClick={() => {
-                        navigate('/create-pin');
-                        setIsPlusOpen(false);
-                      }}
-                      className="p-2 hover:bg-btn_h_gray cursor-pointer"
-                    >
-                      핀 만들기
-                    </div>
-                    <div
-                      onClick={() => {
-                        setIsBoardModalOpen(true);
-                        setIsPlusOpen(false);
-                      }}
-                      className="p-2 hover:bg-btn_h_gray cursor-pointer"
-                    >
-                      보드 만들기
-                    </div>
+                    {isPlusOpen && (
+                      <div className="absolute right-0 mt-2 bg-white border rounded shadow-md">
+                        <div
+                          onClick={() => {
+                            navigate('/create-pin');
+                            setIsPlusOpen(false);
+                          }}
+                          className="p-2 hover:bg-btn_h_gray cursor-pointer"
+                        >
+                          핀 만들기
+                        </div>
+                        <div
+                          onClick={() => {
+                            setIsBoardModalOpen(true);
+                            setIsPlusOpen(false);
+                          }}
+                          className="p-2 hover:bg-btn_h_gray cursor-pointer"
+                        >
+                          보드 만들기
+                        </div>
+                      </div>
+                    )}
                   </div>
+                ) : (
+                  <div></div>
                 )}
-              </div>
+              </>
             </div>
             {isBoardModalOpen && <BoardModal />}
             {isFollowModalOpen && <FollowModal isFollower={isFollowerModal} />}
