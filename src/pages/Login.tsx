@@ -76,7 +76,7 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen ">
+    <div className="flex items-center justify-center min-h-screen mx-auto my-0">
       <div className="w-96 rounded-3xl px-8 py-6 mt-4 text-left bg-white shadow-xl">
         <div className="flex justify-center mb-4">
           <img src={logo} alt="logo" className="w-12 h-12" />

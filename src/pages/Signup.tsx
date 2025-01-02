@@ -47,7 +47,7 @@ const SignUp: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center min-h-screen mx-auto my-0">
       <div className="w-96 rounded-3xl px-8 py-6 mt-4 text-left bg-white shadow-xl">
         <h2 className="text-2xl font-bold text-center mb-4">회원가입</h2>
         <form onSubmit={handleSignUp}>
