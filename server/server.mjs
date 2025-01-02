@@ -20,6 +20,7 @@ io.on('connection', (socket) => {
   // 메시지 수신 및 전파
   socket.on('send_message', (data) => {
     console.log('Message received: ', data);
+
     io.emit('receive', data); // 모든 클라이언트로 메시지 브로드캐스트
 
     setTimeout(() => {

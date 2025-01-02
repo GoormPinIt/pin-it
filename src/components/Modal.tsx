@@ -23,11 +23,25 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
-    socket.on('receive', (data: Message) => {
-      setMessages((prev) => [...prev, data]);
-    });
+    const handleReceive = (data: Message) => {
+      setMessages((prev) => {
+        if (
+          prev.some(
+            (msg) =>
+              msg.sender === data.sender &&
+              msg.text === data.text &&
+              msg.time === data.time,
+          )
+        ) {
+          return prev; // 중복 메시지 추가 방지
+        }
+        return [...prev, data];
+      });
+    };
+    socket.on('receive', handleReceive);
+
     return () => {
-      socket.off('receive');
+      socket.off('receive', handleReceive);
     };
   }, []);
 
@@ -53,8 +67,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed top-0 left-12 w-full h-full rounded-lg bg-opacity-50 z-50 flex justify-start items-center">
-      <div className="w-[180px] h-[98%] bg-white shadow-lg rounded-md">
+    <div className="fixed top-0 left-12 w-full h-full rounded-lg bg-opacity-50 z-50000 flex justify-start items-center">
+      <div className="w-[210px] h-[98%] bg-white shadow-lg rounded-md">
         {liveMessage ? (
           <LiveMessage
             sender={liveMessage}

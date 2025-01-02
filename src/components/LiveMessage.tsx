@@ -30,11 +30,6 @@ const LiveMessage: React.FC<LiveMessageProps> = ({
       setMessage('');
     }
   };
-  useEffect(() => {
-    if (messageRef.current) {
-      messageRef.current.scrollTop = messageRef.current.scrollHeight;
-    }
-  }, [messages]);
 
   return (
     <div className="flex flex-col w-full h-full">

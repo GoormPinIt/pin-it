@@ -1,6 +1,5 @@
 import React from 'react';
 import { AiOutlineShareAlt, AiOutlineMore } from 'react-icons/ai';
-
 const ProfileBoardDetail = () => {
   return (
     <div className="p-6">

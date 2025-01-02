@@ -52,13 +52,15 @@ const NavBar: React.FC = () => {
     toggleModal('message', '메시지');
   };
 
-  const handleSettingClick = () => {};
+  const handleSettingClick = () => {
+    console.log('설정 구현');
+  };
   const closeModal = () => {
     setModalState({ isOpen: false, title: '', type: null });
   };
 
   return (
-    <div className="sticky top-0 left-0  w-10 h-screen bg-gray-100 flex flex-col border-r-2">
+    <div className="sticky top-0 left-0  w-10 h-screen bg-gray-100 flex flex-col border-r-2 z-10000">
       <div className="flex-1 flex flex-col">
         <button className="px-3 py-4" onClick={handleHomeClick}>
           <AiOutlineHome />
