@@ -5,6 +5,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@firebase/storage": "^0.13.4",
     "@mui/icons-material": "^6.3.0",
     "@mui/material": "^6.3.0",
     "@reduxjs/toolkit": "^2.5.0",
@@ -19,6 +20,7 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.0.2",
     "react-scripts": "5.0.1",
+    "uuid": "^11.0.3",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
