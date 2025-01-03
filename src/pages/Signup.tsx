@@ -9,6 +9,9 @@ const SignUp: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
+  const [id, setId] = useState('');
+  const [name, setName] = useState('');
+  const [profileImage, setProfileImage] = useState('');
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +35,14 @@ const SignUp: React.FC = () => {
         email: user.email,
         uid: user.uid,
         createdAt: new Date(),
+        id: id,
+        name: name,
+        profileImage: profileImage,
+        followers: [],
+        following: [],
+        createdPins: [],
+        savedPins: [],
+        createdBoards: [],
       });
 
       console.log('회원가입 성공:', user);
@@ -61,6 +72,27 @@ const SignUp: React.FC = () => {
               required
             />
           </div>
+          <div className="mb-4">
+            <label className="block text-sm text-gray-600">아이디</label>
+            <input
+              type="text"
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              className="w-full px-4 py-2 mt-2 border rounded-3xl focus:outline-none focus:ring-1"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm text-gray-600">닉네임</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-2 mt-2 border rounded-3xl focus:outline-none focus:ring-1"
+              required
+            />
+          </div>
+
           <div className="mb-4">
             <label className="block text-sm text-gray-600">비밀번호</label>
             <input
