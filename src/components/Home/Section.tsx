@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Images from './Images';
 import Indicator from './Indicator';
 import TextCarousel from './TextCarousel';
@@ -7,12 +7,64 @@ import Button from '../Button';
 import { FiSearch } from 'react-icons/fi';
 import CardImg from './CardImg';
 import './Style.css';
+import SignUp from '../../pages/Signup';
 
 const Sec1: React.FC = () => {
+  type Messages = {
+    text: string;
+    color: string; // Tailwind CSS 클래스 이름
+    img: string[]; // 이미지 링크 배열'
+    id: number;
+  };
+
+  const [index, setIndex] = useState<number>(0);
+  const Messages = [
+    {
+      text: '저녁 식사 메뉴 아이디어를',
+      color: 'text-yellow-600',
+      img: [],
+      id: 1,
+    },
+    {
+      text: '집안 꾸미기 아이디어를',
+      color: 'text-green-900',
+      img: [],
+      id: 2,
+    },
+    {
+      text: '새로운 패션을',
+      color: 'text-sky-600',
+      img: [],
+      id: 3,
+    },
+    {
+      text: '정원 가꾸기 아이디어를',
+      color: 'text-green-900',
+      img: [],
+      id: 4,
+    },
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prevIndex) => (prevIndex + 1) % Messages.length);
+    }, 3000); // 3초마다 변경
+
+    return () => clearInterval(interval); // 컴포넌트 언마운트 시 정리
+  }, []);
+
   return (
     <div className=" flex-col justify-items-center overflow-x-hidden h-screen bg-white relative">
       <h2 className="text-5xl py-3 pt-32">다음</h2>
-      <TextCarousel />
+      {Messages.map((msg, idx) => (
+        <div key={msg.id}>
+          <h2 className="text-5xl py-3">{msg.text} 찾아보세요</h2>
+          <div className="flex w-44 justify-around">
+            <p className={`w-3 my-5 h-3 rounded-full bg-slate-400`}></p>
+            <p className={`w-3 my-5 h-3 rounded-full ${msg.color}`}></p>
+          </div>
+        </div>
+      ))}
       <Indicator />
       <Images />
       <IoIosArrowDropdownCircle className="text-5xl rounded-full text-white relative z-40 animate-bounce mb-3" />
@@ -161,7 +213,7 @@ const Sec4: React.FC = () => {
 
 const Sec5: React.FC = () => {
   return (
-    <div className="relative backImg flex justify-around items-center h-screen bg-blend-darken">
+    <div className="relative backImg flex justify-around items-center h-screen bg-blend-darken overflow-y-hidden">
       <div className="absolute inset-0 bg-black bg-opacity-50"></div>
       <div className="flex-2 items-center text-center z-10">
         <h1 className="text-6xl text-white font-semibold my-4 text-left leading-snug">
@@ -170,7 +222,9 @@ const Sec5: React.FC = () => {
           만나 보세요
         </h1>
       </div>
-      <div className="bg-white rounded-3xl w-1/4 h-3/4 z-10 flex-2"></div>
+      <div className="rounded-3xl w-1/4 h-3/5 z-10 flex-2 -mt-full">
+        <SignUp />
+      </div>
       <div className="absolute w-full bg-white gap-4 flex justify-center items-center bottom-0 h-10 text-sm font-semibold">
         <span>서비스 약관</span>
         <span>개인정보처리방침</span>

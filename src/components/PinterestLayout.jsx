@@ -29,7 +29,7 @@ const images = [
 ];
 const PinterestLayout = () => {
   return (
-    <div className="columns-1 sm:columns-3 lg:columns-5 py-10 md:py-20 gap-4 px-2">
+    <div className="columns-1 sm:columns-3 lg:columns-5 py-2 md:py-5 gap-4 px-2">
       {images.map((src, index) => (
         <div key={index} className="mb-4 break-inside-avoid">
           <Pin src={src} />
