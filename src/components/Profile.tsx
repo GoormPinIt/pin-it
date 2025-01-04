@@ -974,7 +974,7 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
                       <div className="absolute right-0 mt-2 bg-white border rounded shadow-md">
                         <div
                           onClick={() => {
-                            navigate('/create-pin');
+                            navigate('/pin-creation-tool');
                             setIsPlusOpen(false);
                           }}
                           className="p-2 hover:bg-btn_h_gray cursor-pointer"
