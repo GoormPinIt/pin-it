@@ -1,7 +1,7 @@
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { v4 as uuidv4 } from "uuid";
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { v4 as uuidv4 } from 'uuid';
 
-import { storage } from "../firebase";
+import { storage } from '../firebase';
 
 export default function useUploadImage() {
   const storageRef = ref(storage, `uploads/${uuidv4()}`);
