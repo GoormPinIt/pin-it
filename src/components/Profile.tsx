@@ -895,7 +895,7 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
             {isCurrentUser ? (
               <button
                 className="px-4 py-2 bg-btn_gray rounded-full hover:bg-btn_h_gray"
-                onClick={() => navigate('/edit-profile')}
+                onClick={() => navigate('/settings/edit-profile')}
               >
                 프로필 수정
               </button>
