@@ -14,7 +14,10 @@ module.exports = {
         't2_red':'#c31852',
         't3_green':'#016a6c',
       },
-     
+      margin:{
+        'full':'25rem'
+      }
+
     },
   },
   plugins: [],

@@ -78,7 +78,6 @@ const PinPage: React.FC = () => {
         {/* 우측 콘텐츠 섹션 */}
         <section className="w-1/2 p-6 h-full flex flex-col justify-between">
           <div>
-            {/* 아이콘 & 저장 버튼 */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-4 text-gray-600">
                 <FaRegHeart />
@@ -140,7 +139,6 @@ const PinPage: React.FC = () => {
               </a>
             </p>
 
-            {/* 댓글 토글 */}
             <div className="flex flex-row justify-between items-center">
               <div className="inline-block font-semibold">
                 <span className="inline-block">댓글</span>
@@ -181,6 +179,11 @@ const PinPage: React.FC = () => {
                   className="w-full border px-[15px] py-[13px] rounded-full bg-[#e9e9e9] focus:outline-none focus:ring-2 focus:ring-gray-400"
                 />
               </form>
+              {/* <div className="flex flex-row space-x-2 absolute top-1/2 right-[25px] -translate-y-1/2 ">
+                <FaSmile />
+                <LuSticker />
+                <AiOutlinePicture />
+              </div> */}
             </footer>
           </div>
         </section>
