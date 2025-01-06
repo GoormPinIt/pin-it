@@ -39,7 +39,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-between p-4 bg-white">
+    <div className="fixed top-0 left-0 right-0 flex items-center justify-between p-4 bg-white z-50">
       <div className="flex-1 mx-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />

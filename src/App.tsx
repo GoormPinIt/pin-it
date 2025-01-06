@@ -20,7 +20,7 @@ const App = (): JSX.Element => {
     <Provider store={store}>
       <Router>
         <Header />
-        <div className="flex">
+        <div className="flex pt-20">
           <NavBar />
           <Routes>
             <Route path="/" element={<Home />} />
