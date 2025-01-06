@@ -9,7 +9,8 @@
     "prettier/prettier": [
       "error",
       {
-        "trailingComma": "all"
+        "trailingComma": "all",
+        "endOfLine": "auto"
       }
     ],
     "react/react-in-jsx-scope": "off"
