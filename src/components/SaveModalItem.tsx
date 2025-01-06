@@ -10,7 +10,7 @@ interface SaveModalItemProps {
 const SaveModalItem: React.FC<SaveModalItemProps> = ({
   icon,
   title,
-  buttonLabel,
+  buttonLabel = '저장',
   onClick,
 }) => {
   return (

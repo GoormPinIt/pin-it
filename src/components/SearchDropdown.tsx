@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SaveModalItem from './SaveModalItem';
 
 interface SearchDropdownProps {
   setBoard: (value: string) => void; // 보드 값 설정 함수
@@ -12,9 +13,13 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
   const [searchText, setSearchText] = useState('');
 
   const boards = [
-    { id: 1, name: '2023' },
-    { id: 2, name: '곰돌이 인형' },
-    { id: 3, name: '귀여운 고양이 사진' },
+    { id: 1, icon: 'https://via.placeholder.com/30', name: '2023' },
+    { id: 2, icon: 'https://via.placeholder.com/30', name: '곰돌이 인형' },
+    {
+      id: 3,
+      icon: 'https://via.placeholder.com/30',
+      name: '귀여운 고양이 사진',
+    },
   ];
 
   const filteredBoards = boards.filter((board) =>
@@ -22,43 +27,43 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
   );
 
   return (
-    <div className="absolute w-64 mx-auto bg-white">
+    <div className="absolute left-0 top-full mt-2 min-w-[400px] bg-white border border-gray-300 rounded-lg shadow-lg z-50 p-4">
       {/* 검색 입력창 */}
       <input
         type="text"
         placeholder="검색"
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
-        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:border-blue-400"
+        className="w-full border px-3 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-400 mb-4"
       />
 
-      {/* 드롭다운 리스트 */}
-      <div className="absolute mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg z-10">
-        {/* 필터링된 결과 */}
+      {/* 보드 리스트 */}
+      <ul className="space-y-2 max-h-60 overflow-y-auto">
         {filteredBoards.length > 0 ? (
           filteredBoards.map((board) => (
-            <div
+            <SaveModalItem
               key={board.id}
-              className="p-2 hover:bg-gray-100 cursor-pointer"
+              icon={board.icon} // 아이콘 추가
+              title={board.name}
               onClick={() => {
-                setBoard(board.name); // 선택된 값 부모로 전달
+                setBoard(board.name); // 선택된 보드 설정
                 closeDropdown(); // 드롭다운 닫기
               }}
-            >
-              {board.name}
-            </div>
+            />
           ))
         ) : (
-          <div className="p-2 text-gray-500">검색 결과가 없습니다.</div>
+          <li className="text-gray-500">검색 결과가 없습니다.</li>
         )}
+      </ul>
 
-        {/* 보드 만들기 버튼 */}
-        <div
-          className="p-2 text-blue-600 hover:bg-gray-100 cursor-pointer border-t border-gray-200"
-          onClick={() => alert('보드 만들기 클릭됨!')}
+      {/* 보드 생성 버튼 */}
+      <div className="mt-4">
+        <button
+          className="flex items-center justify-center w-full px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+          onClick={() => alert('보드 만들기 클릭됨')}
         >
-          + 보드 만들기
-        </div>
+          <span className="font-semibold">+ 보드 만들기</span>
+        </button>
       </div>
     </div>
   );
