@@ -22,18 +22,20 @@ const App = (): JSX.Element => {
         <Header />
         <div className="flex pt-20">
           <NavBar />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/mypage" element={<Mypage />} />
-            <Route path="/profile/:userId" element={<UserProfile />} />
-            <Route path="/board/:boardId" element={<BoardDetails />} />
-            <Route path="/boardDetail" element={<ProfileBoardDetail />} />
-            <Route path="/pin-creation-tool" element={<PinBuilder />} />
-            <Route path="/pin" element={<PinPage />} />
-            <Route path="/settings/*" element={<Settings />} />
-          </Routes>
+          <div className="flex-1 pl-16">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/mypage" element={<Mypage />} />
+              <Route path="/profile/:userId" element={<UserProfile />} />
+              <Route path="/board/:boardId" element={<BoardDetails />} />
+              <Route path="/boardDetail" element={<ProfileBoardDetail />} />
+              <Route path="/pin-creation-tool" element={<PinBuilder />} />
+              <Route path="/pin" element={<PinPage />} />
+              <Route path="/settings/*" element={<Settings />} />
+            </Routes>
+          </div>
         </div>
       </Router>
     </Provider>
