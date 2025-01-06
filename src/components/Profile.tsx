@@ -25,6 +25,7 @@ import { db } from '../firebase';
 
 type ProfileProps = {
   uid: string;
+  currentUserUid: string;
   isCurrentUser: boolean;
 };
 
@@ -113,7 +114,11 @@ type User = {
   profileImage: string;
 };
 
-const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
+const Profile = ({
+  uid,
+  currentUserUid,
+  isCurrentUser,
+}: ProfileProps): JSX.Element => {
   const navigate = useNavigate();
 
   const [selectedTab, setSelectedTab] = useState<'created' | 'saved'>('saved');
@@ -125,6 +130,7 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
   const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
   const [isFollowerModal, setIsFollowerModal] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   const [userData, setUserData] = useState<{
     id: string;
@@ -148,6 +154,26 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
 
   const defaultProfileImage =
     'https://i.pinimg.com/736x/3b/73/a1/3b73a13983f88f8b84e130bb3fb29e17.jpg';
+
+  useEffect(() => {
+    if (isCurrentUser) return; // 마이페이지에서는 팔로우 상태 확인 불필요
+
+    const checkFollowStatus = async () => {
+      try {
+        const currentUserDocRef = doc(db, 'users', currentUserUid);
+        const currentUserSnapshot = await getDoc(currentUserDocRef);
+
+        if (currentUserSnapshot.exists()) {
+          const currentUserData = currentUserSnapshot.data();
+          setIsFollowing(currentUserData.following?.includes(uid) || false);
+        }
+      } catch (error) {
+        console.error('팔로우 상태 확인 중 오류 발생:', error);
+      }
+    };
+
+    checkFollowStatus();
+  }, [currentUserUid, uid, isCurrentUser]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -330,7 +356,7 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
     };
 
     fetchUserData();
-  }, []);
+  }, [uid, isFollowing]);
 
   console.log(userData);
 
@@ -366,6 +392,37 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
     });
 
     setBoardDataState([fixedBoard!, ...sortedData]);
+  };
+
+  const handleFollowToggle = async () => {
+    try {
+      if (!currentUserUid) return;
+
+      const currentUserDocRef = doc(db, 'users', currentUserUid);
+      const targetUserDocRef = doc(db, 'users', uid);
+
+      if (isFollowing) {
+        // 언팔로우
+        await Promise.all([
+          updateDoc(currentUserDocRef, { following: arrayRemove(uid) }),
+          updateDoc(targetUserDocRef, {
+            followers: arrayRemove(currentUserUid),
+          }),
+        ]);
+      } else {
+        // 팔로우
+        await Promise.all([
+          updateDoc(currentUserDocRef, { following: arrayUnion(uid) }),
+          updateDoc(targetUserDocRef, {
+            followers: arrayUnion(currentUserUid),
+          }),
+        ]);
+      }
+
+      setIsFollowing(!isFollowing);
+    } catch (error) {
+      console.error('팔로우/언팔로우 처리 중 오류 발생:', error);
+    }
   };
 
   const BoardModal = () => {
@@ -514,85 +571,122 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
     );
   };
 
-  const FollowModal = ({ isFollower }: { isFollower: boolean }) => {
-    const data = isFollower ? userData.followers : userData.following;
+  const FollowModal = ({
+    isFollower,
+    currentUserUid,
+    uid,
+  }: {
+    isFollower: boolean;
+    currentUserUid: string;
+    uid: string;
+  }) => {
+    const [followData, setFollowData] = useState<
+      { id: string; name: string; profileImage: string; isFollowing: boolean }[]
+    >([]);
 
-    const handleFollowToggle = async (id: string) => {
+    useEffect(() => {
+      const fetchFollowData = async () => {
+        try {
+          const userDocRef = doc(db, 'users', uid);
+          const userSnapshot = await getDoc(userDocRef);
+
+          if (!userSnapshot.exists()) {
+            console.error('프로필 유저 데이터를 찾을 수 없습니다.');
+            return;
+          }
+
+          const userData = userSnapshot.data();
+          const targetList = isFollower
+            ? userData.followers
+            : userData.following;
+
+          // 현재 로그인한 유저의 팔로잉 목록 가져오기
+          const currentUserRef = doc(db, 'users', currentUserUid);
+          const currentUserSnapshot = await getDoc(currentUserRef);
+          const currentUserData = currentUserSnapshot.data();
+
+          if (!currentUserData) {
+            console.error('현재 로그인한 유저 데이터를 찾을 수 없습니다.');
+            return;
+          }
+
+          const currentUserFollowing = currentUserData.following || [];
+
+          // 각 유저에 대한 정보와 현재 로그인한 유저 기준 팔로우 상태 가져오기
+          const fetchedData = await Promise.all(
+            targetList.map(async (userId: string) => {
+              const userRef = doc(db, 'users', userId);
+              const userDoc = await getDoc(userRef);
+
+              if (!userDoc.exists()) return null;
+
+              return {
+                id: userDoc.id,
+                name: userDoc.data().name,
+                profileImage: userDoc.data().profileImage,
+                isFollowing: currentUserFollowing.includes(userId), // 현재 로그인 유저 기준
+              };
+            }),
+          );
+
+          setFollowData(
+            fetchedData.filter(
+              (user): user is NonNullable<typeof user> => user !== null,
+            ),
+          );
+        } catch (error) {
+          console.error('팔로우 데이터 가져오기 중 오류 발생:', error);
+        }
+      };
+
+      fetchFollowData();
+    }, [isFollower, uid, currentUserUid]);
+
+    const handleFollowToggle = async (targetUserId: string) => {
       try {
-        const currentUserId = uid;
+        const targetUserRef = doc(db, 'users', targetUserId);
+        const currentUserRef = doc(db, 'users', currentUserUid);
 
-        // Firestore 쿼리로 입력된 id에 해당하는 문서 가져오기
-        const userQuery = query(collection(db, 'users'), where('id', '==', id));
-        const userSnapshot = await getDocs(userQuery);
+        const currentUserSnapshot = await getDoc(currentUserRef);
+        const currentUserData = currentUserSnapshot.data();
 
-        if (userSnapshot.empty) {
-          console.error('해당 사용자 ID를 찾을 수 없습니다.');
-          return;
-        }
-
-        // Firestore 문서의 uid 가져오기
-        const targetDoc = userSnapshot.docs[0];
-        const targetUid = targetDoc.id;
-
-        const targetUserRef = doc(db, 'users', targetUid);
-        const currentUserRef = doc(db, 'users', currentUserId);
-
-        const targetUserDoc = await getDoc(targetUserRef);
-
-        if (!targetUserDoc.exists()) {
-          console.error('해당 사용자 데이터를 찾을 수 없습니다.');
-          return;
-        }
-
-        const isFollowing = userData.following.some((user) => user.id === id);
+        const isFollowing = currentUserData?.following?.includes(targetUserId);
 
         if (isFollowing) {
           // 언팔로우
           await Promise.all([
+            updateDoc(currentUserRef, { following: arrayRemove(targetUserId) }),
             updateDoc(targetUserRef, {
-              followers: arrayRemove(currentUserId),
-            }),
-            updateDoc(currentUserRef, {
-              following: arrayRemove(targetUid),
+              followers: arrayRemove(currentUserUid),
             }),
           ]);
-
-          setUserData((prev) => ({
-            ...prev,
-            following: prev.following.filter((user) => user.id !== id),
-          }));
         } else {
           // 팔로우
           await Promise.all([
-            updateDoc(targetUserRef, {
-              followers: arrayUnion(currentUserId),
-            }),
-            updateDoc(currentUserRef, {
-              following: arrayUnion(targetUid),
-            }),
+            updateDoc(currentUserRef, { following: arrayUnion(targetUserId) }),
+            updateDoc(targetUserRef, { followers: arrayUnion(currentUserUid) }),
           ]);
-
-          const newFollowingUser = {
-            id: targetUserDoc.data().id,
-            name: targetUserDoc.data().name,
-            profileImage: targetUserDoc.data().profileImage,
-          };
-
-          setUserData((prev) => ({
-            ...prev,
-            following: [...prev.following, newFollowingUser],
-          }));
         }
+
+        setFollowData((prev) =>
+          prev.map((user) =>
+            user.id === targetUserId
+              ? { ...user, isFollowing: !isFollowing }
+              : user,
+          ),
+        );
       } catch (error) {
         console.error('팔로우/언팔로우 처리 중 오류 발생:', error);
       }
     };
 
     return (
-      <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-20">
+      <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-lg w-96">
           <h2 className="text-2xl font-semibold m-4 text-center relative">
-            {isFollower ? `팔로워 ${data.length}명` : `팔로잉 ${data.length}명`}
+            {isFollower
+              ? `팔로워 ${followData.length}명`
+              : `팔로잉 ${followData.length}명`}
             <IoClose
               size={30}
               onClick={() => setIsFollowModalOpen(false)}
@@ -600,39 +694,43 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
             />
           </h2>
           <div className="flex flex-col gap-3">
-            {data.map((user) => {
-              const isFollowing = userData.following.some(
-                (followingUser) => followingUser.id === user.id,
-              );
+            {followData.map((user) => (
+              <div
+                key={user.id}
+                className="flex items-center justify-between p-2 rounded-lg cursor-pointer"
+                onClick={() => {
+                  setIsFollowModalOpen(false);
+                  navigate(`/profile/${user.id}`);
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <img
+                    src={user.profileImage || defaultProfileImage}
+                    alt="profile"
+                    className="w-10 h-10 rounded-full"
+                  />
+                  <p className="font-semibold">{user.name}</p>
+                </div>
 
-              return (
-                <div
-                  key={user.id}
-                  className="flex items-center justify-between p-2 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={user.profileImage || defaultProfileImage}
-                      alt="profile"
-                      className="w-10 h-10 rounded-full"
-                    />
-                    <p className="font-semibold">{user.name}</p>
-                  </div>
+                {user.id !== currentUserUid && (
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => handleFollowToggle(user.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleFollowToggle(user.id);
+                      }}
                       className={`px-4 py-2 rounded-full ${
-                        isFollowing
+                        user.isFollowing
                           ? 'bg-black text-white'
                           : 'bg-btn_red text-white hover:bg-btn_h_red'
                       }`}
                     >
-                      {isFollowing ? '언팔로우' : '팔로우'}
+                      {user.isFollowing ? '언팔로우' : '팔로우'}
                     </button>
                   </div>
-                </div>
-              );
-            })}
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -900,8 +998,15 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
                 <button className="px-4 py-2 rounded-full bg-btn_gray hover:bg-btn_h_gray">
                   메시지
                 </button>
-                <button className="px-4 py-2 rounded-full bg-btn_red text-white hover:bg-btn_h_red">
-                  팔로우
+                <button
+                  className={`px-4 py-2 rounded-full ${
+                    isFollowing
+                      ? 'bg-black text-white'
+                      : 'bg-btn_red text-white hover:bg-btn_h_red'
+                  }`}
+                  onClick={handleFollowToggle}
+                >
+                  {isFollowing ? '언팔로우' : '팔로우'}
                 </button>
               </div>
             )}
@@ -995,7 +1100,13 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
               </>
             </div>
             {isBoardModalOpen && <BoardModal />}
-            {isFollowModalOpen && <FollowModal isFollower={isFollowerModal} />}
+            {isFollowModalOpen && (
+              <FollowModal
+                isFollower={isFollowerModal}
+                currentUserUid={currentUserUid}
+                uid={uid}
+              />
+            )}
             <div className="flex flex-row flex-wrap gap-5 border-b-2 pb-8">
               {boardDataState.map((board: BoardData) => (
                 <Board

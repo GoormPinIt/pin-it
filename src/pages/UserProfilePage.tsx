@@ -27,7 +27,8 @@ const UserProfile = (): JSX.Element => {
 
   return (
     <Profile
-      uid={userId!}
+      uid={userId!} // 프로필 주인의 UID
+      currentUserUid={currentUserUid} // 로그인한 사용자의 UID
       isCurrentUser={currentUserUid === userId} // 내 프로필인지
     />
   );

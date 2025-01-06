@@ -23,7 +23,13 @@ const Mypage = (): JSX.Element => {
     return <div>Loading...</div>;
   }
 
-  return <Profile uid={currentUserUid} isCurrentUser={true} />;
+  return (
+    <Profile
+      uid={currentUserUid}
+      currentUserUid={currentUserUid}
+      isCurrentUser={true}
+    />
+  );
 };
 
 export default Mypage;
