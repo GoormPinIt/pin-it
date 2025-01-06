@@ -6,7 +6,6 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { loginSuccess, logout } from './features/authSlice';
 import Home from './pages/Home';
 import Login from './pages/Login';
-import Mypage from './pages/Mypage';
 import UserProfile from './pages/UserProfilePage';
 import BoardDetails from './pages/BoardDetails';
 import SignUp from './pages/Signup';
@@ -17,6 +16,7 @@ import PinBuilder from './pages/PinBuilder';
 import PinPage from './pages/PinPage';
 import Settings from './pages/Settings';
 import LandingPage from './pages/LandingPage';
+import AllPinsPage from './pages/AllPinsPage';
 
 const App = (): JSX.Element => {
   return (
@@ -58,8 +58,8 @@ const AppRoutes = (): JSX.Element => {
           <div className="flex-1 pl-16">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/mypage" element={<Mypage />} />
               <Route path="/profile/:userId" element={<UserProfile />} />
+              <Route path="/profile/:uid/all-pins" element={<AllPinsPage />} />
               <Route path="/board/:boardId" element={<BoardDetails />} />
               <Route path="/boardDetail" element={<ProfileBoardDetail />} />
               <Route path="/pin-creation-tool" element={<PinBuilder />} />
