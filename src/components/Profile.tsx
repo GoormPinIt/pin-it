@@ -344,10 +344,6 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
     setSelectedTab(tab);
   };
 
-  const handleBoardClick = (id: string): void => {
-    navigate(`/board/${id}`);
-  };
-
   const handleSortChange = (option: string) => {
     setSelectedSort(option);
     setIsSortOpen(false);
@@ -842,7 +838,7 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 w-full">
       <div className="pb-4 mb-6 text-center">
         <img
           src={userData.profileImage || defaultProfileImage}
@@ -1005,7 +1001,13 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
                 <Board
                   key={board.id}
                   {...board}
-                  onBoardClick={handleBoardClick}
+                  onBoardClick={(id) => {
+                    if (id === 'all-pins') {
+                      navigate(`/profile/${uid}/all-pins`);
+                    } else {
+                      navigate(`/board/${id}`);
+                    }
+                  }}
                 />
               ))}
             </div>
