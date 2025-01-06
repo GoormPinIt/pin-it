@@ -4,9 +4,9 @@ import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { TbAdjustmentsHorizontal } from 'react-icons/tb';
 import { FaCheck, FaPlus } from 'react-icons/fa6';
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaLink } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
-import { FaLink } from 'react-icons/fa';
+import { FiShare } from 'react-icons/fi';
 import GridBoard from './GridBoard';
 import MasonryLayout from './MasonryLayout';
 import {
@@ -873,24 +873,29 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
           </p>
         </div>
 
-        <div className="mt-4 flex justify-center gap-4 relative">
+        <div
+          className={`mt-4 flex justify-center gap-4 relative ${
+            !isCurrentUser ? '-translate-x-8' : ''
+          } transition-transform`}
+        >
           <button
             onClick={handleShareClick}
             className={`px-4 py-2 rounded-full ${
               isShareModalOpen
                 ? 'bg-black text-white'
-                : 'bg-btn_gray hover:bg-btn_h_gray'
+                : isCurrentUser
+                  ? 'bg-btn_gray hover:bg-btn_h_gray'
+                  : 'bg-white hover:bg-btn_h_gray'
             }`}
           >
-            공유
+            {isCurrentUser ? '공유' : <FiShare className="w-5 h-5" />}
           </button>
           {isShareModalOpen && <ShareModal />}
-
           <>
             {isCurrentUser ? (
               <button
                 className="px-4 py-2 bg-btn_gray rounded-full hover:bg-btn_h_gray"
-                onClick={() => navigate('/edit-profile')}
+                onClick={() => navigate('/settings/edit-profile')}
               >
                 프로필 수정
               </button>
@@ -969,7 +974,7 @@ const Profile = ({ uid, isCurrentUser }: ProfileProps): JSX.Element => {
                       <div className="absolute right-0 mt-2 bg-white border rounded shadow-md">
                         <div
                           onClick={() => {
-                            navigate('/create-pin');
+                            navigate('/pin-creation-tool');
                             setIsPlusOpen(false);
                           }}
                           className="p-2 hover:bg-btn_h_gray cursor-pointer"

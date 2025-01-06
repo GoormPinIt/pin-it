@@ -9,10 +9,11 @@ import UserProfile from './pages/UserProfilePage';
 import BoardDetails from './pages/BoardDetails';
 import SignUp from './pages/Signup';
 import Header from './components/Header';
-import Sidebar from './components/Sidebar';
+import NavBar from './components/NavBar';
 import ProfileBoardDetail from './pages/ProfileBoardDetail';
 import PinBuilder from './pages/PinBuilder';
 import PinPage from './pages/PinPage';
+import Settings from './pages/Settings';
 
 const App = (): JSX.Element => {
   return (
@@ -20,7 +21,7 @@ const App = (): JSX.Element => {
       <Router>
         <Header />
         <div className="flex">
-          <Sidebar />
+          <NavBar />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -31,6 +32,7 @@ const App = (): JSX.Element => {
             <Route path="/boardDetail" element={<ProfileBoardDetail />} />
             <Route path="/pin-creation-tool" element={<PinBuilder />} />
             <Route path="/pin" element={<PinPage />} />
+            <Route path="/settings/*" element={<Settings />} />
           </Routes>
         </div>
       </Router>

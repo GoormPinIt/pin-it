@@ -53,7 +53,7 @@ const NavBar: React.FC = () => {
   };
 
   const handleSettingClick = () => {
-    console.log('설정 구현');
+    nav('/settings');
   };
   const closeModal = () => {
     setModalState({ isOpen: false, title: '', type: null });
