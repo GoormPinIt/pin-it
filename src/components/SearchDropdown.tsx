@@ -13,7 +13,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
   const [searchText, setSearchText] = useState('');
 
   const boards = [
-    { id: 1, icon: 'https://via.placeholder.com/30', name: '2023' },
+    { id: 1, icon: 'https://via.placeholder.com/30', name: '2024' },
     { id: 2, icon: 'https://via.placeholder.com/30', name: '곰돌이 인형' },
     {
       id: 3,

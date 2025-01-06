@@ -71,6 +71,7 @@ const PinBuilder = () => {
 
   const [imgBase64, setImgBase64] = useState<string>(''); // 파일 base64
   const [imgFile, setImgFile] = useState<File | null>(null); // 파일
+  const [toastVisible, setToastVisible] = useState(false);
   const [imgUrl, setImgUrl] = useState<string>(''); // 파일
   const [uploadedfile, setUploadedfile] = useState<string>(''); // 업로드한 파일
   const [userId, setUserId] = useState<string>('');
@@ -188,6 +189,9 @@ const PinBuilder = () => {
       await updateDoc(docRef, { pinId: docRef.id });
 
       console.log('저장 완료');
+      setToastVisible(true); // 토스트 메시지 표시
+
+      resetForm();
     } catch (error) {
       console.error('Error handling submit:', error);
     }
@@ -201,8 +205,28 @@ const PinBuilder = () => {
     setIsDropdownOpen(false); // 드롭다운 닫기
   };
 
+  const resetForm = () => {
+    setImgBase64('');
+    setImgFile(null);
+    setImgUrl('');
+    setUploadedfile('');
+    setTitle('');
+    setBoard('');
+    setLink('');
+    setAllowComments(true);
+    setShowSimilarProducts(true);
+    setTag('');
+    setImgDes('');
+    setIsImageUploaded(false);
+  };
+
   return (
     <div className="pin-builder-main">
+      {toastVisible && (
+        <div className="fixed top-5 left-1/2 transform -translate-x-1/2 bg-black text-white px-4 py-2 rounded-full shadow-md">
+          저장되었습니다!
+        </div>
+      )}
       <div className="pin-builder-content">
         <div className="pin-builder-bar">
           {/* <div className="pin-builder-bar-space"></div> */}
@@ -266,6 +290,7 @@ const PinBuilder = () => {
                   label="제목"
                   placeholder="제목 추가"
                   disabled={!isImageUploaded}
+                  value={title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
                 />
                 <InputField
@@ -273,6 +298,7 @@ const PinBuilder = () => {
                   placeholder="자세한 설명을 추가하세요."
                   textarea
                   disabled={!isImageUploaded}
+                  value={imgDes}
                   onChange={(e) =>
                     handleInputChange('description', e.target.value)
                   }
@@ -281,6 +307,7 @@ const PinBuilder = () => {
                   label="링크"
                   placeholder="링크 추가"
                   type="url"
+                  value={link}
                   disabled={!isImageUploaded}
                   onChange={(e) => handleInputChange('link', e.target.value)}
                 />
@@ -313,6 +340,7 @@ const PinBuilder = () => {
                   placeholder="태그 검색"
                   disabled={!isImageUploaded}
                   onChange={(e) => handleInputChange('tag', e.target.value)}
+                  value={tag}
                 />
                 <p className="pin-builder-note">
                   걱정하지 마세요. 사람들에게 태그는 보여지지 않습니다.
