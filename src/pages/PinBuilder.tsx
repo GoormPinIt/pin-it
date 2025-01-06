@@ -5,38 +5,42 @@ import InputField from '../components/InputField';
 import { HiArrowUpCircle } from 'react-icons/hi2';
 import useUploadImage from '../hooks/useUploadImage';
 interface PinData {
+  pinId: string;
   title: string;
+  userId: string;
   description: string;
   imageUrl: string;
   link: string;
-  board: string;
   tag: string;
   allowComments: boolean;
   showSimilarProducts: boolean;
   creatorId: string;
+  savedBy: string[]; // 핀을 저장한 유저 ID 배열
+  boards: string[]; // 핀을 저장한 유저 ID 배열
+  comments: string[]; // 핀을 저장한 유저 ID 배열
+  createdAt: Date; // 핀 생성 날짜
 }
 //firebase
 import {
-  doc,
-  getDoc,
   addDoc,
-  getDocs,
-  DocumentData,
+  collection,
   updateDoc,
-  arrayRemove,
-  arrayUnion,
+  getDocs,
   query,
   where,
-  collection,
 } from 'firebase/firestore';
 
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { storage, db } from '../firebase';
-import { v4 as uuidv4 } from 'uuid';
+import { db } from '../firebase';
+// import { v4 as uuidv4 } from 'uuid';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
 
 import './PinBuilder.css';
 
 const PinBuilder = () => {
+  const { isLoggedIn, userEmail } = useSelector(
+    (state: RootState) => state.auth,
+  );
   const [imgBase64, setImgBase64] = useState<string>(''); // 파일 base64
   const [imgFile, setImgFile] = useState<File | null>(null); // 파일
   const [imgUrl, setImgUrl] = useState<string>(''); // 파일
@@ -113,21 +117,51 @@ const PinBuilder = () => {
       }
 
       const pinData: PinData = {
+        pinId: '',
+        userId: '',
         title: title,
         description: imgDes || '',
         imageUrl: downloadUrl,
         link: link || '',
-        board: board,
         tag: tag || '',
         allowComments: allowComments,
         showSimilarProducts: showSimilarProducts,
         creatorId: '1',
+        savedBy: [],
+        boards: [],
+        comments: [],
+        createdAt: new Date(),
       };
+
+      pinData.boards.push(board);
 
       console.log('핀데이터', pinData);
 
+      try {
+        // `users` 컬렉션에서 `email`이 일치하는 문서 쿼리
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('email', '==', userEmail));
+
+        // 쿼리 실행
+        const querySnapshot = await getDocs(q);
+
+        // 결과 처리
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0]; // 첫 번째 결과 문서
+          return userDoc.id; // 문서 ID(uid) 반환
+        } else {
+          console.log('No matching user found');
+          return null;
+        }
+      } catch (error) {
+        console.error('Error fetching user UID:', error);
+        return null;
+      }
+
       const docRef = await addDoc(collection(db, 'pins'), pinData);
       console.log('Document ID:', docRef.id);
+
+      await updateDoc(docRef, { pinId: docRef.id });
 
       console.log('저장 완료');
     } catch (error) {

@@ -1,15 +1,15 @@
 import { FaRegHeart } from 'react-icons/fa';
 import { RiShare2Line } from 'react-icons/ri';
 import { HiDotsHorizontal } from 'react-icons/hi';
-import { FaSmile } from 'react-icons/fa';
-import { LuSticker } from 'react-icons/lu';
-import { AiOutlinePicture } from 'react-icons/ai';
-
+// import { FaSmile } from 'react-icons/fa';
+// import { LuSticker } from 'react-icons/lu';
+// import { AiOutlinePicture } from 'react-icons/ai';
 import SaveModal from './../components/SaveModal';
 
 import React, { useState, useEffect, useRef } from 'react';
 
 interface PinData {
+  pinId: string;
   title: string;
   description: string;
   imageUrl: string;

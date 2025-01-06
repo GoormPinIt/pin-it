@@ -8,6 +8,16 @@ import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import logo from '../assets/pinit_logo.png';
 
+const getCurrentUserUid = () => {
+  const user = auth.currentUser;
+  if (user) {
+    return user.uid;
+  }
+  return null;
+};
+
+console.log('현재 로그인한 UID:', getCurrentUserUid());
+
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
