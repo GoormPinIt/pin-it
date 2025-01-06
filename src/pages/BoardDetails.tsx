@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { FaUserPlus } from 'react-icons/fa';
 import { GoKebabHorizontal } from 'react-icons/go';
 import { GiDiamonds } from 'react-icons/gi';
 import { HiSquare2Stack } from 'react-icons/hi2';
+import EditBoardModal from '../components/EditBoardModal';
 
 type PinData = {
   imageUrl: string;
@@ -13,16 +14,18 @@ type PinData = {
 };
 
 type BoardData = {
-  ownerId: string; // 보드 소유자 ID
-  pins: PinData[]; // PinData 배열
-  title: string; // 보드 제목
-  updatedTime: string; // 보드 수정 시간
+  ownerId: string;
+  pins: PinData[];
+  title: string;
+  updatedTime: string;
+  description?: string;
 };
 
 const BoardDetails = (): JSX.Element => {
-  const { boardId } = useParams<{ boardId: string }>(); // URL에서 boardId 가져오기
+  const { boardId } = useParams<{ boardId: string }>();
   const [board, setBoard] = useState<BoardData | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Firestore에서 보드 데이터 가져오기
   const fetchBoardData = async (boardId: string): Promise<BoardData> => {
@@ -36,6 +39,7 @@ const BoardDetails = (): JSX.Element => {
         pins: data.pins || [],
         title: data.title || '제목 없음',
         updatedTime: data.updatedTime || new Date().toISOString(),
+        description: data.description || '',
       } as BoardData;
     } else {
       throw new Error('보드 데이터를 찾을 수 없습니다.');
@@ -64,8 +68,8 @@ const BoardDetails = (): JSX.Element => {
           const boardData = await fetchBoardData(boardId);
           const pinsData = await fetchPinData(
             boardData.pins as unknown as string[],
-          ); // pins ID 가져오기
-          setBoard({ ...boardData, pins: pinsData }); // board에 pins 데이터 병합
+          );
+          setBoard({ ...boardData, pins: pinsData });
         } catch (error) {
           console.error('데이터를 가져오는 데 실패했습니다:', error);
         }
@@ -74,6 +78,33 @@ const BoardDetails = (): JSX.Element => {
 
     loadBoardAndPins();
   }, [boardId]);
+
+  const handleEditSubmit = async (updatedData: {
+    title: string;
+    description: string;
+  }) => {
+    if (!boardId) return;
+
+    try {
+      // Firestore에서 보드 데이터 업데이트
+      const boardRef = doc(db, 'boards', boardId);
+      await updateDoc(boardRef, {
+        title: updatedData.title,
+        description: updatedData.description,
+      });
+
+      // 로컬 상태 업데이트
+      setBoard((prevBoard) => ({
+        ...prevBoard!,
+        title: updatedData.title,
+        description: updatedData.description,
+      }));
+      setShowEditModal(false);
+    } catch (error) {
+      console.error('보드 업데이트 실패:', error);
+      alert('보드를 업데이트하는 중 문제가 발생했습니다.');
+    }
+  };
 
   if (!board) {
     return <p>보드 데이터를 로드 중...</p>;
@@ -98,7 +129,13 @@ const BoardDetails = (): JSX.Element => {
               <div className="px-1 py-1 text-gray-500 font-medium text-[7px]">
                 보드 옵션
               </div>
-              <button className="block px-1 py-1 hover:bg-gray-100 text-left text-[9px] font-bold w-full">
+              <button
+                onClick={() => {
+                  setShowEditModal(true);
+                  setShowModal(false);
+                }}
+                className="block px-1 py-1 hover:bg-gray-100 text-left text-[9px] font-bold w-full"
+              >
                 보드 수정
               </button>
               <button className="block px-1 py-1 hover:bg-gray-100 text-left text-[9px] font-bold w-full">
@@ -151,6 +188,16 @@ const BoardDetails = (): JSX.Element => {
           </div>
         ))}
       </div>
+      {showEditModal && (
+        <EditBoardModal
+          board={{
+            title: board.title,
+            description: board.description || '',
+          }}
+          onSubmit={handleEditSubmit}
+          onClose={() => setShowEditModal(false)}
+        />
+      )}
     </div>
   );
 };
