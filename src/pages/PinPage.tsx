@@ -5,10 +5,18 @@ import { HiDotsHorizontal } from 'react-icons/hi';
 // import { LuSticker } from 'react-icons/lu';
 // import { AiOutlinePicture } from 'react-icons/ai';
 import SaveModal from './../components/SaveModal';
+import ProfileComment from '../components/ProfileComment';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import {
+  doc,
+  getDoc,
+  getDocs,
+  where,
+  query,
+  collection,
+} from 'firebase/firestore';
 import { db } from '../firebase'; // Firebase 초기화된 db import
 
 interface PinData {
@@ -28,6 +36,7 @@ interface Comment {
   commentId: string; // 댓글 ID
   content: string; // 댓글 내용
   pinId: string; // 연결된 핀의 ID
+  nickname: string;
   userId: string; // 댓글 작성자 ID
   parentCommentId: string | null; // 부모 댓글 ID (null이면 일반 댓글)
 }
@@ -36,8 +45,10 @@ const PinPage: React.FC = () => {
   const { pinId } = useParams<{ pinId: string }>(); // URL에서 pinId 추출
   const [pinData, setPinData] = useState<PinData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리
+  const [isCommentOpen, setIsCommentOpen] = useState(false); // 모달 상태 관리
   const modalRef = useRef<HTMLDivElement>(null); // 모달 영역 감지용 ref
   const [isLoading, setIsLoading] = useState(true);
+  const [comments, setComments] = useState<Comment[]>([]);
 
   const handleModalOpen = () => {
     setIsModalOpen(true); // 모달 열기
@@ -45,6 +56,11 @@ const PinPage: React.FC = () => {
 
   const handleModalClose = () => {
     setIsModalOpen(false); // 모달 닫기
+  };
+
+  const handleReplyClick = (commentId: string) => {
+    console.log(`답변 버튼 클릭됨! 댓글 ID: ${commentId}`);
+    // 답변 클릭 시 동작 추가 가능
   };
 
   // 모달 외부 클릭 감지
@@ -89,6 +105,37 @@ const PinPage: React.FC = () => {
       }
     };
     fetchPinData();
+
+    const fetchCommentsData = async () => {
+      if (!pinId) return;
+      try {
+        setIsLoading(true);
+        const commentsRef = collection(db, 'comment');
+        const q = query(
+          commentsRef,
+          where('pinId', '==', pinId),
+          where('parentCommentId', '==', ''),
+        );
+
+        const querySnapshot = await getDocs(q); // Firestore에서 데이터 가져오기
+
+        const fetchedComments: Comment[] = querySnapshot.docs.map((doc) => ({
+          commentId: doc.id, // 문서 ID
+          content: doc.data().content || '', // Firestore에서 가져온 content
+          pinId: doc.data().pinId || '', // Firestore에서 가져온 pinId
+          nickname: doc.data().nickname || '', // Firestore에서 가져온 nickname
+          userId: doc.data().userId || '', // Firestore에서 가져온 userId
+          parentCommentId: doc.data().parentCommentId || null, // Firestore에서 가져온 parentCommentId
+        }));
+        setComments(fetchedComments); // 댓글 상태에 저장
+        console.log(comments);
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCommentsData();
   }, [pinId]);
 
   return (
@@ -172,9 +219,14 @@ const PinPage: React.FC = () => {
             </p>
 
             <div className="flex flex-row justify-between items-center">
-              <div className="inline-block font-semibold">
+              <div
+                className="inline-block font-semibold cursor-pointer"
+                onClick={() => {
+                  setIsCommentOpen(!isCommentOpen);
+                }}
+              >
                 <span className="inline-block">댓글</span>
-                <span className="inline-block ml-1">1</span>
+                <span className="inline-block ml-1">{comments.length}</span>
                 <span className="inline-block">개</span>
               </div>
               <div className="inline-block ml-[7px]">
@@ -189,6 +241,18 @@ const PinPage: React.FC = () => {
                   <path d="M20.16 6.65 12 14.71 3.84 6.65a2.27 2.27 0 0 0-3.18 0 2.2 2.2 0 0 0 0 3.15L12 21 23.34 9.8a2.2 2.2 0 0 0 0-3.15 2.26 2.26 0 0 0-3.18 0"></path>
                 </svg>
               </div>
+            </div>
+            <div>
+              {isCommentOpen &&
+                comments.map((comment) => (
+                  <ProfileComment
+                    key={comment.commentId}
+                    profileUrl={''} // 프로필 URL이 없는 경우
+                    userName={comment.nickname}
+                    comment={comment.content}
+                    onReplyClick={() => handleReplyClick(comment.commentId)}
+                  />
+                ))}
             </div>
             <article className="chat"></article>
           </div>
