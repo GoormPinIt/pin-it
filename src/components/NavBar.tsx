@@ -53,32 +53,43 @@ const NavBar: React.FC = () => {
   };
 
   const handleSettingClick = () => {
-    console.log('설정 구현');
+    nav('/settings');
   };
-
   const closeModal = () => {
     setModalState({ isOpen: false, title: '', type: null });
   };
 
   return (
-    <div className="sticky top-0 left-0  w-10 h-screen bg-gray-100 flex flex-col border-r-2">
-      <div className="flex-1 flex flex-col">
-        <button className="px-3 py-4" onClick={handleHomeClick}>
-          <AiOutlineHome />
+    <div className="fixed top-0 left-0  w-16 h-screen flex flex-col border-r-2 z-[100]">
+      <div className="flex-1 flex flex-col gap-10 pt-10">
+        <button
+          className="flex justify-center items-center"
+          onClick={handleHomeClick}
+        >
+          <AiOutlineHome size={25} />
         </button>
-        <button className="px-3 py-4" onClick={handleCreateClick}>
-          <FaRegPlusSquare />
+        <button
+          className="flex justify-center items-center"
+          onClick={handleCreateClick}
+        >
+          <FaRegPlusSquare size={25} />
         </button>
-        <button className="px-3 py-4" onClick={handleUpdateClick}>
-          <FaRegBell />
+        <button
+          className="flex justify-center items-center"
+          onClick={handleUpdateClick}
+        >
+          <FaRegBell size={25} />
         </button>
-        <button className="px-3 py-4" onClick={handleMessageClick}>
-          <AiOutlineMessage />
+        <button
+          className="flex justify-center items-center"
+          onClick={handleMessageClick}
+        >
+          <AiOutlineMessage size={25} />
         </button>
       </div>
-      <div>
-        <button className="px-3 py-2" onClick={handleSettingClick}>
-          <AiOutlineSetting />
+      <div className="flex justify-center items-center pb-10">
+        <button onClick={handleSettingClick}>
+          <AiOutlineSetting size={25} />
         </button>
       </div>
       <Modal
