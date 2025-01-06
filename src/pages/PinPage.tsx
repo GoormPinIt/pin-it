@@ -7,6 +7,9 @@ import { HiDotsHorizontal } from 'react-icons/hi';
 import SaveModal from './../components/SaveModal';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase'; // Firebase 초기화된 db import
 
 interface PinData {
   pinId: string;
@@ -21,9 +24,20 @@ interface PinData {
   creatorId: string;
 }
 
+interface Comment {
+  commentId: string; // 댓글 ID
+  content: string; // 댓글 내용
+  pinId: string; // 연결된 핀의 ID
+  userId: string; // 댓글 작성자 ID
+  parentCommentId: string | null; // 부모 댓글 ID (null이면 일반 댓글)
+}
+
 const PinPage: React.FC = () => {
+  const { pinId } = useParams<{ pinId: string }>(); // URL에서 pinId 추출
+  const [pinData, setPinData] = useState<PinData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리
   const modalRef = useRef<HTMLDivElement>(null); // 모달 영역 감지용 ref
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleModalOpen = () => {
     setIsModalOpen(true); // 모달 열기
@@ -55,20 +69,37 @@ const PinPage: React.FC = () => {
     };
   }, [isModalOpen]);
 
+  useEffect(() => {
+    const fetchPinData = async () => {
+      if (!pinId) return;
+      try {
+        setIsLoading(true);
+        const docRef = doc(db, 'pins', pinId); // Firestore에서 pinId로 문서 참조
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setPinData({ ...docSnap.data(), pinId } as PinData);
+        } else {
+          console.error('문서가 없습니다.');
+        }
+      } catch (error) {
+        console.error('불러오는 과정에서 에러가 발생했습니다.', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPinData();
+  }, [pinId]);
+
   return (
     <div className="flex h-screen justify-center">
-      {/* 헤더 */}
-      <header className="fixed h-[80px] bg-white z-[1000] top-0 left-0 w-full shadow-md flex items-center px-6">
-        <div className="text-xl font-semibold">Header</div>
-      </header>
-
       {/* 메인 콘텐츠 */}
-      <main className="flex w-[80%] border border-gray-200 rounded-3xl overflow-hidden mt-[100px] h-[550px] max-w-[815px] bg-white">
+      <main className="flex w-[80%] border border-gray-200 rounded-3xl overflow-hidden mt-[5px] h-[550px] max-w-[815px] bg-white">
         {/* 좌측 이미지 섹션 */}
         <section className="w-1/2 bg-gray-300 flex items-center justify-center">
           <figure className="rounded-lg overflow-hidden w-full h-full">
             <img
-              src="https://i.ibb.co/YQSsxqH/7c22f44da02203123787a1f230cf4e91.jpg"
+              src={pinData?.imageUrl}
               alt="이미지 설명"
               className="w-full h-full object-cover"
             />
@@ -119,7 +150,7 @@ const PinPage: React.FC = () => {
             </div>
 
             {/* 제목 */}
-            <h1 className="text-3xl font-semibold mb-4">miffy</h1>
+            <h1 className="text-3xl font-semibold mb-4">{pinData?.title}</h1>
 
             {/* 사용자 */}
             <header className="flex items-center mb-4">
@@ -133,6 +164,7 @@ const PinPage: React.FC = () => {
             </header>
 
             {/* 글 */}
+            <p className="text-black mb-4">{pinData?.description}</p>
             <p className="text-blue-500 mb-4">
               <a href="#tag" className="hover:underline">
                 #miffy
