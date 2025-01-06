@@ -8,9 +8,9 @@ const Sidebar: React.FC = () => {
 
   return (
     <div
-      className={`fixed top-[81px] left-0 ${
+      className={`fixed top-[81px] right-0 ${
         isExpanded ? 'w-64' : 'w-20'
-      } bg-white border-r border-gray-200 h-full transition-all duration-300 z-[100] `}
+      } bg-white border-l border-gray-200 h-full transition-all duration-300 z-[100] `}
     >
       {/* 사이드바 내부 컨텐츠 */}
       <div className="flex flex-col text-center items-center border-b border-[rgb(205, 205, 205)]">

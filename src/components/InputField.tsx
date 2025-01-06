@@ -8,6 +8,8 @@ interface InputFieldProps {
   disabled?: boolean;
   onChange?: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   value?: string;
+  onClick?: () => void; // 추가: onClick 이벤트
+  readOnly?: boolean; // 추가: readOnly 속성
 }
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -18,6 +20,8 @@ const InputField: React.FC<InputFieldProps> = ({
   disabled = false,
   onChange,
   value,
+  onClick,
+  readOnly = false, // 기본값 추가
 }) => {
   return (
     <div className="mb-6">
@@ -46,6 +50,8 @@ const InputField: React.FC<InputFieldProps> = ({
           disabled={disabled}
           onChange={onChange}
           value={value}
+          onClick={onClick} // 추가
+          readOnly={readOnly} // 추가
         />
       )}
     </div>

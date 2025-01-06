@@ -11,6 +11,16 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { UserData } from '../features/authSlice';
 
+const getCurrentUserUid = () => {
+  const user = auth.currentUser;
+  if (user) {
+    return user.uid;
+  }
+  return null;
+};
+
+console.log('현재 로그인한 UID:', getCurrentUserUid());
+
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
