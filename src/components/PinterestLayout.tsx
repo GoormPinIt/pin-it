@@ -27,7 +27,8 @@ const images = [
   'https://dummyimage.com/480x400/ddd/222',
   'https://dummyimage.com/480x690/ddd/222',
 ];
-const PinterestLayout = () => {
+
+const PinterestLayout: React.FC = () => {
   return (
     <div className="columns-1 sm:columns-3 lg:columns-5 py-2 md:py-5 gap-4 px-2">
       {images.map((src, index) => (

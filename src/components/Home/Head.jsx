@@ -25,7 +25,6 @@ const Head = () => {
           <Button
             className="px-3 py-2 !text-base"
             onClick={() => {
-              console.log('ha');
               navigate('/login');
             }}
           >

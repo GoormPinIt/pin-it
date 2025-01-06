@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Images from './Images';
 import Indicator from './Indicator';
-import TextCarousel from './TextCarousel';
 import { IoIosArrowDropdownCircle } from 'react-icons/io';
 import Button from '../Button';
 import { FiSearch } from 'react-icons/fi';
@@ -10,65 +9,81 @@ import './Style.css';
 import SignUp from '../../pages/Signup';
 
 const Sec1: React.FC = () => {
-  type Messages = {
+  type Message = {
     text: string;
     color: string; // Tailwind CSS 클래스 이름
     img: string[]; // 이미지 링크 배열'
     id: number;
+    bgColor: string;
   };
 
-  const [index, setIndex] = useState<number>(0);
-  const Messages = [
+  const Messages: Message[] = [
     {
       text: '저녁 식사 메뉴 아이디어를',
       color: 'text-yellow-600',
+      bgColor: 'bg-yellow-600',
       img: [],
       id: 1,
     },
     {
       text: '집안 꾸미기 아이디어를',
       color: 'text-green-900',
+      bgColor: 'bg-green-900',
       img: [],
       id: 2,
     },
     {
       text: '새로운 패션을',
       color: 'text-sky-600',
+      bgColor: 'bg-sky-600',
       img: [],
       id: 3,
     },
     {
       text: '정원 가꾸기 아이디어를',
       color: 'text-green-900',
+      bgColor: 'bg-green-900',
       img: [],
       id: 4,
     },
   ];
 
+  const [index, setIndex] = useState<number>(0);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prevIndex) => (prevIndex + 1) % Messages.length);
-    }, 3000); // 3초마다 변경
-
-    return () => clearInterval(interval); // 컴포넌트 언마운트 시 정리
+    }, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
     <div className=" flex-col justify-items-center overflow-x-hidden h-screen bg-white relative">
       <h2 className="text-5xl py-3 pt-32">다음</h2>
       {Messages.map((msg, idx) => (
-        <div key={msg.id}>
-          <h2 className="text-5xl py-3">{msg.text} 찾아보세요</h2>
-          <div className="flex w-44 justify-around">
-            <p className={`w-3 my-5 h-3 rounded-full bg-slate-400`}></p>
-            <p className={`w-3 my-5 h-3 rounded-full ${msg.color}`}></p>
-          </div>
+        <div
+          key={msg.id}
+          className={`transition-opacity duration-500 justify-center flex-col flex items-center ${
+            idx === index ? 'opacity-100 block' : 'opacity-0 hidden'
+          }`}
+        >
+          <h2
+            className={`text-5xl py-3 m-auto justify-center flex ${msg.color}`}
+          >
+            {msg.text} 찾아보세요
+          </h2>
+          <Indicator
+            activeIndex={index}
+            total={Messages.length}
+            messages={Messages}
+          />
+          <Images />
+          <IoIosArrowDropdownCircle
+            className={`text-5xl rounded-full ${msg.color} relative z-40 animate-bounce mb-3`}
+          />
         </div>
       ))}
-      <Indicator />
-      <Images />
-      <IoIosArrowDropdownCircle className="text-5xl rounded-full text-white relative z-40 animate-bounce mb-3" />
-      <div className="w-full  h-24 absolute bottom-16 bg-gradient-to-t from-white/80 to-transparent"></div>
+      <div className="w-full h-36 absolute bottom-16 bg-gradient-to-t from-white/80 to-transparent"></div>
       <div className="w-full text-center absolute bottom-0 py-6 bg-pinit_yellow font-bold mt-auto ">
         방식은 다음과 같습니다
       </div>

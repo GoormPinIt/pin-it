@@ -1,15 +1,18 @@
-import { useState } from 'react';
 import PinterestLayout from '../components/PinterestLayout';
-import Landing from './LandingPage';
+import React, { useState } from 'react';
 
 const Home = (): JSX.Element => {
+  interface Board {
+    board: string;
+    key: string;
+  }
   const [activeKey, setActiveKey] = useState<string | null>(null); // 클릭된 항목의 key 저장
 
   const handleClick = (key: string) => {
     setActiveKey((prevKey: string | null) => (prevKey === key ? null : key)); // 클릭된 key를 토글
   };
 
-  const data = [
+  const Board = [
     {
       board: 'Cats',
       key: '1',
@@ -23,13 +26,14 @@ const Home = (): JSX.Element => {
       key: '3',
     },
   ];
+
   return (
     <div className="flex flex-col">
       <div className="h-20 text-center flex items-center justify-start w-full gap-10 pl-3">
-        {data.map((item) => (
+        {Board.map((item: Board) => (
           <div className="relative" key={item.key}>
             <h2
-              className="font-extrabold hover:bg-gray-400/30 rounded-xl px-2 py-1 inline-block"
+              className="font-bold hover:bg-gray-400/30 rounded-xl px-2 py-1 inline-block"
               onClick={() => handleClick(item.key)}
             >
               {item.board}
