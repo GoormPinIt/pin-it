@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import Profile from '../components/Profile';
+import { useState, useEffect } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
-const Mypage = (): JSX.Element => {
+const useCurrentUserUid = (): string | null => {
   const [currentUserUid, setCurrentUserUid] = useState<string | null>(null);
 
   useEffect(() => {
@@ -19,17 +18,7 @@ const Mypage = (): JSX.Element => {
     return () => unsubscribe(); // 컴포넌트 언마운트 시 리스너 정리
   }, []);
 
-  if (currentUserUid === null) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <Profile
-      uid={currentUserUid}
-      currentUserUid={currentUserUid}
-      isCurrentUser={true}
-    />
-  );
+  return currentUserUid;
 };
 
-export default Mypage;
+export default useCurrentUserUid;
