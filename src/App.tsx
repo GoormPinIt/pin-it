@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import { store } from './store';
+import { Provider, useDispatch, useSelector } from 'react-redux';
+import { RootState, store } from './store';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { loginSuccess, logout } from './features/authSlice';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Mypage from './pages/Mypage';
@@ -14,19 +16,44 @@ import ProfileBoardDetail from './pages/ProfileBoardDetail';
 import PinBuilder from './pages/PinBuilder';
 import PinPage from './pages/PinPage';
 import Settings from './pages/Settings';
+import LandingPage from './pages/LandingPage';
 
 const App = (): JSX.Element => {
   return (
     <Provider store={store}>
       <Router>
-        <Header />
+        <AppRoutes />
+      </Router>
+    </Provider>
+  );
+};
+
+export default App;
+
+const AppRoutes = (): JSX.Element => {
+  const dispatch = useDispatch();
+  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
+  const auth = getAuth();
+  
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        dispatch(loginSuccess(user.email || ''));
+      } else {
+        dispatch(logout());
+      }
+    });
+  }, [dispatch, auth]);
+
+  return (
+    <>
+      <Header />
+      {isLoggedIn ? (
         <div className="flex pt-20">
           <NavBar />
           <div className="flex-1 pl-16">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<SignUp />} />
               <Route path="/mypage" element={<Mypage />} />
               <Route path="/profile/:userId" element={<UserProfile />} />
               <Route path="/board/:boardId" element={<BoardDetails />} />
@@ -37,9 +64,13 @@ const App = (): JSX.Element => {
             </Routes>
           </div>
         </div>
-      </Router>
-    </Provider>
+      ) : (
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+        </Routes>
+      )}
+    </>
   );
 };
-
-export default App;
