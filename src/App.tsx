@@ -34,11 +34,15 @@ const AppRoutes = (): JSX.Element => {
   const dispatch = useDispatch();
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
   const auth = getAuth();
-  
+
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        dispatch(loginSuccess(user.email || ''));
+        const userData = {
+          email: user.email || '',
+          uid: user.uid || '',
+        };
+        dispatch(loginSuccess(userData));
       } else {
         dispatch(logout());
       }
