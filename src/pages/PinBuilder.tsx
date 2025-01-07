@@ -1,10 +1,18 @@
-import React, {
-  useState,
-  ChangeEvent,
-  useEffect,
-  useRef,
-  useCallback,
-} from 'react';
+import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
+
+import {
+  addDoc,
+  collection,
+  updateDoc,
+  doc,
+  arrayUnion,
+} from 'firebase/firestore';
+
+import { db } from '../firebase';
+// import { v4 as uuidv4 } from 'uuid';
+
+import './PinBuilder.css';
+import colorGenerator from '../utils/colorGenerator';
 
 // import Sidebar from '../components/Sidebar';
 import InputField from '../components/InputField';
@@ -32,13 +40,6 @@ interface PinData {
   createdAt: Date; // 핀 생성 날짜
 }
 //firebase
-import { addDoc, collection, updateDoc } from 'firebase/firestore';
-
-import { db } from '../firebase';
-// import { v4 as uuidv4 } from 'uuid';
-
-import './PinBuilder.css';
-import colorGenerator from '../utils/colorGenerator';
 
 const PinBuilder = () => {
   const [imgBase64, setImgBase64] = useState<string>(''); // 파일 base64
@@ -114,6 +115,23 @@ const PinBuilder = () => {
     }
   };
 
+  const resetForm = () => {
+    setTags([]);
+    setImgBase64('');
+    setImgFile(null);
+    setImgUrl('');
+    setUploadedfile('');
+    setTitle('');
+    setBoard('');
+    setSelectedBoardId('');
+    setLink('');
+    setAllowComments(true);
+    setShowSimilarProducts(true);
+    setSearch('');
+    setImgDes('');
+    setIsImageUploaded(false);
+  };
+
   const handleSubmit = async () => {
     try {
       let downloadUrl = '';
@@ -147,6 +165,14 @@ const PinBuilder = () => {
       console.log('Document ID:', docRef.id);
       console.log('User ID:', userId);
 
+      if (userId) {
+        const userDocRef = doc(db, 'users', userId);
+        await updateDoc(userDocRef, {
+          createdPins: arrayUnion(docRef.id), // 배열에 핀 ID 추가
+        });
+        console.log('유저 데이터에 핀 ID 추가 완료');
+      }
+
       await updateDoc(docRef, { pinId: docRef.id });
 
       console.log('저장 완료');
@@ -170,36 +196,9 @@ const PinBuilder = () => {
     setIsDropdownOpen(false); // 드롭다운 닫기
   };
 
-  const handleTagSelection = useCallback((selectedTag: string) => {
-    setSelectedTags((prevTags) => {
-      if (!prevTags.includes(selectedTag)) {
-        return [...prevTags, selectedTag];
-      }
-      return prevTags;
-    });
-    setSearch('');
-    setIsTagDropdownOpen(false);
-  }, []);
-
   useEffect(() => {
     console.log('Tags updated:', tags);
   }, [tags]);
-
-  const resetForm = () => {
-    setImgBase64('');
-    setImgFile(null);
-    setImgUrl('');
-    setUploadedfile('');
-    setTitle('');
-    setBoard('');
-    setSelectedBoardId('');
-    setLink('');
-    setAllowComments(true);
-    setShowSimilarProducts(true);
-    setSearch('');
-    setImgDes('');
-    setIsImageUploaded(false);
-  };
 
   return (
     <div className="pin-builder-main">
