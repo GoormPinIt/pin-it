@@ -1,14 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  arrayRemove,
+  deleteDoc,
+  doc,
+  getDoc,
+  updateDoc,
+} from 'firebase/firestore';
 import { db } from '../firebase';
 import { FaUserPlus } from 'react-icons/fa';
 import { GoKebabHorizontal } from 'react-icons/go';
 import { GiDiamonds } from 'react-icons/gi';
 import { HiSquare2Stack } from 'react-icons/hi2';
 import EditBoardModal from '../components/EditBoardModal';
+import MergeModal from '../components/MergeModal';
 
 type PinData = {
+  id?: string;
   imageUrl: string;
   title?: string;
 };
@@ -22,10 +30,12 @@ type BoardData = {
 };
 
 const BoardDetails = (): JSX.Element => {
+  const navigate = useNavigate();
   const { boardId } = useParams<{ boardId: string }>();
   const [board, setBoard] = useState<BoardData | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showMergeModal, setShowMergeModal] = useState(false);
 
   // Firestore에서 보드 데이터 가져오기
   const fetchBoardData = async (boardId: string): Promise<BoardData> => {
@@ -36,7 +46,7 @@ const BoardDetails = (): JSX.Element => {
       const data = boardSnap.data();
       return {
         ownerId: data.ownerId || '',
-        pins: data.pins || [],
+        pins: data.pins || ([] as string[]),
         title: data.title || '제목 없음',
         updatedTime: data.updatedTime || new Date().toISOString(),
         description: data.description || '',
@@ -52,7 +62,7 @@ const BoardDetails = (): JSX.Element => {
       const pinRef = doc(db, 'pins', pinId);
       const pinSnap = await getDoc(pinRef);
       if (pinSnap.exists()) {
-        return pinSnap.data() as PinData;
+        return { ...pinSnap.data(), id: pinSnap.id } as PinData;
       }
       return null;
     });
@@ -106,6 +116,44 @@ const BoardDetails = (): JSX.Element => {
     }
   };
 
+  const handleMerge = async (targetBoardId: string) => {
+    if (!board || !boardId) return;
+
+    try {
+      const targetBoardRef = doc(db, 'boards', targetBoardId);
+      const currentBoardRef = doc(db, 'boards', boardId);
+
+      // 대상 보드의 기존 핀 데이터를 가져오기
+      const targetBoardSnap = await getDoc(targetBoardRef);
+      const targetPins = targetBoardSnap.exists()
+        ? targetBoardSnap.data().pins || []
+        : [];
+
+      // 병합: 현재 보드의 핀을 대상 보드에 추가
+      const newPins = [
+        ...targetPins,
+        ...board.pins.map((pin) => (typeof pin === 'object' ? pin.id : pin)),
+      ];
+      await updateDoc(targetBoardRef, {
+        pins: newPins,
+      });
+      const userRef = doc(db, 'users', board.ownerId);
+      await updateDoc(userRef, {
+        boardIds: arrayRemove(boardId), // boardId 제거
+      });
+      // 현재 보드 삭제 (선택적으로 비활성화 가능)
+      await deleteDoc(currentBoardRef);
+
+      // 병합 완료 메시지
+      alert('보드가 성공적으로 병합되었습니다.');
+      navigate('/mypage');
+      setShowMergeModal(false); // 모달 닫기
+    } catch (error) {
+      console.error('보드 병합 실패:', error);
+      alert('보드 병합 중 문제가 발생했습니다.');
+    }
+  };
+
   if (!board) {
     return <p>보드 데이터를 로드 중...</p>;
   }
@@ -116,6 +164,7 @@ const BoardDetails = (): JSX.Element => {
         <div>
           <h2 className="text-xl font-bold">{board.title}</h2>
           <p className="text-[8px] text-gray-500">핀 {board.pins.length}개</p>
+          <p className="text-[9px] mt-2">{board.description}</p>
         </div>
         <div className="relative">
           <button
@@ -138,13 +187,28 @@ const BoardDetails = (): JSX.Element => {
               >
                 보드 수정
               </button>
-              <button className="block px-1 py-1 hover:bg-gray-100 text-left text-[9px] font-bold w-full">
+              <button
+                className="block px-1 py-1 hover:bg-gray-100 text-left text-[9px] font-bold w-full"
+                onClick={() => {
+                  setShowMergeModal(true);
+                  setShowModal(false);
+                }}
+              >
                 병합
               </button>
               <button className="block px-1 py-1 hover:bg-gray-100 text-left text-[9px] font-bold w-full">
                 보관
               </button>
             </div>
+          )}
+          {showMergeModal && (
+            <MergeModal
+              currentBoardId={boardId!}
+              boardTitle={board.title}
+              pinsCount={board.pins.length}
+              onMerge={handleMerge}
+              onClose={() => setShowMergeModal(false)}
+            />
           )}
         </div>
       </div>
@@ -166,7 +230,14 @@ const BoardDetails = (): JSX.Element => {
           </div>
 
           <div className="flex flex-col items-center">
-            <button className="p-1 bg-gray-100 rounded-xl w-9 h-9 flex items-center justify-center">
+            <button
+              onClick={() =>
+                navigate(`/board/${boardId}/organize`, {
+                  state: { pins: board.pins },
+                })
+              }
+              className="p-1 bg-gray-100 rounded-xl w-9 h-9 flex items-center justify-center"
+            >
               <HiSquare2Stack size={16} />
             </button>
             <span className="text-[6px] mt-1">정리하기</span>

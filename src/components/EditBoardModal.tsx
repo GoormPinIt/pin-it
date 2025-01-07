@@ -46,6 +46,39 @@ const EditBoardModal = ({
           <div>
             <label className="text-[8px] text-gray-500">참여자</label>
           </div>
+          <div>
+            <div className="text-[8px] text-gray-500">설정</div>
+            <div className="flex items-center mb-4">
+              <input type="checkbox" />
+              <label htmlFor="private-board" className="text-[10px]">
+                비밀 보드 유지
+                <br />
+                <span className="text-gray-500">
+                  회원님과 참여자만 볼 수 있습니다.
+                </span>
+              </label>
+            </div>
+            <div className="flex items-center mb-4">
+              <input type="checkbox" />
+              <label htmlFor="personal-setting" className="text-[10px] ">
+                개인 설정
+                <br />
+                <span className="text-gray-400">
+                  내 홈피드에서 이 보드에 영감을 받은 핀을 봅니다
+                </span>
+              </label>
+            </div>
+          </div>
+          <div className="mt-6">
+            <h3 className="text-[8px] text-gray-500 mb-2">작업</h3>
+            <button className="flex flex-start text-[12px] w-full py-2 rounded">
+              보드 삭제
+            </button>
+            <p className="text-[10px] text-gray-500 mb-4">
+              7일이 지나면 삭제된 보드를 복원할 수 없습니다. 이후에는 영구적으로
+              삭제됩니다.
+            </p>
+          </div>
           <div className="flex justify-end mt-4">
             <button
               onClick={handleSubmit}

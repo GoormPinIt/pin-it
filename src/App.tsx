@@ -14,6 +14,7 @@ import ProfileBoardDetail from './pages/ProfileBoardDetail';
 import PinBuilder from './pages/PinBuilder';
 import PinPage from './pages/PinPage';
 import Settings from './pages/Settings';
+import OrganizePins from './pages/OrganizePins';
 
 const App = (): JSX.Element => {
   return (
@@ -29,6 +30,7 @@ const App = (): JSX.Element => {
             <Route path="/mypage" element={<Mypage />} />
             <Route path="/profile/:userId" element={<UserProfile />} />
             <Route path="/board/:boardId" element={<BoardDetails />} />
+            <Route path="/board/:boardId/organize" element={<OrganizePins />} />
             <Route path="/boardDetail" element={<ProfileBoardDetail />} />
             <Route path="/pin-creation-tool" element={<PinBuilder />} />
             <Route path="/pin" element={<PinPage />} />
