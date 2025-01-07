@@ -1,10 +1,11 @@
 import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
-import Form from '../components/Form';
-import Sidebar from '../components/Sidebar';
+// import Sidebar from '../components/Sidebar';
 import InputField from '../components/InputField';
 import { HiArrowUpCircle } from 'react-icons/hi2';
 import useUploadImage from '../hooks/useUploadImage';
 import SearchDropdown from '../components/SearchDropdown';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+
 interface PinData {
   pinId: string;
   title: string;
@@ -17,8 +18,8 @@ interface PinData {
   showSimilarProducts: boolean;
   creatorId: string;
   savedBy: string[]; // 핀을 저장한 유저 ID 배열
-  boards: string[]; // 핀을 저장한 유저 ID 배열
-  comments: string[]; // 핀을 저장한 유저 ID 배열
+  boards: string[]; // 핀을 저장한 보드드 ID 배열
+  comments: string[]; // 핀에 작성된 코멘트 배열
   createdAt: Date; // 핀 생성 날짜
 }
 //firebase
@@ -44,37 +45,12 @@ const PinBuilder = () => {
     (state: RootState) => state.auth,
   );
 
-  const getUid = async (userEmail: string) => {
-    try {
-      // `users` 컬렉션에서 `email`이 일치하는 문서 쿼리
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('email', '==', userEmail));
-
-      // 쿼리 실행
-      const querySnapshot = await getDocs(q);
-
-      // 결과 처리
-      if (!querySnapshot.empty) {
-        const userDoc = querySnapshot.docs[0]; // 첫 번째 결과 문서
-        return userDoc.id; // 문서 ID(uid) 반환
-      } else {
-        console.log('No matching user found');
-        return null;
-      }
-    } catch (error) {
-      console.error('Error fetching user UID:', error);
-      return null;
-    }
-  };
-
-  const userEmail = userData?.email; // userEmail을 userData에서 가져옴
-
   const [imgBase64, setImgBase64] = useState<string>(''); // 파일 base64
   const [imgFile, setImgFile] = useState<File | null>(null); // 파일
   const [toastVisible, setToastVisible] = useState(false);
   const [imgUrl, setImgUrl] = useState<string>(''); // 파일
   const [uploadedfile, setUploadedfile] = useState<string>(''); // 업로드한 파일
-  const [userId, setUserId] = useState<string>('');
+  const [userId, setUserId] = useState<string | null>(null);
   const [title, setTitle] = useState<string>('');
   const [board, setBoard] = useState<string>('');
   const [link, setLink] = useState<string>('');
@@ -82,27 +58,23 @@ const PinBuilder = () => {
   const [showSimilarProducts, setShowSimilarProducts] = useState<boolean>(true);
   const [tag, setTag] = useState<string>('');
   const [imgDes, setImgDes] = useState<string>(''); // 업로드한 파일 설명
-  const name = localStorage.getItem('user_name');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // 드롭다운 열림 상태
 
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   const [isImageUploaded, setIsImageUploaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const fetchUserId = async () => {
-      const uid = await getUid(userEmail || '');
-      const user = auth.currentUser;
-
-      if (uid) {
-        setUserId(uid);
-      }
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserId(user.uid);
+      } else {
+        setUserId(null);
       }
-    };
-    fetchUserId();
-  }, [userEmail]);
+    });
+
+    return () => unsubscribe(); // 언마운트 시 구독 해제
+  }, []);
 
   const uploadImage = useUploadImage();
 
@@ -164,7 +136,7 @@ const PinBuilder = () => {
 
       const pinData: PinData = {
         pinId: '',
-        userId: '',
+        userId: userId || '',
         title: title,
         description: imgDes || '',
         imageUrl: downloadUrl,
@@ -181,10 +153,9 @@ const PinBuilder = () => {
 
       pinData.boards.push(board);
 
-      console.log('핀데이터', pinData);
-
       const docRef = await addDoc(collection(db, 'pins'), pinData);
       console.log('Document ID:', docRef.id);
+      console.log('User ID:', userId);
 
       await updateDoc(docRef, { pinId: docRef.id });
 
