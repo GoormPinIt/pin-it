@@ -3,18 +3,18 @@ import SaveModalItem from './SaveModalItem';
 import { fetchBoards } from '../utils/boards';
 
 interface SearchDropdownProps {
-  setBoard: (value: string) => void; // 보드 값 설정 함수
-  closeDropdown: () => void; // 드롭다운 닫기 함수
+  setBoard: (value: string) => void;
+  closeDropdown: () => void;
   userId: string | '';
 }
 
 interface Board {
-  id: string; // 보드 문서 ID
-  description: string; // 보드 설명
-  isPrivate: boolean; // 보드 공개 여부
-  ownerIds: string[]; // 소유자 ID 배열
+  id: string;
+  description: string;
+  isPrivate: boolean;
+  ownerIds: string[];
   pins: {
-    pinId: string[]; // 핀 ID 배열
+    pinId: string[];
   };
   title: string;
   icon: string;
@@ -25,14 +25,13 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
   closeDropdown,
   userId,
 }) => {
-  const [searchText, setSearchText] = useState(''); // 검색 텍스트 상태
-  const [boards, setBoards] = useState<Board[]>([]); // Board 타입 배열로 상태 지정
+  const [searchText, setSearchText] = useState('');
+  const [boards, setBoards] = useState<Board[]>([]);
 
-  // 보드 데이터를 로드하는 useEffect
   useEffect(() => {
     const loadBoards = async () => {
-      const fetchedBoards = await fetchBoards(userId); // fetchBoards 함수 호출
-      setBoards(fetchedBoards); // 상태 업데이트
+      const fetchedBoards = await fetchBoards(userId);
+      setBoards(fetchedBoards);
     };
 
     loadBoards();
