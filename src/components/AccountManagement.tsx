@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { auth } from '../firebase';
-import { User } from 'firebase/auth'; // User 임포트
 import { FirebaseError } from 'firebase/app'; // FirebaseError 임포트
 import {
   updatePassword,
@@ -18,7 +17,6 @@ interface AccountManagementProps {
 }
 
 const AccountManagement: React.FC<AccountManagementProps> = ({ title }) => {
-  const [newEmail, setNewEmail] = useState('');
   const userEmail = useSelector(
     (state: RootState) => state.auth.userData?.email,
   );
