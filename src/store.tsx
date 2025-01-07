@@ -11,3 +11,7 @@ export const store = configureStore({
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+
+// useAppDispatch 훅 정의
+import { useDispatch } from 'react-redux';
+export const useAppDispatch = () => useDispatch<AppDispatch>();
