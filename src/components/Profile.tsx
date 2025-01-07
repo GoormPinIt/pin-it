@@ -13,6 +13,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  setDoc,
   DocumentData,
   updateDoc,
   arrayRemove,
@@ -223,36 +224,43 @@ const Profile = ({
 
         const boardQuery = query(
           collection(db, 'boards'),
-          where('ownerId', '==', uid),
+          where('ownerId', 'array-contains', uid),
         );
         const boardSnapshot = await getDocs(boardQuery);
 
-        const boardsData: BoardData[] = await Promise.all(
-          boardSnapshot.docs.map(async (boardDoc) => {
-            const board = boardDoc.data();
-            const pinsData = await Promise.all(
-              (board.pins || []).map(async (pinId: string) => {
-                const pinDocRef = doc(db, 'pins', pinId);
-                const pinDoc = await getDoc(pinDocRef);
+        const boardsData: BoardData[] = (
+          await Promise.all(
+            boardSnapshot.docs.map(async (boardDoc) => {
+              const board = boardDoc.data();
 
-                if (pinDoc.exists()) {
-                  const pinData = pinDoc.data() as { imageUrl: string };
-                  return pinData.imageUrl;
-                } else {
-                  return null;
-                }
-              }),
-            );
+              if (board.isPrivate && !board.ownerId.includes(currentUserUid)) {
+                return null;
+              }
 
-            return {
-              id: boardDoc.id,
-              title: board.title || '제목 없음',
-              pinCount: (board.pins || []).length,
-              updatedTime: board.updatedTime?.toDate(),
-              images: pinsData.filter((url): url is string => url !== null),
-            };
-          }),
-        );
+              const pinsData = await Promise.all(
+                (board.pins || []).map(async (pinId: string) => {
+                  const pinDocRef = doc(db, 'pins', pinId);
+                  const pinDoc = await getDoc(pinDocRef);
+
+                  if (pinDoc.exists()) {
+                    const pinData = pinDoc.data() as { imageUrl: string };
+                    return pinData.imageUrl;
+                  } else {
+                    return null;
+                  }
+                }),
+              );
+
+              return {
+                id: boardDoc.id,
+                title: board.title || '제목 없음',
+                pinCount: (board.pins || []).length,
+                updatedTime: board.updatedTime?.toDate(),
+                images: pinsData.filter((url): url is string => url !== null),
+              };
+            }),
+          )
+        ).filter((board): board is BoardData => board !== null);
 
         const followerData = await Promise.all(
           followers.map(async (id: string) => {
@@ -463,6 +471,69 @@ const Profile = ({
       );
     };
 
+    const createBoard = async (
+      boardName: string,
+      isPrivate: boolean,
+      participants: string[],
+    ) => {
+      try {
+        const boardRef = doc(collection(db, 'boards'));
+        const newBoardId = boardRef.id;
+
+        const allParticipants = await Promise.all(
+          participants.map(async (participantId) => {
+            const userQuery = query(
+              collection(db, 'users'),
+              where('id', '==', participantId),
+            );
+            const userSnapshot = await getDocs(userQuery);
+
+            if (!userSnapshot.empty) {
+              const userDoc = userSnapshot.docs[0];
+              return userDoc.id;
+            } else {
+              console.error(
+                `ID ${participantId}에 해당하는 문서를 찾을 수 없습니다.`,
+              );
+              return null;
+            }
+          }),
+        );
+
+        const validUids = allParticipants.filter(
+          (uid): uid is string => uid !== null,
+        );
+
+        await setDoc(boardRef, {
+          title: boardName,
+          ownerId: [currentUserUid, ...validUids],
+          pins: [],
+          description: '',
+          updatedTime: new Date(),
+          isPrivate,
+        });
+
+        // 각 참여자의 createdBoards 필드에 보드 ID 추가
+        await Promise.all(
+          [currentUserUid, ...validUids].map(async (participantUid) => {
+            const userRef = doc(db, 'users', participantUid);
+            await updateDoc(userRef, {
+              createdBoards: arrayUnion(newBoardId),
+            });
+            console.log(
+              `createdBoards 업데이트됨: ${participantUid}, 보드 ID: ${newBoardId}`,
+            );
+          }),
+        );
+
+        alert('보드가 생성되었습니다.');
+        setIsBoardModalOpen(false);
+      } catch (error) {
+        console.error('보드 생성 중 오류:', error);
+        alert('보드 생성에 실패했습니다.');
+      }
+    };
+
     return (
       <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-20">
         <div className="bg-white p-6 rounded-lg shadow-lg w-96">
@@ -556,10 +627,13 @@ const Profile = ({
             </button>
             <button
               onClick={() => {
-                alert(
-                  `보드가 생성되었습니다. 참여자: ${selectedUsers.join(', ')}`,
-                );
-                setIsBoardModalOpen(false);
+                const boardName = (
+                  document.getElementById('boardName') as HTMLInputElement
+                )?.value;
+                const isPrivate = (
+                  document.getElementById('privateBoard') as HTMLInputElement
+                )?.checked;
+                createBoard(boardName, isPrivate, selectedUsers);
               }}
               className="px-4 py-2 bg-btn_red text-white rounded-full hover:bg-btn_h_red"
             >
