@@ -1,4 +1,11 @@
-import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
+import React, {
+  useState,
+  ChangeEvent,
+  useEffect,
+  useRef,
+  useCallback,
+} from 'react';
+
 // import Sidebar from '../components/Sidebar';
 import InputField from '../components/InputField';
 import { HiArrowUpCircle } from 'react-icons/hi2';
@@ -6,6 +13,7 @@ import useUploadImage from '../hooks/useUploadImage';
 import SearchDropdown from '../components/SearchDropdown';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { addPinToBoard } from '../utils/firestoreUtils';
+import TagDropdown from '../components/TagDropdown';
 
 interface PinData {
   pinId: string;
@@ -14,7 +22,7 @@ interface PinData {
   description: string;
   imageUrl: string;
   link: string;
-  tag: string;
+  tag: string[];
   allowComments: boolean;
   showSimilarProducts: boolean;
   creatorId: string;
@@ -24,32 +32,21 @@ interface PinData {
   createdAt: Date; // 핀 생성 날짜
 }
 //firebase
-import {
-  addDoc,
-  collection,
-  updateDoc,
-  getDocs,
-  query,
-  where,
-} from 'firebase/firestore';
+import { addDoc, collection, updateDoc } from 'firebase/firestore';
 
 import { db } from '../firebase';
 // import { v4 as uuidv4 } from 'uuid';
-import { useSelector } from 'react-redux';
-import { RootState } from '../store';
-import { auth } from '../firebase';
 
 import './PinBuilder.css';
+import colorGenerator from '../utils/colorGenerator';
 
 const PinBuilder = () => {
-  const { isLoggedIn, userData } = useSelector(
-    (state: RootState) => state.auth,
-  );
-
   const [imgBase64, setImgBase64] = useState<string>(''); // 파일 base64
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [imgFile, setImgFile] = useState<File | null>(null); // 파일
   const [toastVisible, setToastVisible] = useState(false);
   const [imgUrl, setImgUrl] = useState<string>(''); // 파일
+  const [tags, setTags] = useState<string[]>([]); // 파일
   const [uploadedfile, setUploadedfile] = useState<string>(''); // 업로드한 파일
   const [userId, setUserId] = useState<string | null>(null);
   const [title, setTitle] = useState<string>('');
@@ -58,9 +55,10 @@ const PinBuilder = () => {
   const [link, setLink] = useState<string>('');
   const [allowComments, setAllowComments] = useState<boolean>(true);
   const [showSimilarProducts, setShowSimilarProducts] = useState<boolean>(true);
-  const [tag, setTag] = useState<string>('');
+  const [search, setSearch] = useState<string>('');
   const [imgDes, setImgDes] = useState<string>(''); // 업로드한 파일 설명
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // 드롭다운 열림 상태
+  const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
 
   const [isImageUploaded, setIsImageUploaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -95,8 +93,8 @@ const PinBuilder = () => {
         setBoard(value);
         break;
 
-      case 'tag':
-        setTag(value);
+      case 'search':
+        setSearch(value);
         break;
     }
   };
@@ -133,7 +131,7 @@ const PinBuilder = () => {
         description: imgDes || '',
         imageUrl: downloadUrl,
         link: link || '',
-        tag: tag || '',
+        tag: tags || [],
         allowComments: allowComments,
         showSimilarProducts: showSimilarProducts,
         creatorId: '1',
@@ -172,6 +170,21 @@ const PinBuilder = () => {
     setIsDropdownOpen(false); // 드롭다운 닫기
   };
 
+  const handleTagSelection = useCallback((selectedTag: string) => {
+    setSelectedTags((prevTags) => {
+      if (!prevTags.includes(selectedTag)) {
+        return [...prevTags, selectedTag];
+      }
+      return prevTags;
+    });
+    setSearch('');
+    setIsTagDropdownOpen(false);
+  }, []);
+
+  useEffect(() => {
+    console.log('Tags updated:', tags);
+  }, [tags]);
+
   const resetForm = () => {
     setImgBase64('');
     setImgFile(null);
@@ -183,7 +196,7 @@ const PinBuilder = () => {
     setLink('');
     setAllowComments(true);
     setShowSimilarProducts(true);
-    setTag('');
+    setSearch('');
     setImgDes('');
     setIsImageUploaded(false);
   };
@@ -333,16 +346,54 @@ const PinBuilder = () => {
                     />
                   )}
                 </div>
-                <InputField
-                  label="태그된 주제 (0)개"
-                  placeholder="태그 검색"
-                  disabled={!isImageUploaded}
-                  onChange={(e) => handleInputChange('tag', e.target.value)}
-                  value={tag}
-                />
-                <p className="pin-builder-note">
-                  걱정하지 마세요. 사람들에게 태그는 보여지지 않습니다.
-                </p>
+                <div className="relative">
+                  <InputField
+                    label={`태그된 주제 (${tags.length})개`}
+                    placeholder="태그 검색"
+                    disabled={!isImageUploaded}
+                    className={'mb-0'}
+                    onChange={(e) =>
+                      handleInputChange('search', e.target.value)
+                    }
+                    value={search}
+                    onFocus={() => setIsTagDropdownOpen(true)} // 포커스 상태 업데이트
+                    onBlur={() => setIsTagDropdownOpen(false)}
+                  />
+                  {isTagDropdownOpen && (
+                    <TagDropdown
+                      setSearchText={setSearch}
+                      searchText={search}
+                      setTags={setTags}
+                      tags={tags}
+                      onClose={() => {
+                        setIsTagDropdownOpen(false);
+                      }}
+                    />
+                  )}
+                  <p className="pin-builder-note">
+                    걱정하지 마세요. 사람들에게 태그는 보여지지 않습니다.
+                  </p>
+                  <div className="space-x-2 space-y-1">
+                    {tags.map((tag, index) => (
+                      <div
+                        key={tag}
+                        className={`inline-block rounded-full text-white font-semibold px-2 py-2`}
+                        style={{ backgroundColor: colorGenerator(index) }} // 인라인 스타일로 색상 적용
+                      >
+                        <span>{tag}</span>
+                        <button
+                          className="ml-2"
+                          onClick={() => {
+                            setTags(tags.filter((t) => t !== tag));
+                            console.log(tags);
+                          }}
+                        >
+                          X
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
                 <div className="pin-builder-options">
                   <div className="pin-builder-options-label">추가 옵션</div>
                   <div className="pin-builder-options-icon">
