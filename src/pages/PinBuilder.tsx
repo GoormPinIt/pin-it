@@ -5,7 +5,7 @@ import { HiArrowUpCircle } from 'react-icons/hi2';
 import useUploadImage from '../hooks/useUploadImage';
 import SearchDropdown from '../components/SearchDropdown';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { addPinToFirestore } from '../utils/firestoreUtils';
+import { addPinToBoard } from '../utils/firestoreUtils';
 
 interface PinData {
   pinId: string;
@@ -54,6 +54,7 @@ const PinBuilder = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [title, setTitle] = useState<string>('');
   const [board, setBoard] = useState<string>('');
+  const [selectedBoardId, setSelectedBoardId] = useState<string>('');
   const [link, setLink] = useState<string>('');
   const [allowComments, setAllowComments] = useState<boolean>(true);
   const [showSimilarProducts, setShowSimilarProducts] = useState<boolean>(true);
@@ -142,7 +143,7 @@ const PinBuilder = () => {
         createdAt: new Date(),
       };
 
-      pinData.boards.push(board);
+      pinData.boards.push(selectedBoardId);
 
       const docRef = await addDoc(collection(db, 'pins'), pinData);
       console.log('Document ID:', docRef.id);
@@ -152,6 +153,10 @@ const PinBuilder = () => {
 
       console.log('저장 완료');
       setToastVisible(true); // 토스트 메시지 표시
+
+      if (selectedBoardId) {
+        await addPinToBoard(selectedBoardId, docRef.id);
+      }
 
       resetForm();
     } catch (error) {
@@ -174,6 +179,7 @@ const PinBuilder = () => {
     setUploadedfile('');
     setTitle('');
     setBoard('');
+    setSelectedBoardId('');
     setLink('');
     setAllowComments(true);
     setShowSimilarProducts(true);
@@ -295,6 +301,7 @@ const PinBuilder = () => {
                       setBoard={setBoard}
                       closeDropdown={closeDropdown}
                       userId={userId}
+                      setSelectedBoardId={setSelectedBoardId}
                     />
                   )}
                 </div>
