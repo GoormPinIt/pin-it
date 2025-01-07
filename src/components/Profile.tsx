@@ -745,33 +745,85 @@ const Profile = ({
     const facebookAppId = process.env.REACT_APP_FACEBOOK_APP_ID;
 
     useEffect(() => {
-      const fetchAllUsers = async () => {
-        if (searchTerm === '') {
-          setFilteredUsers(userData.following);
-        } else {
-          const usersQuery = query(
-            collection(db, 'users'),
-            where('name', '>=', searchTerm),
-            where('name', '<=', searchTerm + '\uf8ff'),
-          );
+      const fetchUsers = async () => {
+        try {
+          const currentUserRef = doc(db, 'users', currentUserUid);
+          const currentUserSnapshot = await getDoc(currentUserRef);
 
-          const userSnapshot = await getDocs(usersQuery);
-          const allUsers = userSnapshot.docs.map((doc) => ({
-            id: doc.data().id,
-            name: doc.data().name || '',
-            profileImage: doc.data().profileImage || '',
-          }));
+          if (!currentUserSnapshot.exists()) {
+            console.error('현재 로그인한 유저 데이터를 찾을 수 없습니다.');
+            return;
+          }
 
-          setFilteredUsers(allUsers);
+          const currentUserData = currentUserSnapshot.data();
+          const following = currentUserData.following || [];
+
+          if (searchTerm === '') {
+            const followingData = await Promise.all(
+              following.map(async (userId: string) => {
+                const userRef = doc(db, 'users', userId);
+                const userDoc = await getDoc(userRef);
+                return userDoc.exists()
+                  ? {
+                      id: userDoc.data().id || '',
+                      name: userDoc.data().name || '',
+                      profileImage: userDoc.data().profileImage || '',
+                    }
+                  : null;
+              }),
+            );
+
+            setFilteredUsers(
+              followingData.filter((user): user is User => user !== null),
+            );
+          } else {
+            const nameQuery = query(
+              collection(db, 'users'),
+              where('name', '>=', searchTerm),
+              where('name', '<=', searchTerm + '\uf8ff'),
+            );
+
+            const idQuery = query(
+              collection(db, 'users'),
+              where('id', '>=', searchTerm),
+              where('id', '<=', searchTerm + '\uf8ff'),
+            );
+
+            const [nameSnapshot, idSnapshot] = await Promise.all([
+              getDocs(nameQuery),
+              getDocs(idQuery),
+            ]);
+
+            const nameResults = nameSnapshot.docs.map((doc) => ({
+              id: doc.data().id,
+              name: doc.data().name || '',
+              profileImage: doc.data().profileImage || '',
+            }));
+
+            const idResults = idSnapshot.docs.map((doc) => ({
+              id: doc.data().id,
+              name: doc.data().name || '',
+              profileImage: doc.data().profileImage || '',
+            }));
+
+            const allResults = [...nameResults, ...idResults].filter(
+              (user, index, self) =>
+                index === self.findIndex((u) => u.id === user.id),
+            );
+
+            setFilteredUsers(allResults);
+          }
+        } catch (error) {
+          console.error('유저 데이터를 가져오는 중 오류 발생:', error);
         }
       };
 
-      fetchAllUsers();
-    }, [searchTerm, userData.following]);
+      fetchUsers();
+    }, [currentUserUid, searchTerm]);
 
     const handleSend = (id: string) => {
-      alert(`${id}에게 내 프로필을 보냈습니다.`);
-      // 메시지로 내 프로필 보내는 로직 추가하기
+      alert(`${id}님에게 프로필을 보냈습니다.`);
+      // 메시지로 프로필 보내는 로직 추가하기
     };
 
     const handleCopyLink = () => {
@@ -899,7 +951,7 @@ const Profile = ({
           <input
             id="searchUser"
             type="text"
-            placeholder="이름 또는 이메일 검색"
+            placeholder="이름 또는 아이디 검색"
             className="w-full p-2 pl-10 border-2 border-gray-300 rounded-full mb-4"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
