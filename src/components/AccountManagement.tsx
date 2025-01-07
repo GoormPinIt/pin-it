@@ -9,8 +9,6 @@ import {
   deleteUser,
 } from 'firebase/auth';
 import { RootState } from '../store';
-import { deleteAccount } from '../features/authSlice';
-import { useAppDispatch } from '../store'; // useAppDispatch 훅 임포트
 
 interface AccountManagementProps {
   title: string;
@@ -25,8 +23,6 @@ const AccountManagement: React.FC<AccountManagementProps> = ({ title }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const user = useSelector((state: RootState) => state.auth.userData);
-  const dispatch = useAppDispatch(); // useAppDispatch 사용
-  const { loading, error } = useSelector((state: RootState) => state.auth);
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
