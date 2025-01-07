@@ -10,6 +10,7 @@ interface InputFieldProps {
   value?: string;
   onClick?: () => void; // 추가: onClick 이벤트
   readOnly?: boolean; // 추가: readOnly 속성
+  className?: string;
 }
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -22,9 +23,10 @@ const InputField: React.FC<InputFieldProps> = ({
   value,
   onClick,
   readOnly = false, // 기본값 추가
+  className = 'mb-6',
 }) => {
   return (
-    <div className="mb-6">
+    <div className={`${className}`}>
       <label className="block text-gray-700 text-sm font-medium mb-2">
         {label}
       </label>
