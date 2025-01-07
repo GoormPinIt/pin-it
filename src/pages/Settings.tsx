@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate, NavLink } from 'react-router-dom';
 import EditProfile from '../components/EditProfile';
+import AccountManagement from '../components/AccountManagement';
 
 const Settings = (): JSX.Element => {
   return (
@@ -35,7 +36,7 @@ const Settings = (): JSX.Element => {
         <Route path="edit-profile" element={<EditProfile />} />
         <Route
           path="account-management"
-          element={<div>계정 관리 페이지</div>}
+          element={<AccountManagement title="계정 관리 페이지" />}
         />
         <Route path="*" element={<Navigate to="edit-profile" />} />
       </Routes>
