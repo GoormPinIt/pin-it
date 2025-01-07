@@ -234,11 +234,39 @@ const PinBuilder = () => {
                     </div>
                   </label>
                 ) : (
-                  <img
-                    src={imgBase64}
-                    alt="미리 보기"
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
+                  <div className="relative w-full h-full">
+                    <img
+                      src={imgBase64}
+                      alt="미리 보기"
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    {/* 수정 버튼 */}
+                    <button
+                      className="absolute top-3 right-3 w-10 h-10 bg-gray-200 text-white text-sm px-3 py-1 rounded-full hover:bg-gray-300"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <svg
+                        aria-hidden="true"
+                        aria-label=""
+                        className="Uvi gUZ U9O kVc"
+                        height="18"
+                        role="img"
+                        viewBox="0 0 24 24"
+                        width="18"
+                      >
+                        <path d="M17.45 1.95a3.25 3.25 0 1 1 4.6 4.6l-2.3 2.3-4.6-4.6zM2.5 16.9 13.4 6.02l4.6 4.6L7.08 21.5 1 23z"></path>
+                      </svg>
+                    </button>
+                    {/* 숨겨진 파일 입력 */}
+                    <input
+                      ref={fileInputRef}
+                      id="file-upload"
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleChangeFile}
+                    />
+                  </div>
                 )}
               </div>
             </div>
