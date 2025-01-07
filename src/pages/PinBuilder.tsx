@@ -5,6 +5,7 @@ import { HiArrowUpCircle } from 'react-icons/hi2';
 import useUploadImage from '../hooks/useUploadImage';
 import SearchDropdown from '../components/SearchDropdown';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { addPinToFirestore } from '../utils/firestoreUtils';
 
 interface PinData {
   pinId: string;
@@ -96,16 +97,6 @@ const PinBuilder = () => {
       case 'tag':
         setTag(value);
         break;
-    }
-  };
-
-  const saveToFirestore = async (data: PinData): Promise<void> => {
-    try {
-      const docRef = await addDoc(collection(db, 'pins'), data);
-      console.log('Document written with ID:', docRef.id);
-    } catch (error) {
-      console.error('Error adding document:', error);
-      throw error;
     }
   };
 
@@ -299,10 +290,11 @@ const PinBuilder = () => {
                     onClick={handleBoardClick} // 클릭 시 드롭다운 열기
                     readOnly
                   />
-                  {isDropdownOpen && (
+                  {isDropdownOpen && userId && (
                     <SearchDropdown
                       setBoard={setBoard}
                       closeDropdown={closeDropdown}
+                      userId={userId}
                     />
                   )}
                 </div>

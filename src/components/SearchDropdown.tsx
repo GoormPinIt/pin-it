@@ -1,29 +1,46 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import SaveModalItem from './SaveModalItem';
+import { fetchBoards } from '../utils/boards';
 
 interface SearchDropdownProps {
   setBoard: (value: string) => void; // 보드 값 설정 함수
   closeDropdown: () => void; // 드롭다운 닫기 함수
+  userId: string | '';
+}
+
+interface Board {
+  id: string; // 보드 문서 ID
+  description: string; // 보드 설명
+  isPrivate: boolean; // 보드 공개 여부
+  ownerIds: string[]; // 소유자 ID 배열
+  pins: {
+    pinId: string[]; // 핀 ID 배열
+  };
+  title: string;
+  icon: string;
 }
 
 const SearchDropdown: React.FC<SearchDropdownProps> = ({
   setBoard,
   closeDropdown,
+  userId,
 }) => {
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState(''); // 검색 텍스트 상태
+  const [boards, setBoards] = useState<Board[]>([]); // Board 타입 배열로 상태 지정
 
-  const boards = [
-    { id: 1, icon: 'https://via.placeholder.com/30', name: '2024' },
-    { id: 2, icon: 'https://via.placeholder.com/30', name: '곰돌이 인형' },
-    {
-      id: 3,
-      icon: 'https://via.placeholder.com/30',
-      name: '귀여운 고양이 사진',
-    },
-  ];
+  // 보드 데이터를 로드하는 useEffect
+  useEffect(() => {
+    const loadBoards = async () => {
+      const fetchedBoards = await fetchBoards(userId); // fetchBoards 함수 호출
+      setBoards(fetchedBoards); // 상태 업데이트
+    };
 
+    loadBoards();
+  }, [userId]); // userId가 변경될 때만 실행
+
+  // 검색 필터 적용
   const filteredBoards = boards.filter((board) =>
-    board.name.toLowerCase().includes(searchText.toLowerCase()),
+    board.title.toLowerCase().includes(searchText.toLowerCase()),
   );
 
   return (
@@ -44,9 +61,9 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
             <SaveModalItem
               key={board.id}
               icon={board.icon} // 아이콘 추가
-              title={board.name}
+              title={board.title}
               onClick={() => {
-                setBoard(board.name); // 선택된 보드 설정
+                setBoard(board.title); // 선택된 보드 설정
                 closeDropdown(); // 드롭다운 닫기
               }}
             />
