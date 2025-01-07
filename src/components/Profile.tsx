@@ -142,6 +142,7 @@ const Profile = ({
     createdPins: PinData[];
     savedPins: PinData[];
     createdBoards: string[];
+    description?: string;
   }>({
     id: '',
     name: '',
@@ -151,6 +152,7 @@ const Profile = ({
     createdPins: [],
     savedPins: [],
     createdBoards: [],
+    description: '',
   });
 
   const defaultProfileImage =
@@ -196,6 +198,7 @@ const Profile = ({
           createdPins,
           savedPins,
           createdBoards,
+          description,
         } = userDoc.data();
 
         const allPinIds = [...new Set([...createdPins, ...savedPins])];
@@ -344,6 +347,7 @@ const Profile = ({
           createdPins: validCreatedPins,
           savedPins: validSavedPins,
           createdBoards,
+          description: description || '',
         });
 
         setBoardDataState(() => {
@@ -1070,6 +1074,11 @@ const Profile = ({
           className="w-32 h-32 object-cover rounded-full bg-gray-200 mx-auto"
         />
         <h2 className="text-2xl font-bold mt-2">{userData.name}</h2>
+
+        {userData.description && (
+          <p className="text-gray-600 text-sm">{userData.description}</p>
+        )}
+
         <p className="text-gray-600 text-sm">@{userData.id}</p>
         <div className="flex justify-center">
           <p
