@@ -1,16 +1,20 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import Profile from '../components/Profile';
+import useCurrentUserUid from '../hooks/useCurrentUserUid';
 
 const UserProfile = (): JSX.Element => {
   const { userId } = useParams<{ userId: string }>(); // URL에서 userId 추출
+  const currentUserUid = useCurrentUserUid();
 
-  // 로그인 후 uid 가져오는 로직 추가하기
-  const currentUserUid = '1'; // 임시로 1번 유저
+  if (currentUserUid === null) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Profile
-      uid={userId!}
+      uid={userId!} // 프로필 주인의 UID
+      currentUserUid={currentUserUid} // 로그인한 사용자의 UID
       isCurrentUser={currentUserUid === userId} // 내 프로필인지
     />
   );

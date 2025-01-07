@@ -6,6 +6,7 @@ import { signOut } from 'firebase/auth';
 import { logout } from '../features/authSlice';
 import { auth } from '../firebase';
 import { RootState } from '../store';
+import useCurrentUserUid from '../hooks/useCurrentUserUid';
 import SearchModal from './SearchModal';
 
 const Header: React.FC = () => {
@@ -14,6 +15,7 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
+  const currentUserUid = useCurrentUserUid();
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   const onSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -83,7 +85,10 @@ const Header: React.FC = () => {
       <div className="flex items-center">
         {isLoggedIn ? (
           <>
-            <button onClick={() => navigate('/mypage')} className="mx-2">
+            <button
+              onClick={() => navigate(`/profile/${currentUserUid}`)}
+              className="mx-2"
+            >
               <Face className="text-gray-700" />
             </button>
             <div className="relative">
@@ -94,7 +99,7 @@ const Header: React.FC = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
                   <button
                     onClick={() => {
-                      navigate('/mypage');
+                      navigate(`/profile/${currentUserUid}`);
                       setIsActive(false);
                     }}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
