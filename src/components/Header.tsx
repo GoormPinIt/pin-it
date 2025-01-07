@@ -7,7 +7,7 @@ import { logout } from '../features/authSlice';
 import { auth } from '../firebase';
 import { RootState } from '../store';
 import useCurrentUserUid from '../hooks/useCurrentUserUid';
-import SearchModal from './SearchModal';
+// import SearchModal from './SearchModal';
 
 const Header: React.FC = () => {
   const [input, setInput] = useState<string>('');
@@ -16,7 +16,7 @@ const Header: React.FC = () => {
   const dispatch = useDispatch();
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
   const currentUserUid = useCurrentUserUid();
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  // const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   const onSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,44 +42,45 @@ const Header: React.FC = () => {
     navigate('/login');
   };
 
-  const modalRef = useRef<HTMLDivElement>(null);
+  // const modalRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        modalRef.current &&
-        !modalRef.current.contains(event.target as Node)
-      ) {
-        setIsSearchModalOpen(false);
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event: MouseEvent) => {
+  //     if (
+  //       modalRef.current &&
+  //       !modalRef.current.contains(event.target as Node)
+  //     ) {
+  //       setIsSearchModalOpen(false);
+  //     }
+  //   };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  //   document.addEventListener('mousedown', handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener('mousedown', handleClickOutside);
+  //   };
+  // }, []);
 
   return (
     <div className="fixed top-0 left-14 right-0 flex items-center justify-between p-4 bg-white z-50">
       <div className="flex-1 mx-4">
-        <div className="relative" ref={modalRef}>
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        {/* <div className="relative" ref={modalRef}> */}
+        <div className="relative">
+          {/* <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" /> */}
           <form onSubmit={onSearchSubmit}>
             <input
               type="text"
               className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 bg-btn_h_gray"
               placeholder="검색"
-              onClick={() => setIsSearchModalOpen(true)}
+              // onClick={() => setIsSearchModalOpen(true)}
               onChange={(e) => setInput(e.target.value)}
               value={input}
             />
             <button type="submit" className="hidden"></button>
           </form>
-          <SearchModal
+          {/* <SearchModal
             isOpen={isSearchModalOpen}
             onClose={() => setIsSearchModalOpen(false)}
-          />
+          /> */}
         </div>
       </div>
       <div className="flex items-center">
