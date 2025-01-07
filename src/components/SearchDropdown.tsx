@@ -6,6 +6,7 @@ interface SearchDropdownProps {
   setBoard: (value: string) => void;
   closeDropdown: () => void;
   userId: string | '';
+  setSelectedBoardId: (value: string) => void;
 }
 
 interface Board {
@@ -24,6 +25,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
   setBoard,
   closeDropdown,
   userId,
+  setSelectedBoardId,
 }) => {
   const [searchText, setSearchText] = useState('');
   const [boards, setBoards] = useState<Board[]>([]);
@@ -64,6 +66,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
               onClick={() => {
                 setBoard(board.title); // 선택된 보드 설정
                 closeDropdown(); // 드롭다운 닫기
+                setSelectedBoardId(board.id);
               }}
             />
           ))
