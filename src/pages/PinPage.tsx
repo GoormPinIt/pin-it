@@ -1,6 +1,11 @@
 import { FaRegHeart } from 'react-icons/fa';
 import { RiShare2Line } from 'react-icons/ri';
 import { HiDotsHorizontal } from 'react-icons/hi';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { db } from '../firebase';
+import { v4 as uuidv4 } from 'uuid';
+import { addCommentToFirestore } from '../utils/firestoreUtils';
+
 // import { FaSmile } from 'react-icons/fa';
 // import { LuSticker } from 'react-icons/lu';
 // import { AiOutlinePicture } from 'react-icons/ai';
@@ -13,11 +18,11 @@ import {
   doc,
   getDoc,
   getDocs,
+  addDoc,
   where,
   query,
   collection,
 } from 'firebase/firestore';
-import { db } from '../firebase'; // Firebase 초기화된 db import
 
 interface PinData {
   pinId: string;
@@ -43,12 +48,14 @@ interface Comment {
 
 const PinPage: React.FC = () => {
   const { pinId } = useParams<{ pinId: string }>(); // URL에서 pinId 추출
+  const [userId, setUserId] = useState<string | null>(null);
   const [pinData, setPinData] = useState<PinData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리
   const [isCommentOpen, setIsCommentOpen] = useState(false); // 모달 상태 관리
   const modalRef = useRef<HTMLDivElement>(null); // 모달 영역 감지용 ref
   const [isLoading, setIsLoading] = useState(true);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [comment, setComment] = useState('');
 
   const handleModalOpen = () => {
     setIsModalOpen(true); // 모달 열기
@@ -60,10 +67,8 @@ const PinPage: React.FC = () => {
 
   const handleReplyClick = (commentId: string) => {
     console.log(`답변 버튼 클릭됨! 댓글 ID: ${commentId}`);
-    // 답변 클릭 시 동작 추가 가능
   };
 
-  // 모달 외부 클릭 감지
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -138,13 +143,48 @@ const PinPage: React.FC = () => {
     fetchCommentsData();
   }, [pinId]);
 
+  const handleAddComment = () => {
+    if (!comment.trim()) return; // 빈 문자열은 무시
+
+    const newComment = {
+      commentId: uuidv4(),
+      content: comment,
+      nickname: 'test7',
+      parentCommentId: '',
+      pinId: pinId || '',
+      userId: userId || '',
+    };
+
+    addCommentToFirestore(newComment)
+      .then(() => {
+        setComments([...comments, newComment]); // 로컬 상태 갱신
+        setComment(''); // 입력 필드 초기화
+      })
+      .catch((error) => {
+        console.error('Error adding comment to Firestore:', error);
+      });
+  };
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        setUserId(null);
+      }
+    });
+
+    return () => unsubscribe(); // 언마운트 시 구독 해제
+  }, []);
+
   return (
     <div className="flex h-screen justify-center">
       {/* 메인 콘텐츠 */}
       <main className="flex w-[80%] border border-gray-200 rounded-3xl overflow-hidden mt-[5px] h-[550px] max-w-[815px] bg-white">
         {/* 좌측 이미지 섹션 */}
         <section className="w-1/2 bg-gray-300 flex items-center justify-center">
-          <figure className="rounded-lg overflow-hidden w-full h-full">
+          <figure className="overflow-hidden w-full h-full">
             <img
               src={pinData?.imageUrl}
               alt="이미지 설명"
@@ -154,18 +194,18 @@ const PinPage: React.FC = () => {
         </section>
 
         {/* 우측 콘텐츠 섹션 */}
-        <section className="w-1/2 p-6 h-full flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
+        <section className="w-1/2 pl-3 h-full flex flex-col justify-between">
+          <div className="overflow-y-auto pb-10">
+            <div className="flex items-center justify-between mb-4 pt-5 pr-5">
               <div className="flex items-center space-x-4 text-gray-600">
                 <FaRegHeart />
-                <span className="text-black">4</span>
+                <span className="text-black"></span>
                 <RiShare2Line />
                 <HiDotsHorizontal />
               </div>
               <div className="flex items-center space-x-2">
                 <div
-                  className="flex items-center bg-white hover:bg-[#e2e2e2] px-4 py-2 rounded-full"
+                  className="flex items-center bg-white hover:bg-[#e2e2e2] px-4 py-2 rounded-full "
                   onClick={handleModalOpen}
                 >
                   <button className="text-black text-sm font-semibold">
@@ -212,19 +252,19 @@ const PinPage: React.FC = () => {
 
             {/* 글 */}
             <p className="text-black mb-4">{pinData?.description}</p>
-            <p className="text-blue-500 mb-4">
+            {/* <p className="text-blue-500 mb-4">
               <a href="#tag" className="hover:underline">
                 #miffy
               </a>
-            </p>
+            </p> */}
 
-            <div className="flex flex-row justify-between items-center">
-              <div
-                className="inline-block font-semibold cursor-pointer"
-                onClick={() => {
-                  setIsCommentOpen(!isCommentOpen);
-                }}
-              >
+            <div
+              className="flex flex-row justify-between items-center pr-5 cursor-pointer"
+              onClick={() => {
+                setIsCommentOpen(!isCommentOpen);
+              }}
+            >
+              <div className="inline-block font-semibold ">
                 <span className="inline-block">댓글</span>
                 <span className="inline-block ml-1">{comments.length}</span>
                 <span className="inline-block">개</span>
@@ -263,23 +303,44 @@ const PinPage: React.FC = () => {
             <p className="text-black font-semibold mb-4">어떠셨나요?</p>
 
             {/* 댓글 입력란 */}
-            <footer className="relative">
+            <footer className="sticky bottom-0 bg-white pt-2">
               <form>
                 <label htmlFor="comment" className="sr-only">
                   댓글 입력
                 </label>
-                <input
-                  id="comment"
-                  type="text"
-                  placeholder="댓글을 추가..."
-                  className="w-full border px-[15px] py-[13px] rounded-full bg-[#e9e9e9] focus:outline-none focus:ring-2 focus:ring-gray-400"
-                />
+                <div className="relative w-full mb-4 pr-2">
+                  <input
+                    id="comment"
+                    type="text"
+                    placeholder="댓글을 추가..."
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className="w-full border px-[15px] py-[13px] pr-[50px] rounded-full bg-[#e9e9e9] focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddComment}
+                    disabled={!comment.trim()}
+                    className={`absolute top-1/2 right-[15px] -translate-y-1/2 p-2 rounded-full font-semibold focus:outline-none focus:ring-2 ${
+                      comment.trim()
+                        ? 'bg-[#e60023] text-white hover:bg-red-700 focus:ring-red-400'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label=""
+                      height="16"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      fill="currentColor"
+                    >
+                      <path d="m.46 2.43-.03.03c-.4.42-.58 1.06-.28 1.68L3 10.5 16 12 3 13.5.15 19.86c-.3.62-.13 1.26.27 1.67l.05.05c.4.38 1 .56 1.62.3l20.99-8.5q.28-.12.47-.3l.04-.04c.68-.71.51-2-.51-2.42L2.09 2.12Q1.79 2 1.49 2q-.61.01-1.03.43"></path>
+                    </svg>
+                  </button>
+                </div>
               </form>
-              {/* <div className="flex flex-row space-x-2 absolute top-1/2 right-[25px] -translate-y-1/2 ">
-                <FaSmile />
-                <LuSticker />
-                <AiOutlinePicture />
-              </div> */}
             </footer>
           </div>
         </section>

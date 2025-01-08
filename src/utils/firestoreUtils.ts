@@ -13,6 +13,11 @@ export const addPinToFirestore = async (pinData: any) => {
   return docRef.id;
 };
 
+export const addCommentToFirestore = (newComment: any) => {
+  const commentsRef = collection(db, 'comment'); // 'comment' 컬렉션 참조
+  return addDoc(commentsRef, newComment); // Firestore에 새 댓글 추가
+};
+
 export const addPinToBoard = async (
   boardId: string,
   pinId: string,
