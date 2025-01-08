@@ -1,5 +1,6 @@
 import PinterestLayout from '../components/PinterestLayout';
 import React, { useState } from 'react';
+import StoryList from '../components/StoryList';
 
 const Home = (): JSX.Element => {
   interface Board {
@@ -29,6 +30,10 @@ const Home = (): JSX.Element => {
 
   return (
     <div className="flex flex-col">
+      <div className="w-11/12 h-30 p-4 overflow-x-auto">
+        <StoryList />
+      </div>
+
       <div className="h-20 text-center flex items-center justify-start w-full gap-10 pl-3">
         {Board.map((item: Board) => (
           <div className="relative" key={item.key}>

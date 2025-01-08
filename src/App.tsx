@@ -17,6 +17,8 @@ import PinPage from './pages/PinPage';
 import Settings from './pages/Settings';
 import LandingPage from './pages/LandingPage';
 import AllPinsPage from './pages/AllPinsPage';
+import StoryPage from './pages/StoryPage';
+import CreateStory from './pages/CreateStory';
 
 const App = (): JSX.Element => {
   return (
@@ -65,6 +67,8 @@ const AppRoutes = (): JSX.Element => {
               <Route path="/pin-creation-tool" element={<PinBuilder />} />
               <Route path="/pin/:pinId" element={<PinPage />} />
               <Route path="/settings/*" element={<Settings />} />
+              <Route path="/story/:userId/:storyId" element={<StoryPage />} />
+              <Route path="/create-story" element={<CreateStory />} />
             </Routes>
           </div>
         </div>
