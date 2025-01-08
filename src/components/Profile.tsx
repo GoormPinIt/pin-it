@@ -13,6 +13,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  setDoc,
   DocumentData,
   updateDoc,
   arrayRemove,
@@ -141,6 +142,7 @@ const Profile = ({
     createdPins: PinData[];
     savedPins: PinData[];
     createdBoards: string[];
+    description?: string;
   }>({
     id: '',
     name: '',
@@ -150,6 +152,7 @@ const Profile = ({
     createdPins: [],
     savedPins: [],
     createdBoards: [],
+    description: '',
   });
 
   const defaultProfileImage =
@@ -195,6 +198,7 @@ const Profile = ({
           createdPins,
           savedPins,
           createdBoards,
+          description,
         } = userDoc.data();
 
         const allPinIds = [...new Set([...createdPins, ...savedPins])];
@@ -223,36 +227,43 @@ const Profile = ({
 
         const boardQuery = query(
           collection(db, 'boards'),
-          where('ownerId', '==', uid),
+          where('ownerId', 'array-contains', uid),
         );
         const boardSnapshot = await getDocs(boardQuery);
 
-        const boardsData: BoardData[] = await Promise.all(
-          boardSnapshot.docs.map(async (boardDoc) => {
-            const board = boardDoc.data();
-            const pinsData = await Promise.all(
-              (board.pins || []).map(async (pinId: string) => {
-                const pinDocRef = doc(db, 'pins', pinId);
-                const pinDoc = await getDoc(pinDocRef);
+        const boardsData: BoardData[] = (
+          await Promise.all(
+            boardSnapshot.docs.map(async (boardDoc) => {
+              const board = boardDoc.data();
 
-                if (pinDoc.exists()) {
-                  const pinData = pinDoc.data() as { imageUrl: string };
-                  return pinData.imageUrl;
-                } else {
-                  return null;
-                }
-              }),
-            );
+              if (board.isPrivate && !board.ownerId.includes(currentUserUid)) {
+                return null;
+              }
 
-            return {
-              id: boardDoc.id,
-              title: board.title || '제목 없음',
-              pinCount: (board.pins || []).length,
-              updatedTime: board.updatedTime?.toDate(),
-              images: pinsData.filter((url): url is string => url !== null),
-            };
-          }),
-        );
+              const pinsData = await Promise.all(
+                (board.pins || []).map(async (pinId: string) => {
+                  const pinDocRef = doc(db, 'pins', pinId);
+                  const pinDoc = await getDoc(pinDocRef);
+
+                  if (pinDoc.exists()) {
+                    const pinData = pinDoc.data() as { imageUrl: string };
+                    return pinData.imageUrl;
+                  } else {
+                    return null;
+                  }
+                }),
+              );
+
+              return {
+                id: boardDoc.id,
+                title: board.title || '제목 없음',
+                pinCount: (board.pins || []).length,
+                updatedTime: board.updatedTime?.toDate(),
+                images: pinsData.filter((url): url is string => url !== null),
+              };
+            }),
+          )
+        ).filter((board): board is BoardData => board !== null);
 
         const followerData = await Promise.all(
           followers.map(async (id: string) => {
@@ -336,6 +347,7 @@ const Profile = ({
           createdPins: validCreatedPins,
           savedPins: validSavedPins,
           createdBoards,
+          description: description || '',
         });
 
         setBoardDataState(() => {
@@ -463,6 +475,69 @@ const Profile = ({
       );
     };
 
+    const createBoard = async (
+      boardName: string,
+      isPrivate: boolean,
+      participants: string[],
+    ) => {
+      try {
+        const boardRef = doc(collection(db, 'boards'));
+        const newBoardId = boardRef.id;
+
+        const allParticipants = await Promise.all(
+          participants.map(async (participantId) => {
+            const userQuery = query(
+              collection(db, 'users'),
+              where('id', '==', participantId),
+            );
+            const userSnapshot = await getDocs(userQuery);
+
+            if (!userSnapshot.empty) {
+              const userDoc = userSnapshot.docs[0];
+              return userDoc.id;
+            } else {
+              console.error(
+                `ID ${participantId}에 해당하는 문서를 찾을 수 없습니다.`,
+              );
+              return null;
+            }
+          }),
+        );
+
+        const validUids = allParticipants.filter(
+          (uid): uid is string => uid !== null,
+        );
+
+        await setDoc(boardRef, {
+          title: boardName,
+          ownerId: [currentUserUid, ...validUids],
+          pins: [],
+          description: '',
+          updatedTime: new Date(),
+          isPrivate,
+        });
+
+        // 각 참여자의 createdBoards 필드에 보드 ID 추가
+        await Promise.all(
+          [currentUserUid, ...validUids].map(async (participantUid) => {
+            const userRef = doc(db, 'users', participantUid);
+            await updateDoc(userRef, {
+              createdBoards: arrayUnion(newBoardId),
+            });
+            console.log(
+              `createdBoards 업데이트됨: ${participantUid}, 보드 ID: ${newBoardId}`,
+            );
+          }),
+        );
+
+        alert('보드가 생성되었습니다.');
+        setIsBoardModalOpen(false);
+      } catch (error) {
+        console.error('보드 생성 중 오류:', error);
+        alert('보드 생성에 실패했습니다.');
+      }
+    };
+
     return (
       <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-20">
         <div className="bg-white p-6 rounded-lg shadow-lg w-96">
@@ -556,10 +631,13 @@ const Profile = ({
             </button>
             <button
               onClick={() => {
-                alert(
-                  `보드가 생성되었습니다. 참여자: ${selectedUsers.join(', ')}`,
-                );
-                setIsBoardModalOpen(false);
+                const boardName = (
+                  document.getElementById('boardName') as HTMLInputElement
+                )?.value;
+                const isPrivate = (
+                  document.getElementById('privateBoard') as HTMLInputElement
+                )?.checked;
+                createBoard(boardName, isPrivate, selectedUsers);
               }}
               className="px-4 py-2 bg-btn_red text-white rounded-full hover:bg-btn_h_red"
             >
@@ -745,33 +823,85 @@ const Profile = ({
     const facebookAppId = process.env.REACT_APP_FACEBOOK_APP_ID;
 
     useEffect(() => {
-      const fetchAllUsers = async () => {
-        if (searchTerm === '') {
-          setFilteredUsers(userData.following);
-        } else {
-          const usersQuery = query(
-            collection(db, 'users'),
-            where('name', '>=', searchTerm),
-            where('name', '<=', searchTerm + '\uf8ff'),
-          );
+      const fetchUsers = async () => {
+        try {
+          const currentUserRef = doc(db, 'users', currentUserUid);
+          const currentUserSnapshot = await getDoc(currentUserRef);
 
-          const userSnapshot = await getDocs(usersQuery);
-          const allUsers = userSnapshot.docs.map((doc) => ({
-            id: doc.data().id,
-            name: doc.data().name || '',
-            profileImage: doc.data().profileImage || '',
-          }));
+          if (!currentUserSnapshot.exists()) {
+            console.error('현재 로그인한 유저 데이터를 찾을 수 없습니다.');
+            return;
+          }
 
-          setFilteredUsers(allUsers);
+          const currentUserData = currentUserSnapshot.data();
+          const following = currentUserData.following || [];
+
+          if (searchTerm === '') {
+            const followingData = await Promise.all(
+              following.map(async (userId: string) => {
+                const userRef = doc(db, 'users', userId);
+                const userDoc = await getDoc(userRef);
+                return userDoc.exists()
+                  ? {
+                      id: userDoc.data().id || '',
+                      name: userDoc.data().name || '',
+                      profileImage: userDoc.data().profileImage || '',
+                    }
+                  : null;
+              }),
+            );
+
+            setFilteredUsers(
+              followingData.filter((user): user is User => user !== null),
+            );
+          } else {
+            const nameQuery = query(
+              collection(db, 'users'),
+              where('name', '>=', searchTerm),
+              where('name', '<=', searchTerm + '\uf8ff'),
+            );
+
+            const idQuery = query(
+              collection(db, 'users'),
+              where('id', '>=', searchTerm),
+              where('id', '<=', searchTerm + '\uf8ff'),
+            );
+
+            const [nameSnapshot, idSnapshot] = await Promise.all([
+              getDocs(nameQuery),
+              getDocs(idQuery),
+            ]);
+
+            const nameResults = nameSnapshot.docs.map((doc) => ({
+              id: doc.data().id,
+              name: doc.data().name || '',
+              profileImage: doc.data().profileImage || '',
+            }));
+
+            const idResults = idSnapshot.docs.map((doc) => ({
+              id: doc.data().id,
+              name: doc.data().name || '',
+              profileImage: doc.data().profileImage || '',
+            }));
+
+            const allResults = [...nameResults, ...idResults].filter(
+              (user, index, self) =>
+                index === self.findIndex((u) => u.id === user.id),
+            );
+
+            setFilteredUsers(allResults);
+          }
+        } catch (error) {
+          console.error('유저 데이터를 가져오는 중 오류 발생:', error);
         }
       };
 
-      fetchAllUsers();
-    }, [searchTerm, userData.following]);
+      fetchUsers();
+    }, [currentUserUid, searchTerm]);
 
     const handleSend = (id: string) => {
-      alert(`${id}에게 내 프로필을 보냈습니다.`);
-      // 메시지로 내 프로필 보내는 로직 추가하기
+      alert(`${id}님에게 프로필을 보냈습니다.`);
+      // 메시지로 프로필 보내는 로직 추가하기
     };
 
     const handleCopyLink = () => {
@@ -899,7 +1029,7 @@ const Profile = ({
           <input
             id="searchUser"
             type="text"
-            placeholder="이름 또는 이메일 검색"
+            placeholder="이름 또는 아이디 검색"
             className="w-full p-2 pl-10 border-2 border-gray-300 rounded-full mb-4"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -944,6 +1074,11 @@ const Profile = ({
           className="w-32 h-32 object-cover rounded-full bg-gray-200 mx-auto"
         />
         <h2 className="text-2xl font-bold mt-2">{userData.name}</h2>
+
+        {userData.description && (
+          <p className="text-gray-600 text-sm">{userData.description}</p>
+        )}
+
         <p className="text-gray-600 text-sm">@{userData.id}</p>
         <div className="flex justify-center">
           <p
