@@ -67,7 +67,7 @@ const AppRoutes = (): JSX.Element => {
               <Route path="/pin-creation-tool" element={<PinBuilder />} />
               <Route path="/pin/:pinId" element={<PinPage />} />
               <Route path="/settings/*" element={<Settings />} />
-              <Route path="/story/:userId/:storyId" element={<StoryPage />} />
+              <Route path="/story/:userUid/:storyId" element={<StoryPage />} />
               <Route path="/create-story" element={<CreateStory />} />
             </Routes>
           </div>
