@@ -15,7 +15,7 @@ import { HiSquare2Stack } from 'react-icons/hi2';
 import EditBoardModal from '../components/EditBoardModal';
 import MergeModal from '../components/MergeModal';
 import useCurrentUserUid from '../hooks/useCurrentUserUid';
-
+import InviteModal from '../components/InviteModal';
 type PinData = {
   id?: string;
   imageUrl: string;
@@ -43,6 +43,7 @@ const BoardDetails = (): JSX.Element => {
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showMergeModal, setShowMergeModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const currentUserUid = useCurrentUserUid();
   const fetchBoardData = async (boardId: string): Promise<BoardData> => {
     const boardRef = doc(db, 'boards', boardId);
@@ -228,10 +229,19 @@ const BoardDetails = (): JSX.Element => {
       </div>
 
       <div className="flex flex-col items-start space-y-4 mb-6">
-        <button className="p-2 bg-gray-100 rounded-full w-6 h-6 flex items-center justify-center">
+        <button
+          onClick={() => setShowInviteModal(true)}
+          className="p-2 bg-gray-100 rounded-full w-6 h-6 flex items-center justify-center"
+        >
           <FaUserPlus size={14} />
         </button>
-
+        {showInviteModal && (
+          <InviteModal
+            boardId={boardId ?? ''}
+            currentUserUid={currentUserUid}
+            onClose={() => setShowInviteModal(false)}
+          />
+        )}
         <div className="flex space-x-1">
           <div className="flex flex-col items-center">
             <button className="p-1 bg-gray-100 rounded-xl w-9 h-9 flex items-center justify-center">
