@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { formatDistanceToNow } from 'date-fns';
@@ -27,6 +27,7 @@ const formatRelativeTime = (timestamp: any): string => {
 };
 
 const StoryPage = (): JSX.Element => {
+  const navigate = useNavigate();
   const { userUid } = useParams<{ userUid: string }>();
   const [stories, setStories] = useState<Story[]>([]);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
@@ -104,7 +105,29 @@ const StoryPage = (): JSX.Element => {
   return (
     <div className="flex flex-col items-center w-1/2 mx-auto">
       <div className="flex items-center justify-between w-full">
-        <div className="flex items-center gap-4 mb-4">
+        <div
+          className="flex items-center gap-4 mb-4 cursor-pointer"
+          onClick={async () => {
+            try {
+              const userQuery = query(
+                collection(db, 'users'),
+                where('id', '==', user.id),
+              );
+              const userSnapshot = await getDocs(userQuery);
+
+              if (!userSnapshot.empty) {
+                const userDoc = userSnapshot.docs[0];
+                const userUid = userDoc.id;
+
+                navigate(`/profile/${userUid}`);
+              } else {
+                console.error('해당 ID를 가진 사용자를 찾을 수 없습니다.');
+              }
+            } catch (error) {
+              console.error('유저 UID를 가져오는 중 오류 발생:', error);
+            }
+          }}
+        >
           <img
             src={user.profileImage}
             alt={`${user.id}의 프로필`}
