@@ -8,6 +8,8 @@ import {
   where,
   doc,
   getDoc,
+  deleteDoc,
+  Timestamp,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import useCurrentUserUid from '../hooks/useCurrentUserUid';
@@ -38,6 +40,30 @@ const StoryList = (): JSX.Element => {
   const navigate = useNavigate();
   const currentUserUid = useCurrentUserUid();
 
+  const deleteOldStories = async () => {
+    try {
+      const now = new Date();
+      const twentyFourHoursAgo = Timestamp.fromDate(
+        new Date(now.getTime() - 24 * 60 * 60 * 1000),
+      );
+
+      const oldStoriesQuery = query(
+        collection(db, 'stories'),
+        where('createdAt', '<=', twentyFourHoursAgo),
+      );
+
+      const querySnapshot = await getDocs(oldStoriesQuery);
+
+      const deletePromises = querySnapshot.docs.map((doc) =>
+        deleteDoc(doc.ref),
+      );
+
+      await Promise.all(deletePromises);
+    } catch (error) {
+      console.error('24시간이 지난 스토리를 삭제하는 중 오류 발생:', error);
+    }
+  };
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!currentUserUid) {
@@ -67,6 +93,8 @@ const StoryList = (): JSX.Element => {
 
   useEffect(() => {
     const fetchStoryList = async () => {
+      await deleteOldStories();
+
       if (!currentUserUid) return;
 
       try {
