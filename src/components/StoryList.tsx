@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, getDocs, orderBy, where } from 'firebase/firestore';
-import { doc, getDoc } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  getDocs,
+  orderBy,
+  where,
+  doc,
+  getDoc,
+} from 'firebase/firestore';
 import { db } from '../firebase';
 import useCurrentUserUid from '../hooks/useCurrentUserUid';
 import { FaPlusCircle } from 'react-icons/fa';
@@ -60,14 +67,35 @@ const StoryList = (): JSX.Element => {
 
   useEffect(() => {
     const fetchStoryList = async () => {
+      if (!currentUserUid) return;
+
       try {
+        const currentUserDocRef = doc(db, 'users', currentUserUid);
+        const currentUserDoc = await getDoc(currentUserDocRef);
+
+        if (!currentUserDoc.exists()) {
+          console.error('현재 사용자 데이터를 찾을 수 없습니다.');
+          return;
+        }
+
+        const followingList: string[] = currentUserDoc.data().following || [];
+
+        if (followingList.length === 0) {
+          console.log('팔로잉하는 유저가 없습니다.');
+          setStoryList([]);
+          return;
+        }
+
         const storiesQuery = query(
           collection(db, 'stories'),
+          where('userUid', 'in', followingList),
           orderBy('createdAt', 'asc'),
         );
         const querySnapshot = await getDocs(storiesQuery);
 
-        const fetchedStories = await Promise.all(
+        const userStoryMap = new Map<string, Story>();
+
+        await Promise.all(
           querySnapshot.docs.map(async (storyDoc) => {
             const storyData = storyDoc.data();
             const userDocRef = doc(db, 'users', storyData.userUid);
@@ -78,28 +106,22 @@ const StoryList = (): JSX.Element => {
                 id: string;
                 profileImage?: string;
               };
-              return {
+              const story: Story = {
                 storyId: storyDoc.id,
                 userUid: storyData.userUid,
                 userId: userData.id || 'unknown',
                 profileImage: userData.profileImage || defaultProfileImage,
                 createdAt: storyData.createdAt || '',
               };
-            } else {
-              console.warn(
-                `사용자 데이터를 찾을 수 없습니다: ${storyData.userUid}`,
-              );
-              return null;
+
+              if (!userStoryMap.has(storyData.userUid)) {
+                userStoryMap.set(storyData.userUid, story);
+              }
             }
           }),
         );
 
-        setStoryList(
-          fetchedStories.filter(
-            (story): story is Story =>
-              story !== null && story.userUid !== currentUserUid,
-          ),
-        );
+        setStoryList(Array.from(userStoryMap.values()));
       } catch (error) {
         console.error('스토리 데이터를 가져오는 중 오류 발생:', error);
       }
