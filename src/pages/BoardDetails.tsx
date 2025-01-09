@@ -14,6 +14,7 @@ import { GiDiamonds } from 'react-icons/gi';
 import { HiSquare2Stack } from 'react-icons/hi2';
 import EditBoardModal from '../components/EditBoardModal';
 import MergeModal from '../components/MergeModal';
+import useCurrentUserUid from '../hooks/useCurrentUserUid';
 
 type PinData = {
   id?: string;
@@ -42,7 +43,7 @@ const BoardDetails = (): JSX.Element => {
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showMergeModal, setShowMergeModal] = useState(false);
-
+  const currentUserUid = useCurrentUserUid();
   const fetchBoardData = async (boardId: string): Promise<BoardData> => {
     const boardRef = doc(db, 'boards', boardId);
     const boardSnap = await getDoc(boardRef);
@@ -58,6 +59,55 @@ const BoardDetails = (): JSX.Element => {
       } as BoardData;
     } else {
       throw new Error('보드 데이터를 찾을 수 없습니다.');
+    }
+  };
+
+  useEffect(() => {
+    const loadBoardData = async () => {
+      if (boardId) {
+        try {
+          const boardData = await fetchBoardData(boardId);
+          setBoard(boardData);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    };
+    loadBoardData();
+  }, [boardId]);
+
+  const handleMerge = async (targetBoardId: string) => {
+    if (!board || !boardId || !currentUserUid) return;
+
+    try {
+      const targetBoardRef = doc(db, 'boards', targetBoardId);
+      const currentBoardRef = doc(db, 'boards', boardId);
+
+      const targetBoardSnap = await getDoc(targetBoardRef);
+      const targetPins = targetBoardSnap.exists()
+        ? targetBoardSnap.data().pins || []
+        : [];
+
+      const newPins = [
+        ...targetPins,
+        ...board.pins.map((pin) => (typeof pin === 'object' ? pin.id : pin)),
+      ];
+      await updateDoc(targetBoardRef, {
+        pins: newPins,
+      });
+      const userRef = doc(db, 'users', currentUserUid);
+      await updateDoc(userRef, {
+        createdBoards: arrayRemove(boardId),
+      });
+
+      await deleteDoc(currentBoardRef);
+
+      alert('보드가 성공적으로 병합되었습니다.');
+      navigate('/');
+      setShowMergeModal(false);
+    } catch (error) {
+      console.error('보드 병합 실패:', error);
+      alert('보드 병합 중 문제가 발생했습니다.');
     }
   };
 
@@ -115,43 +165,6 @@ const BoardDetails = (): JSX.Element => {
     } catch (error) {
       console.error('보드 업데이트 실패:', error);
       alert('보드를 업데이트하는 중 문제가 발생했습니다.');
-    }
-  };
-
-  const handleMerge = async (targetBoardId: string) => {
-    if (!board || !boardId) return;
-
-    try {
-      const targetBoardRef = doc(db, 'boards', targetBoardId);
-      const currentBoardRef = doc(db, 'boards', boardId);
-
-      const targetBoardSnap = await getDoc(targetBoardRef);
-      const targetPins = targetBoardSnap.exists()
-        ? targetBoardSnap.data().pins || []
-        : [];
-
-      const newPins = [
-        ...targetPins,
-        ...board.pins.map((pin) => (typeof pin === 'object' ? pin.id : pin)),
-      ];
-      await updateDoc(targetBoardRef, {
-        pins: newPins,
-      });
-      const userRef = doc(db, 'users', board.ownerId);
-      await updateDoc(userRef, {
-        boardIds: arrayRemove(boardId),
-      });
-      console.log('boardId:', boardId);
-      console.log('targetBoardId:', targetBoardId);
-      console.log('board:', board);
-      await deleteDoc(currentBoardRef);
-
-      alert('보드가 성공적으로 병합되었습니다.');
-      navigate('/profile/:userId');
-      setShowMergeModal(false);
-    } catch (error) {
-      console.error('보드 병합 실패:', error);
-      alert('보드 병합 중 문제가 발생했습니다.');
     }
   };
 
