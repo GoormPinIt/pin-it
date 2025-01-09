@@ -36,7 +36,9 @@ const ProfileComment: React.FC<ProfileCommentProps> = ({
       {/* 이름과 댓글 */}
       <div className="flex flex-row">
         <div className="font-semibold text-gray-800">{userName}</div>
-        <p className="text-gray-600 text-base">{comment}</p>
+        <p className="text-gray-600 text-base inline-block max-w-full">
+          {comment}
+        </p>
       </div>
 
       {/* 답변 버튼 */}

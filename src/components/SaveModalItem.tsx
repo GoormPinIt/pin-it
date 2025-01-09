@@ -19,9 +19,14 @@ const SaveModalItem: React.FC<SaveModalItemProps> = ({
       onClick={onClick}
     >
       <div className="flex items-center">
-        {icon && (
+        {icon ? (
           <img src={icon} alt={title} className="w-12 h-12 rounded-lg mr-2" />
+        ) : (
+          <div className="w-12 h-12 rounded-lg mr-2 bg-gray-100 flex items-center justify-center">
+            {/* 기본 아이콘 텍스트나 심볼 추가 가능 */}
+          </div>
         )}
+
         <span className="font-semibold">{title}</span>
       </div>
       {buttonLabel && (

@@ -47,19 +47,16 @@ const MergeModal = ({
           boardSnap.docs
             .filter((doc) => doc.id !== currentBoardId)
             .map(async (doc) => {
-              const boardData = doc.data() as BoardData; // 보드 데이터
-              const firstPinId = boardData?.pins?.[0] || null; // 첫 번째 핀 ID
+              const boardData = doc.data() as BoardData;
+              const firstPinId = boardData?.pins?.[0] || null;
               let firstPinImage = null;
-
               if (firstPinId) {
                 try {
-                  const pinDocRef = getDocRef(db, 'pins', firstPinId); // 'doc'을 'getDocRef'로 명확히 변경
+                  const pinDocRef = getDocRef(db, 'pins', firstPinId);
                   const pinDoc = await getDoc(pinDocRef);
                   if (pinDoc.exists()) {
-                    const pinData = pinDoc.data() as PinData; // 핀 데이터
-                    console.log('핀 데이터:', pinData); // 디버깅: 핀 데이터 출력
+                    const pinData = pinDoc.data() as PinData;
                     firstPinImage = pinData?.imageUrl || null;
-                    console.log('첫 번째 핀 이미지 URL:', firstPinImage); // 디버깅: 이미지 URL 출력
                   } else {
                     console.log(
                       `핀 ID ${firstPinId}에 해당하는 문서를 찾을 수 없습니다.`,

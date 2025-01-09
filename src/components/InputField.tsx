@@ -9,7 +9,10 @@ interface InputFieldProps {
   onChange?: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   value?: string;
   onClick?: () => void; // 추가: onClick 이벤트
+  onFocus?: () => void; // 추가: onFocus 이벤트
+  onBlur?: () => void; // 추가: onBlur 이벤트
   readOnly?: boolean; // 추가: readOnly 속성
+  className?: string;
 }
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -21,10 +24,13 @@ const InputField: React.FC<InputFieldProps> = ({
   onChange,
   value,
   onClick,
+  onFocus,
+  onBlur,
   readOnly = false, // 기본값 추가
+  className = 'mb-6',
 }) => {
   return (
-    <div className="mb-6">
+    <div className={`${className}`}>
       <label className="block text-gray-700 text-sm font-medium mb-2">
         {label}
       </label>
@@ -50,8 +56,10 @@ const InputField: React.FC<InputFieldProps> = ({
           disabled={disabled}
           onChange={onChange}
           value={value}
-          onClick={onClick} // 추가
-          readOnly={readOnly} // 추가
+          onClick={onClick}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          readOnly={readOnly}
         />
       )}
     </div>

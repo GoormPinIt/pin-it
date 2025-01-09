@@ -1,29 +1,47 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import SaveModalItem from './SaveModalItem';
+import { fetchBoards } from '../utils/boards';
 
 interface SearchDropdownProps {
-  setBoard: (value: string) => void; // 보드 값 설정 함수
-  closeDropdown: () => void; // 드롭다운 닫기 함수
+  setBoard: (value: string) => void;
+  closeDropdown: () => void;
+  userId: string | '';
+  setSelectedBoardId: (value: string) => void;
+}
+
+interface Board {
+  id: string;
+  description: string;
+  isPrivate: boolean;
+  ownerIds: string[];
+  pins: {
+    pinId: string[];
+  };
+  title: string;
+  icon: string;
 }
 
 const SearchDropdown: React.FC<SearchDropdownProps> = ({
   setBoard,
   closeDropdown,
+  userId,
+  setSelectedBoardId,
 }) => {
   const [searchText, setSearchText] = useState('');
+  const [boards, setBoards] = useState<Board[]>([]);
 
-  const boards = [
-    { id: 1, icon: 'https://via.placeholder.com/30', name: '2024' },
-    { id: 2, icon: 'https://via.placeholder.com/30', name: '곰돌이 인형' },
-    {
-      id: 3,
-      icon: 'https://via.placeholder.com/30',
-      name: '귀여운 고양이 사진',
-    },
-  ];
+  useEffect(() => {
+    const loadBoards = async () => {
+      const fetchedBoards = await fetchBoards(userId);
+      setBoards(fetchedBoards);
+    };
 
+    loadBoards();
+  }, [userId]); // userId가 변경될 때만 실행
+
+  // 검색 필터 적용
   const filteredBoards = boards.filter((board) =>
-    board.name.toLowerCase().includes(searchText.toLowerCase()),
+    board.title.toLowerCase().includes(searchText.toLowerCase()),
   );
 
   return (
@@ -44,10 +62,11 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
             <SaveModalItem
               key={board.id}
               icon={board.icon} // 아이콘 추가
-              title={board.name}
+              title={board.title}
               onClick={() => {
-                setBoard(board.name); // 선택된 보드 설정
+                setBoard(board.title); // 선택된 보드 설정
                 closeDropdown(); // 드롭다운 닫기
+                setSelectedBoardId(board.id);
               }}
             />
           ))

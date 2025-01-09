@@ -141,11 +141,13 @@ const BoardDetails = (): JSX.Element => {
       await updateDoc(userRef, {
         boardIds: arrayRemove(boardId),
       });
-
+      console.log('boardId:', boardId);
+      console.log('targetBoardId:', targetBoardId);
+      console.log('board:', board);
       await deleteDoc(currentBoardRef);
 
       alert('보드가 성공적으로 병합되었습니다.');
-      navigate('/mypage');
+      navigate('/profile/:userId');
       setShowMergeModal(false);
     } catch (error) {
       console.error('보드 병합 실패:', error);
