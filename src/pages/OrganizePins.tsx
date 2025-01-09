@@ -10,16 +10,16 @@ import {
 } from '@dnd-kit/core';
 import {
   arrayMove,
-  horizontalListSortingStrategy,
   SortableContext,
   sortableKeyboardCoordinates,
+  rectSortingStrategy,
 } from '@dnd-kit/sortable';
 
 import SortableItem from '../components/SortableItem';
 import { useNavigate, useParams } from 'react-router-dom';
 import { db } from '../firebase';
 import { doc, getDoc, updateDoc, arrayRemove } from 'firebase/firestore';
-import { FaTrash } from 'react-icons/fa';
+import { FaTrash, FaArrowLeft } from 'react-icons/fa';
 
 type PinData = {
   id: string;
@@ -31,7 +31,7 @@ const OrganizePins: React.FC = () => {
   const { boardId } = useParams<{ boardId: string }>();
   const navigate = useNavigate();
   const [pins, setPins] = useState<PinData[]>([]);
-  const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
+  const [selectedPinIds, setSelectedPinIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchPins = async () => {
@@ -49,7 +49,6 @@ const OrganizePins: React.FC = () => {
           const boardData = boardSnap.data();
           const pinIds = boardData?.pins || [];
 
-          // Fetch pin data from "pins" collection
           const pinPromises = pinIds.map(async (pinId: string) => {
             const pinRef = doc(db, 'pins', pinId);
             const pinSnap = await getDoc(pinRef);
@@ -97,36 +96,87 @@ const OrganizePins: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (!selectedPinId) return;
+    if (selectedPinIds.size === 0) return;
 
     try {
-      // 보드의 pins 배열에서 ID 제거
       const boardRef = doc(db, 'boards', boardId!);
+      const selectedPinIdsArray = Array.from(selectedPinIds);
+
       await updateDoc(boardRef, {
-        pins: arrayRemove(selectedPinId),
+        pins: selectedPinIdsArray.reduce(
+          (acc, pinId) => arrayRemove(pinId),
+          {},
+        ),
       });
 
-      // 상태 업데이트
-      setPins((prevPins) => prevPins.filter((pin) => pin.id !== selectedPinId));
-      setSelectedPinId(null);
-      console.log(`핀 ${selectedPinId}이(가) 보드에서 제거되었습니다.`);
+      setPins((prevPins) =>
+        prevPins.filter((pin) => !selectedPinIds.has(pin.id)),
+      );
+      setSelectedPinIds(new Set());
     } catch (error) {
       console.error('핀 제거 중 오류 발생:', error);
       alert('핀 제거 중 문제가 발생했습니다.');
     }
   };
 
-  const handleSave = () => {
-    console.log('저장된 핀 목록:', pins);
-    alert('핀 정리가 저장되었습니다!');
-    navigate(`/board/${boardId}`);
+  const handleSave = async () => {
+    try {
+      const boardRef = doc(db, 'boards', boardId!);
+
+      const updatedPinIds = pins.map((pin) => pin.id);
+      await updateDoc(boardRef, { pins: updatedPinIds });
+
+      alert('핀 정리가 저장되었습니다!');
+      navigate(`/board/${boardId}`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handlePinClick = (pinId: string) => {
+    setSelectedPinIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(pinId)) {
+        newSet.delete(pinId);
+      } else {
+        newSet.add(pinId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedPinIds.size > 0) {
+      setSelectedPinIds(new Set());
+    } else {
+      setSelectedPinIds(new Set(pins.map((pin) => pin.id)));
+    }
   };
 
   return (
-    <div className="w-full h-screen p-4 flex flex-col ">
-      <h2 className="text-xl font-bold mb-4 flex justify-center">
-        핀 정리하기
-      </h2>
+    <div className="w-full h-screen p-2 flex flex-col">
+      <div className="flex items-center mb-8">
+        <button
+          onClick={() => navigate(`/board/${boardId}`)}
+          className="text-gray-700 hover:text-black"
+        >
+          <FaArrowLeft />
+        </button>
+        <h2 className="text-lg font-bold flex-1 text-center">선택 및 재정렬</h2>
+      </div>
+
+      <div className="flex justify-between items-center mb-4">
+        <span className="text-gray-700 text-[10px]">
+          더블 클릭하여 사진을 선택해주세요
+        </span>
+        <button
+          onClick={handleSelectAll}
+          className="px-2 py-1 bg-gray-200 text-xs rounded-3xl"
+        >
+          {selectedPinIds.size > 0 ? '모두 해제' : '모두 선택'}
+        </button>
+      </div>
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -134,27 +184,27 @@ const OrganizePins: React.FC = () => {
       >
         <SortableContext
           items={pins.map((pin) => pin.id)}
-          strategy={horizontalListSortingStrategy}
+          strategy={rectSortingStrategy}
         >
-          <div className="flex flex-wrap justify-center space-x-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1 sm:gap-2">
             {pins.map((pin) => (
               <SortableItem key={pin.id} id={pin.id}>
                 <div
-                  className={`relative group border-4 cursor-pointer ${
-                    selectedPinId === pin.id
-                      ? 'border-black'
-                      : 'border-transparent'
-                  } rounded-lg`}
-                  onClick={() => {
-                    console.log(`Pin clicked: ${pin.id}`);
-                    setSelectedPinId(pin.id);
+                  className={`relative w-full group rounded-lg ${
+                    selectedPinIds.has(pin.id)
+                      ? 'border-2 border-black'
+                      : 'border-2 border-transparent'
+                  }`}
+                  onClick={() => handlePinClick(pin.id)}
+                  style={{
+                    aspectRatio: '1 / 1', // 정사각형 유지
+                    overflow: 'hidden', // 이미지 넘침 방지
                   }}
-                  style={{ width: '192px', height: '192px' }}
                 >
                   <img
                     src={pin.imageUrl}
                     alt={pin.title || '핀'}
-                    className="w-full h-full rounded-lg object-cover"
+                    className="w-full h-full object-cover"
                   />
                 </div>
               </SortableItem>
@@ -162,19 +212,22 @@ const OrganizePins: React.FC = () => {
           </div>
         </SortableContext>
       </DndContext>
+
       <div className="mt-4 flex justify-center items-center space-x-4">
         <button
           onClick={handleDelete}
-          disabled={!selectedPinId}
+          disabled={selectedPinIds.size === 0}
           className={`px-4 py-2 rounded text-white ${
-            selectedPinId ? 'bg-red-500' : 'bg-gray-400 cursor-not-allowed'
+            selectedPinIds.size > 0
+              ? 'bg-red-500'
+              : 'bg-gray-400 cursor-not-allowed'
           }`}
         >
           <FaTrash />
         </button>
         <button
           onClick={handleSave}
-          className="px-4 py-2 bg-blue-500 text-white rounded"
+          className="px-2 py-1 bg-gray-500 text-white rounded"
         >
           저장
         </button>

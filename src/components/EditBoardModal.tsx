@@ -1,5 +1,4 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 type EditBoardModalProps = {
   board: { title: string; description: string };
@@ -20,23 +19,41 @@ const EditBoardModal = ({
     onClose();
   };
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-20000">
-      <div className="bg-white rounded-lg p-6 w-96">
-        <div className="flex">
+    <div
+      className="fixed inset-0 z-[200] bg-black bg-opacity-30 flex items-center justify-center "
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg p-6 w-96 z-[300]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center">
           <h2 className="flex flex-1 justify-center">보드 수정</h2>
           <button onClick={onClose}>X</button>
         </div>
         <div>
-          <label className="block text-[10px] text-gray-500 ">이름</label>
+          <label
+            htmlFor="board-title"
+            className="block text-[10px] text-gray-500 "
+          >
+            이름
+          </label>
           <input
+            id="board-title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full p-2 border rounded text-[12px]"
           />
           <div className="mb-4">
-            <label className="block text-[10px] text-gray-500 ">설명</label>
+            <label
+              htmlFor="board-description"
+              className="block text-[10px] text-gray-500 "
+            >
+              설명
+            </label>
             <textarea
+              id="board-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full p-2 border rounded text-[10px]"
@@ -44,12 +61,14 @@ const EditBoardModal = ({
             />
           </div>
           <div>
-            <label className="text-[8px] text-gray-500">참여자</label>
+            <label htmlFor="participants" className="text-[8px] text-gray-500">
+              참여자
+            </label>
           </div>
           <div>
             <div className="text-[8px] text-gray-500">설정</div>
             <div className="flex items-center mb-4">
-              <input type="checkbox" />
+              <input type="checkbox" id="private-board" name="private-board" />
               <label htmlFor="private-board" className="text-[10px]">
                 비밀 보드 유지
                 <br />
@@ -59,7 +78,11 @@ const EditBoardModal = ({
               </label>
             </div>
             <div className="flex items-center mb-4">
-              <input type="checkbox" />
+              <input
+                type="checkbox"
+                id="personal-setting"
+                name="personal-setting"
+              />
               <label htmlFor="personal-setting" className="text-[10px] ">
                 개인 설정
                 <br />

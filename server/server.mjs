@@ -17,20 +17,10 @@ const io = new Server(server, {
 io.on('connection', (socket) => {
   console.log('A user connected');
 
-  // 메시지 수신 및 전파
   socket.on('send_message', (data) => {
     console.log('Message received: ', data);
 
-    io.emit('receive', data); // 모든 클라이언트로 메시지 브로드캐스트
-
-    setTimeout(() => {
-      const autoReply = {
-        sender: 'Bot',
-        text: `Hi ${data.sender}, I received: "${data.text}"`,
-        time: new Date().toLocaleTimeString(),
-      };
-      io.emit('receive', autoReply); // 브로드캐스트
-    }, 1000); // 1초 후 답장
+    io.emit('receive', data);
   });
   socket.on('disconnect', () => {
     console.log('A user disconnected');

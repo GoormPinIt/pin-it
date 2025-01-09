@@ -28,16 +28,21 @@ type BoardData = {
   updatedTime: string;
   description?: string;
 };
-
+const initialBoardState: BoardData = {
+  ownerId: '',
+  pins: [],
+  title: '',
+  updatedTime: '',
+  description: '',
+};
 const BoardDetails = (): JSX.Element => {
   const navigate = useNavigate();
   const { boardId } = useParams<{ boardId: string }>();
-  const [board, setBoard] = useState<BoardData | null>(null);
+  const [board, setBoard] = useState<BoardData>(initialBoardState);
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showMergeModal, setShowMergeModal] = useState(false);
 
-  // Firestore에서 보드 데이터 가져오기
   const fetchBoardData = async (boardId: string): Promise<BoardData> => {
     const boardRef = doc(db, 'boards', boardId);
     const boardSnap = await getDoc(boardRef);
@@ -56,7 +61,6 @@ const BoardDetails = (): JSX.Element => {
     }
   };
 
-  // Firestore에서 Pin 데이터를 가져오기
   const fetchPinData = async (pinIds: string[]): Promise<PinData[]> => {
     const pinsPromises = pinIds.map(async (pinId) => {
       const pinRef = doc(db, 'pins', pinId);
@@ -96,16 +100,14 @@ const BoardDetails = (): JSX.Element => {
     if (!boardId) return;
 
     try {
-      // Firestore에서 보드 데이터 업데이트
       const boardRef = doc(db, 'boards', boardId);
       await updateDoc(boardRef, {
         title: updatedData.title,
         description: updatedData.description,
       });
 
-      // 로컬 상태 업데이트
       setBoard((prevBoard) => ({
-        ...prevBoard!,
+        ...prevBoard,
         title: updatedData.title,
         description: updatedData.description,
       }));
@@ -123,13 +125,11 @@ const BoardDetails = (): JSX.Element => {
       const targetBoardRef = doc(db, 'boards', targetBoardId);
       const currentBoardRef = doc(db, 'boards', boardId);
 
-      // 대상 보드의 기존 핀 데이터를 가져오기
       const targetBoardSnap = await getDoc(targetBoardRef);
       const targetPins = targetBoardSnap.exists()
         ? targetBoardSnap.data().pins || []
         : [];
 
-      // 병합: 현재 보드의 핀을 대상 보드에 추가
       const newPins = [
         ...targetPins,
         ...board.pins.map((pin) => (typeof pin === 'object' ? pin.id : pin)),
@@ -139,15 +139,14 @@ const BoardDetails = (): JSX.Element => {
       });
       const userRef = doc(db, 'users', board.ownerId);
       await updateDoc(userRef, {
-        boardIds: arrayRemove(boardId), // boardId 제거
+        boardIds: arrayRemove(boardId),
       });
-      // 현재 보드 삭제 (선택적으로 비활성화 가능)
+
       await deleteDoc(currentBoardRef);
 
-      // 병합 완료 메시지
       alert('보드가 성공적으로 병합되었습니다.');
       navigate('/mypage');
-      setShowMergeModal(false); // 모달 닫기
+      setShowMergeModal(false);
     } catch (error) {
       console.error('보드 병합 실패:', error);
       alert('보드 병합 중 문제가 발생했습니다.');
@@ -175,7 +174,7 @@ const BoardDetails = (): JSX.Element => {
           </button>
           {showModal && (
             <div className="absolute mt-2 right-0 w-24 bg-white shadow-md border p-2 rounded-lg z-10">
-              <div className="px-1 py-1 text-gray-500 font-medium text-[7px]">
+              <div className="px-1 py-1 text-gray-500  font-medium text-[7px]">
                 보드 옵션
               </div>
               <button
@@ -183,7 +182,7 @@ const BoardDetails = (): JSX.Element => {
                   setShowEditModal(true);
                   setShowModal(false);
                 }}
-                className="block px-1 py-1 hover:bg-gray-100 text-left text-[9px] font-bold w-full"
+                className="block px-1 py-1 hover:bg-gray-100 text-left text-[9px] font-bold w-full "
               >
                 보드 수정
               </button>
@@ -203,7 +202,7 @@ const BoardDetails = (): JSX.Element => {
           )}
           {showMergeModal && (
             <MergeModal
-              currentBoardId={boardId!}
+              currentBoardId={boardId ?? 'defaultId'}
               boardTitle={board.title}
               pinsCount={board.pins.length}
               onMerge={handleMerge}
@@ -245,17 +244,14 @@ const BoardDetails = (): JSX.Element => {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
         {board.pins.map((pin, index) => (
           <div key={index} className="relative group">
             <img
               src={pin.imageUrl}
               alt={pin.title || `핀 ${index + 1}`}
-              className="w-full h-full object-cover rounded-lg"
+              className="w-full h-auto object-cover rounded-lg"
             />
-            <button className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white text-sm rounded hidden group-hover:block">
-              삭제
-            </button>
           </div>
         ))}
       </div>

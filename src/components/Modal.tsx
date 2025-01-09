@@ -3,6 +3,20 @@ import { IoClose } from 'react-icons/io5';
 import { FaRegPenToSquare } from 'react-icons/fa6';
 import LiveMessage from './LiveMessage';
 import { io, Socket } from 'socket.io-client';
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  getDocs,
+  orderBy,
+  Timestamp,
+  onSnapshot,
+  doc,
+  getDoc,
+  setDoc,
+} from 'firebase/firestore';
+import useCurrentUserUid from '../hooks/useCurrentUserUid';
 
 interface ModalProps {
   isOpen: boolean;
@@ -11,32 +25,164 @@ interface ModalProps {
 }
 
 interface Message {
+  id?: string;
   sender: string;
   receiver: string;
   text: string;
   time: string;
 }
 
-const socket: Socket = io('http://localhost:4000'); // 소켓 초기화
+const socket: Socket = io('http://localhost:4000');
+const db = getFirestore();
+
+const generateChatId = (user1: string, user2: string): string => {
+  const sortedUsers = [user1, user2].sort();
+  return `${sortedUsers[0]}_${sortedUsers[1]}`;
+};
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
   const [messages, setMessages] = useState<Record<string, Message[]>>({});
-  const [chatUsers, setChatUsers] = useState<string[]>([]); // 메시지를 주고받은 사용자
-  const [selectedChat, setSelectedChat] = useState<string | null>(null); // 현재 열려 있는 채팅 상대
-  const [isNewMessage, setIsNewMessage] = useState(false); // 새 메시지 작성 모드
-  const [newMessageReceiver, setNewMessageReceiver] = useState(''); // 새 메시지의 대상 사용자
-  const [newMessageText, setNewMessageText] = useState(''); // 새 메시지 텍스트
+  const [chatUsers, setChatUsers] = useState<string[]>([]);
+  const [selectedChat, setSelectedChat] = useState<string | null>(null);
+  const [isNewMessage, setIsNewMessage] = useState(false);
+  const [newMessageReceiver, setNewMessageReceiver] = useState('');
+  const [newMessageText, setNewMessageText] = useState('');
+  const [currentUserName, setCurrentUserName] = useState<string>('');
+  const currentUserUid = useCurrentUserUid();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [userNames, setUserNames] = useState<Record<string, string>>({});
+
+  const fetchUserData = async () => {
+    if (!currentUserUid) return;
+
+    try {
+      const querySnapshot = await getDocs(collection(db, 'users'));
+      const nameMapping: Record<string, string> = {};
+      let currentName = '';
+
+      querySnapshot.forEach((doc) => {
+        const { name, uid } = doc.data();
+        if (uid && name) {
+          nameMapping[uid] = name;
+        }
+        if (uid === currentUserUid) {
+          currentName = name;
+        }
+      });
+
+      setUserNames(nameMapping);
+      setCurrentUserName(currentName);
+    } catch (error) {
+      console.error('사용자 데이터 가져오는 중 오류 발생:', error);
+    }
+  };
+  useEffect(() => {
+    const fetchChatUsers = async () => {
+      if (!currentUserUid) return;
+
+      try {
+        const userChatsRef = doc(db, 'userChats', currentUserUid);
+        const userChatsDoc = await getDoc(userChatsRef);
+
+        if (userChatsDoc.exists()) {
+          setChatUsers(userChatsDoc.data()?.chatUsers || []);
+        }
+      } catch (error) {
+        console.error('대화 사용자 목록 가져오기 실패:', error);
+      }
+    };
+
+    fetchChatUsers();
+  }, [currentUserUid]);
+  useEffect(() => {
+    if (currentUserUid) {
+      fetchUserData();
+    }
+  }, [currentUserUid]);
+  useEffect(() => {
+    const fetchUserNames = async () => {
+      const nameMapping: Record<string, string> = {};
+
+      try {
+        const querySnapshot = await getDocs(collection(db, 'users'));
+        querySnapshot.forEach((doc) => {
+          const { uid, name } = doc.data();
+          if (uid && name) {
+            nameMapping[uid] = name;
+          }
+        });
+
+        setUserNames(nameMapping);
+      } catch (error) {
+        console.error('사용자 이름 가져오기 실패:', error);
+      }
+    };
+
+    fetchUserNames();
+  }, []);
+
+  useEffect(() => {
+    if (selectedChat && currentUserName) {
+      const chatId = generateChatId(currentUserName, selectedChat);
+      const messagesRef = collection(db, 'messages', chatId, 'chat');
+
+      const unsubscribe = onSnapshot(
+        query(messagesRef, orderBy('time', 'asc')),
+        (snapshot) => {
+          const fetchedMessages = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            sender: doc.data().sender,
+            receiver: doc.data().receiver,
+            text: doc.data().text,
+            time: doc.data().time.toDate().toISOString(),
+          }));
+
+          setMessages((prev) => {
+            const existingMessages = prev[chatId] || [];
+            const uniqueMessages = fetchedMessages.filter(
+              (newMsg) =>
+                !existingMessages.some(
+                  (existingMsg) =>
+                    existingMsg.text === newMsg.text &&
+                    existingMsg.sender === newMsg.sender &&
+                    existingMsg.time === newMsg.time,
+                ),
+            );
+            return {
+              ...prev,
+              [chatId]: [...existingMessages, ...uniqueMessages],
+            };
+          });
+        },
+
+        (error) => {
+          console.error('실시간 메시지 구독 중 오류 발생:', error);
+        },
+      );
+      return () => unsubscribe();
+    }
+  }, [selectedChat, currentUserName]);
 
   useEffect(() => {
     const handleReceive = (data: Message) => {
-      setMessages((prev) => ({
-        ...prev,
-        [data.sender]: [...(prev[data.sender] || []), data],
-      }));
+      const chatId = generateChatId(data.sender, data.receiver);
 
-      if (!chatUsers.includes(data.sender)) {
-        setChatUsers((prev) => [...prev, data.sender]); // 메시지를 주고받은 사용자 추가
-      }
+      setMessages((prev) => {
+        const existingMessages = prev[chatId] || [];
+        const isDuplicate = existingMessages.some(
+          (msg) =>
+            msg.text === data.text &&
+            msg.sender === data.sender &&
+            msg.time === data.time,
+        );
+
+        if (isDuplicate) return prev;
+
+        return {
+          ...prev,
+          [chatId]: [...existingMessages, data],
+        };
+      });
     };
 
     socket.on('receive', handleReceive);
@@ -44,56 +190,111 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
     return () => {
       socket.off('receive', handleReceive);
     };
-  }, [chatUsers]);
+  }, []);
 
-  const sendMessage = (text: string) => {
-    if (selectedChat) {
-      const message: Message = {
-        sender: 'your_user_id', // 로그인한 사용자 ID
-        receiver: selectedChat,
-        text,
-        time: new Date().toLocaleTimeString(),
-      };
+  const sendMessageToFirestore = async (
+    sender: string,
+    receiver: string,
+    text: string,
+  ) => {
+    if (!sender || !receiver || !text) {
+      console.error('메시지 전송에 필요한 정보가 부족합니다.');
+      return;
+    }
 
-      // 서버로 메시지 전송
+    const chatId = generateChatId(sender, receiver);
+    const message: Message = {
+      id: `${sender}_${receiver}_${Date.now()}`,
+      sender,
+      receiver,
+      text,
+      time: new Date().toISOString(),
+    };
+
+    try {
+      const messagesRef = collection(db, 'messages', chatId, 'chat');
+      await addDoc(messagesRef, {
+        ...message,
+        time: Timestamp.now(),
+      });
+
       socket.emit('send_message', message);
-
-      // 메시지를 로컬 상태에 추가
-      setMessages((prev) => ({
-        ...prev,
-        [selectedChat]: [...(prev[selectedChat] || []), message],
-      }));
+    } catch (error) {
+      console.error('메시지 저장 중 오류 발생:', error);
     }
   };
 
-  const handleNewMessage = () => {
-    if (newMessageReceiver && newMessageText) {
-      const message: Message = {
-        sender: 'your_user_id', // 로그인한 사용자 ID
-        receiver: newMessageReceiver,
-        text: newMessageText,
-        time: new Date().toLocaleTimeString(),
-      };
+  const sendMessage = async (text: string) => {
+    if (!currentUserName || !selectedChat) {
+      console.error('전송에 필요한 정보가 부족합니다.');
+      return;
+    }
 
-      // 서버로 메시지 전송
-      socket.emit('send_message', message);
+    await sendMessageToFirestore(currentUserName, selectedChat, text);
+  };
 
-      // 로컬 상태에 메시지 추가
-      setMessages((prev) => ({
-        ...prev,
-        [newMessageReceiver]: [...(prev[newMessageReceiver] || []), message],
-      }));
+  const updateChatUsers = async (receiverUid: string) => {
+    if (!currentUserUid) return;
 
-      if (!chatUsers.includes(newMessageReceiver)) {
-        setChatUsers((prev) => [...prev, newMessageReceiver]);
+    try {
+      const userChatsRef = doc(db, 'userChats', currentUserUid);
+      const userChatsDoc = await getDoc(userChatsRef);
+
+      const updatedChatUsers = userChatsDoc.exists()
+        ? userChatsDoc.data()?.chatUsers || []
+        : [];
+
+      if (!updatedChatUsers.includes(receiverUid)) {
+        updatedChatUsers.push(receiverUid);
+        await setDoc(userChatsRef, { chatUsers: updatedChatUsers });
+
+        // UI 상태 업데이트
+        setChatUsers(updatedChatUsers);
       }
-
-      // 새 메시지 작성 종료
-      setIsNewMessage(false);
-      setNewMessageReceiver('');
-      setNewMessageText('');
+    } catch (error) {
+      console.error('대화 사용자 목록 업데이트 실패:', error);
     }
   };
+
+  const handleNewMessage = async () => {
+    if (!currentUserName || !newMessageReceiver || !newMessageText) {
+      console.error('새 메시지 전송에 필요한 정보가 부족합니다.');
+      return;
+    }
+
+    // 메시지를 Firestore에 저장
+    await sendMessageToFirestore(
+      currentUserName,
+      newMessageReceiver,
+      newMessageText,
+    );
+
+    await updateChatUsers(newMessageReceiver);
+
+    setIsNewMessage(false);
+    setNewMessageReceiver('');
+    setNewMessageText('');
+  };
+
+  useEffect(() => {
+    const fetchChatUsers = async () => {
+      if (!currentUserUid) return;
+
+      try {
+        const userChatsRef = doc(db, 'userChats', currentUserUid);
+        const userChatsDoc = await getDoc(userChatsRef);
+
+        if (userChatsDoc.exists()) {
+          const chatUsers = userChatsDoc.data()?.chatUsers || []; // userChats에 저장된 이름 배열
+          setChatUsers(chatUsers);
+        }
+      } catch (error) {
+        console.error('대화 사용자 목록 가져오기 실패:', error);
+      }
+    };
+
+    fetchChatUsers();
+  }, [currentUserUid]);
 
   if (!isOpen) return null;
 
@@ -112,7 +313,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
             <div className="p-1 text-sm font-bold">새 메시지</div>
             <input
               type="text"
-              placeholder="대상 사용자 ID"
+              placeholder="대상 사용자 이름"
               className="w-full p-2 text-xs border rounded mb-2"
               value={newMessageReceiver}
               onChange={(e) => setNewMessageReceiver(e.target.value)}
@@ -162,18 +363,18 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
                   대화 상대가 없습니다.
                 </div>
               ) : (
-                chatUsers.map((user) => (
+                chatUsers.map((name) => (
                   <div
-                    key={user}
-                    onClick={() => setSelectedChat(user)}
+                    key={name}
+                    onClick={() => setSelectedChat(name)}
                     className="flex cursor-pointer items-center justify-between pb-2 mb-2 hover:bg-gray-300 rounded-lg"
                   >
                     <div className="flex items-center gap-2">
                       <div className="bg-red-400 w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px]">
-                        {user[0]} {/* 사용자 이름의 첫 글자 표시 */}
+                        {name[0] || '?'}
                       </div>
                       <div>
-                        <div className="font-bold text-[10px]">{user}</div>
+                        <div className="font-bold text-[10px]">{name}</div>
                       </div>
                     </div>
                   </div>
@@ -183,10 +384,13 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
           </div>
         ) : (
           <LiveMessage
-            sender={selectedChat}
-            onClose={() => setSelectedChat(null)}
-            messages={messages[selectedChat] || []}
+            sender={currentUserName}
+            receiver={selectedChat}
+            messages={
+              messages[generateChatId(currentUserName, selectedChat)] || []
+            }
             onSendMessage={(text) => sendMessage(text)}
+            onClose={() => setSelectedChat(null)}
           />
         )}
       </div>
