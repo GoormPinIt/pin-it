@@ -17,6 +17,7 @@ export interface Board {
   title: string;
   isPrivate: boolean;
   ownerIds: string[];
+  ownerId: string;
   pins: {
     pinId: string[];
   };
