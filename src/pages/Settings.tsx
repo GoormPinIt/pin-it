@@ -5,7 +5,7 @@ import AccountManagement from '../components/AccountManagement';
 
 const Settings = (): JSX.Element => {
   return (
-    <div className="flex p-6 gap-4 w-full">
+    <div className="flex p-6 gap-4 w-full justify-between">
       <nav className="flex flex-col mb-4 w-28">
         <NavLink
           to="/settings/edit-profile"
@@ -37,6 +37,7 @@ const Settings = (): JSX.Element => {
         <Route path="account-management" element={<AccountManagement />} />
         <Route path="*" element={<Navigate to="edit-profile" />} />
       </Routes>
+      <div className="w-28"></div>
     </div>
   );
 };

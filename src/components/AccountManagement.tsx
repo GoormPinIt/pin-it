@@ -151,7 +151,7 @@ const AccountManagement: React.FC = () => {
         </div>
       </form>
 
-      <div className="mb-10">
+      <div className="mb-4">
         <h3 className="text-xl mb-2 font-semibold text-gray-800">
           데이터 및 계정 삭제
         </h3>
