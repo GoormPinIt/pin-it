@@ -155,7 +155,7 @@ const PhotoEditPage = () => {
   };
 
   const handleErase = () => {
-    setIsErasing(!isErasing);
+    setColor('#FFFFFF');
   };
 
   const handleAddText = () => {
@@ -238,7 +238,7 @@ const PhotoEditPage = () => {
           <button onClick={handleClearCanvas}>
             <RiDeleteBin5Line size={30} />
           </button>
-          <button onClick={handleErase} className={isErasing ? 'active' : ''}>
+          <button onClick={handleErase}>
             <LuEraser size={30} />
           </button>
           <input
@@ -251,9 +251,9 @@ const PhotoEditPage = () => {
           <button onClick={handleAddText}>
             <IoText size={30} />
           </button>
-          <button>
+          {/* <button>
             <MdOutlineAddPhotoAlternate size={30} />
-          </button>
+          </button> */}
           <button onClick={handleSaveImage}>
             <HiOutlineSave size={30} />
           </button>
