@@ -39,6 +39,13 @@ const Home = (): JSX.Element => {
     }
   }, [dispatch]);
 
+  const loadUserDocument = async (uid: string) => {
+    const userDoc = await getDoc(doc(db, 'users', uid));
+    console.log('Firestore 문서 데이터:', userDoc.data());
+    if (userDoc.exists()) {
+      setUser(userDoc.data() as User);
+    }
+  };
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -62,13 +69,6 @@ const Home = (): JSX.Element => {
       }
     };
 
-    const loadUserDocument = async (uid: string) => {
-      const userDoc = await getDoc(doc(db, 'users', uid));
-      console.log('Firestore 문서 데이터:', userDoc.data());
-      if (userDoc.exists()) {
-        setUser(userDoc.data() as User);
-      }
-    };
     loadUserData();
   }, []);
 

@@ -11,10 +11,8 @@ import { AppDispatch, RootState } from '../store';
 import { savePinToBoard, fetchBoards } from '../features/boardSlice';
 
 interface PinProps {
-  src: string; // src는 string 타입이어야 합니다.
-  // ShareModal: React.FC;
+  src: string;
   id: string;
-  // OptionsModal: React.FC;
 }
 interface OptionsModalProps {
   src: string;
@@ -31,15 +29,10 @@ const ShareModal = () => {
   const [copied, setCopied] = useState(false);
   const currentUrl = window.location.href;
   const facebookAppId = process.env.REACT_APP_FACEBOOK_APP_ID;
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const handleShareClick = () => {
-    setIsShareModalOpen((prev) => !prev);
-  };
-
-  const handleSend = (id: string) => {
-    alert(`${id}에게 내 프로필을 보냈습니다.`);
-    // 메시지로 내 프로필 보내는 로직 추가하기
-  };
+  // const handleSend = (id: string) => {
+  //   alert(`${id}에게 내 프로필을 보냈습니다.`);
+  //   // 메시지로 내 프로필 보내는 로직 추가하기
+  // };
 
   const handleCopyLink = () => {
     navigator.clipboard
@@ -195,10 +188,6 @@ const ShareModal = () => {
 };
 // console.log('boards in Pin:', boards);
 const OptionsModal: React.FC<OptionsModalProps> = ({ src, id }) => {
-  // const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
-  // const handleOptionsClick = () => {
-  //   setIsOptionsModalOpen((prev) => !prev);
-  // };
   const handleSaveImage = async () => {
     try {
       // Firebase Storage 참조 생성
@@ -248,42 +237,42 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
   const { boards, userId } = useSelector((state: RootState) => state.boards);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
-  const [showBoardsList, setShowBoardsList] = useState(false);
+  // const [showBoardsList, setShowBoardsList] = useState(false);
   const [selectedBoard, setSelectedBoard] = useState<{
     id: string;
     title: string;
   } | null>(null);
-
+  const [isSaved, setIsSaved] = useState(false);
   // 컴포넌트 마운트 시 보드 목록 가져오기
   useEffect(() => {
     if (userId) {
       console.log('Fetching boards for userId:', userId);
       dispatch(fetchBoards(userId));
     }
-  }, [userId, dispatch]);
+  }, [userId]);
 
   // boards 상태 변경 확인을 위한 useEffect
-  useEffect(() => {
-    console.log('Current boards:', boards);
-  }, [boards]);
+  // useEffect(() => {
+  //   console.log('Current boards:', boards);
+  // }, [boards]);
 
-  const handleSaveClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('저장');
-    setShowBoardsList((prev) => !prev);
-  };
-  const handleSaveToBoard = async (boardId: string, boardName: string) => {
-    try {
-      console.log('보드 선택 됨', boardName);
-      await dispatch(savePinToBoard({ boardId, pinId: id })).unwrap();
-      alert(`${boardName}에 저장 완료`);
-      setShowBoardsList(false);
-    } catch (error) {
-      console.error('핀 저장 실패:', error);
-      alert('Error: 핀 저장 실패');
-    }
-  };
+  // const handleSaveClick = (e: React.MouseEvent) => {
+  //   e.preventDefault();
+  //   e.stopPropagation();
+  //   console.log('저장');
+  //   setShowBoardsList((prev) => !prev);
+  // };
+  // const handleSaveToBoard = async (boardId: string, boardName: string) => {
+  //   try {
+  //     console.log('보드 선택 됨', boardName);
+  //     await dispatch(savePinToBoard({ boardId, pinId: id })).unwrap();
+  //     alert(`${boardName}에 저장 완료`);
+  //     setShowBoardsList(false);
+  //   } catch (error) {
+  //     console.error('핀 저장 실패:', error);
+  //     alert('Error: 핀 저장 실패');
+  //   }
+  // };
   const handleQuickSave = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -301,18 +290,20 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
         savePinToBoard({ boardId: randomBoard.id, pinId: id }),
       ).unwrap();
       alert(`"${randomBoard.title}"에 저장되었습니다.`);
+      setIsSaved((prev) => !prev);
     } catch (error) {
       console.error('핀 저장 실패:', error);
       alert('저장 실패');
     }
   };
+
   useEffect(() => {
     if (userId && boards.length > 0) {
       // 컴포넌트 마운트 시 랜덤으로 보드 선택
       const randomBoard = boards[Math.floor(Math.random() * boards.length)];
       setSelectedBoard(randomBoard);
     }
-  }, [userId, boards]);
+  }, [userId]);
 
   const handleShareClick = (e: React.MouseEvent) => {
     e.preventDefault();
