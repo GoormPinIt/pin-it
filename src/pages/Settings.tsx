@@ -34,10 +34,7 @@ const Settings = (): JSX.Element => {
       </nav>
       <Routes>
         <Route path="edit-profile" element={<EditProfile />} />
-        <Route
-          path="account-management"
-          element={<AccountManagement title="계정 관리 페이지" />}
-        />
+        <Route path="account-management" element={<AccountManagement />} />
         <Route path="*" element={<Navigate to="edit-profile" />} />
       </Routes>
     </div>

@@ -103,7 +103,7 @@ const StoryPage = (): JSX.Element => {
   const currentStory = stories[currentStoryIndex];
 
   return (
-    <div className="flex flex-col items-center w-1/2 mx-auto">
+    <div className="flex flex-col items-center w-1/2 mx-auto mt-4">
       <div className="flex items-center justify-between w-full">
         <div
           className="flex items-center gap-4 mb-4 cursor-pointer"

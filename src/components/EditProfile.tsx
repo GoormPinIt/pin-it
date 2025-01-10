@@ -124,7 +124,7 @@ const EditProfile = (): JSX.Element => {
 
   return (
     <div style={{ width: '488px' }}>
-      <p className="text-3xl font-semibold">프로필 수정</p>
+      <p className="text-3xl font-semibold mb-2">프로필 수정</p>
       <p className="mb-6">
         개인 정보는 비공개로 유지하세요. 여기에 추가한 정보는 회원님의 프로필을
         볼 수 있는 모든 사람에게 표시됩니다.
@@ -166,7 +166,7 @@ const EditProfile = (): JSX.Element => {
               value={profile.name}
               onChange={handleChange}
               placeholder="이름"
-              className="w-full p-2 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 border-2 border-gray-300 rounded-xl"
             />
           </div>
         </div>
@@ -179,7 +179,7 @@ const EditProfile = (): JSX.Element => {
             onChange={handleChange}
             rows={3}
             placeholder="회원님의 이야기를 들려주세요"
-            className="w-full p-2 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 border-2 border-gray-300 rounded-xl"
           ></textarea>
         </div>
 
@@ -191,7 +191,7 @@ const EditProfile = (): JSX.Element => {
             value={profile.id}
             onChange={handleChange}
             placeholder="사용자 이름"
-            className="w-full p-2 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 border-2 border-gray-300 rounded-xl"
           />
           <p className="text-xs text-gray-500 mt-1">
             www.pinterest.com/{profile.id}
