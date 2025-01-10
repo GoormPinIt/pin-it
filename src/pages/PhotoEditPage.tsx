@@ -55,15 +55,6 @@ const PhotoEditPage = () => {
     }
   }, [imgBase64]);
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (ctx) {
-      ctx.strokeStyle = color;
-      ctx.lineWidth = lineWidth;
-    }
-  }, [color, lineWidth]);
-
   const handleChangeFile = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
@@ -80,33 +71,28 @@ const PhotoEditPage = () => {
 
   const handleColorChange = (e: ChangeEvent<HTMLInputElement>) => {
     setColor(e.target.value);
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (ctx) {
-      ctx.strokeStyle = e.target.value;
-    }
+    setIsErasing(false);
   };
 
   const handleLineWidthChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const newLineWidth = Number(e.target.value);
-    setLineWidth(newLineWidth);
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (ctx) {
-      ctx.lineWidth = newLineWidth;
-    }
+    setLineWidth(Number(e.target.value));
   };
 
   const handleModeToggle = () => {
     setIsFilling(!isFilling);
+    setIsErasing(false);
   };
 
   const handleCanvasClick = () => {
     if (isFilling) {
       const canvas = canvasRef.current;
-      const ctx = canvas?.getContext('2d');
-      if (ctx) {
-        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = color;
+          ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+          setCanvasState(canvas.toDataURL());
+        }
       }
     }
   };
@@ -120,7 +106,6 @@ const PhotoEditPage = () => {
       ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
       if (isErasing) {
         ctx.globalCompositeOperation = 'destination-out';
-        ctx.strokeStyle = 'rgba(0,0,0,1)';
       } else {
         ctx.globalCompositeOperation = 'source-over';
         ctx.strokeStyle = color;
@@ -142,9 +127,7 @@ const PhotoEditPage = () => {
   const handleMouseUp = () => {
     setIsDrawing(false);
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (canvas && ctx) {
-      ctx.globalCompositeOperation = 'source-over';
+    if (canvas) {
       setCanvasState(canvas.toDataURL());
     }
   };
@@ -155,16 +138,19 @@ const PhotoEditPage = () => {
   };
 
   const handleErase = () => {
-    setColor('#FFFFFF');
+    setIsErasing(!isErasing);
   };
 
   const handleAddText = () => {
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (ctx && text) {
-      ctx.font = '20px Arial';
-      ctx.fillStyle = color;
-      ctx.fillText(text, 50, 50);
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx && text) {
+        ctx.font = '20px Arial';
+        ctx.fillStyle = color;
+        ctx.fillText(text, 50, 50);
+        setCanvasState(canvas.toDataURL());
+      }
     }
   };
 
