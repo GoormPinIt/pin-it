@@ -15,6 +15,9 @@ const PhotoEditPage = () => {
   const [isFilling, setIsFilling] = useState<boolean>(false);
   const [text, setText] = useState<string>('');
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
+  const [isAddingPhoto, setIsAddingPhoto] = useState<boolean>(false);
+  const [canvasState, setCanvasState] = useState<string | null>(null);
+  const [isErasing, setIsErasing] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -29,18 +32,37 @@ const PhotoEditPage = () => {
       canvas.height = CANVAS_HEIGHT;
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.lineWidth = lineWidth;
-        ctx.strokeStyle = color;
-        ctx.fillStyle = color;
-        ctx.lineCap = 'round';
         const img = new Image();
         img.onload = () => {
-          ctx.drawImage(img, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+          const aspectRatio = img.height / img.width;
+          let drawWidth = CANVAS_WIDTH;
+          let drawHeight = CANVAS_HEIGHT;
+
+          if (CANVAS_WIDTH / CANVAS_HEIGHT > aspectRatio) {
+            drawWidth = CANVAS_HEIGHT / aspectRatio;
+          } else {
+            drawHeight = CANVAS_WIDTH * aspectRatio;
+          }
+
+          const x = (CANVAS_WIDTH - drawWidth) / 2;
+          const y = (CANVAS_HEIGHT - drawHeight) / 2;
+
+          ctx.drawImage(img, x, y, drawWidth, drawHeight);
+          setCanvasState(canvas.toDataURL());
         };
         img.src = imgBase64;
       }
     }
-  }, [imgBase64, color, lineWidth]);
+  }, [imgBase64]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (ctx) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+    }
+  }, [color, lineWidth]);
 
   const handleChangeFile = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -49,6 +71,7 @@ const PhotoEditPage = () => {
       reader.onload = (e) => {
         if (e.target && typeof e.target.result === 'string') {
           setImgBase64(e.target.result);
+          setCanvasState(null);
         }
       };
       reader.readAsDataURL(file);
@@ -57,10 +80,21 @@ const PhotoEditPage = () => {
 
   const handleColorChange = (e: ChangeEvent<HTMLInputElement>) => {
     setColor(e.target.value);
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (ctx) {
+      ctx.strokeStyle = e.target.value;
+    }
   };
 
   const handleLineWidthChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setLineWidth(Number(e.target.value));
+    const newLineWidth = Number(e.target.value);
+    setLineWidth(newLineWidth);
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (ctx) {
+      ctx.lineWidth = newLineWidth;
+    }
   };
 
   const handleModeToggle = () => {
@@ -84,6 +118,14 @@ const PhotoEditPage = () => {
     if (ctx) {
       ctx.beginPath();
       ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+      if (isErasing) {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+      } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = color;
+      }
+      ctx.lineWidth = lineWidth;
     }
   };
 
@@ -99,14 +141,21 @@ const PhotoEditPage = () => {
 
   const handleMouseUp = () => {
     setIsDrawing(false);
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (canvas && ctx) {
+      ctx.globalCompositeOperation = 'source-over';
+      setCanvasState(canvas.toDataURL());
+    }
   };
 
   const handleClearCanvas = () => {
     setImgBase64('');
+    setCanvasState(null);
   };
 
   const handleErase = () => {
-    setColor('#FFFFFF');
+    setIsErasing(!isErasing);
   };
 
   const handleAddText = () => {
@@ -138,7 +187,7 @@ const PhotoEditPage = () => {
             <div className="w-[800px] h-[600px] bg-[#e9e9e9] rounded-lg border-2 border-gray-300 border-dashed relative overflow-hidden">
               <label className="absolute inset-0 flex flex-col justify-center items-center cursor-pointer text-gray-600 gap-4">
                 <HiArrowUpCircle className="text-[60px] text-black" />
-                <h2 className="text-xl font-normal text-black max-w-[300px] text-center">
+                <h2 className="text-base font-normal text-black max-w-[300px] text-center">
                   파일을 선택하거나 여기로 끌어다 놓으세요.
                 </h2>
                 <input
@@ -189,7 +238,7 @@ const PhotoEditPage = () => {
           <button onClick={handleClearCanvas}>
             <RiDeleteBin5Line size={30} />
           </button>
-          <button onClick={handleErase}>
+          <button onClick={handleErase} className={isErasing ? 'active' : ''}>
             <LuEraser size={30} />
           </button>
           <input
@@ -201,6 +250,9 @@ const PhotoEditPage = () => {
           />
           <button onClick={handleAddText}>
             <IoText size={30} />
+          </button>
+          <button>
+            <MdOutlineAddPhotoAlternate size={30} />
           </button>
           <button onClick={handleSaveImage}>
             <HiOutlineSave size={30} />
