@@ -17,6 +17,7 @@ const AccountManagement: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [deleteAccountPassword, setDeleteAccountPassword] = useState('');
 
   const user = useSelector((state: RootState) => state.auth.userData);
 
@@ -77,7 +78,7 @@ const AccountManagement: React.FC = () => {
     // 사용자 재인증
     const credential = EmailAuthProvider.credential(
       user.email!,
-      currentPassword,
+      deleteAccountPassword,
     );
 
     try {
@@ -159,8 +160,8 @@ const AccountManagement: React.FC = () => {
         </p>
         <input
           type="password"
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
+          value={deleteAccountPassword}
+          onChange={(e) => setDeleteAccountPassword(e.target.value)}
           placeholder="현재 비밀번호"
           className="w-full p-2 border-2 border-gray-300 rounded-xl my-2"
           required
