@@ -53,13 +53,19 @@ const LiveMessage: React.FC<LiveMessageProps> = ({
             key={index}
             className={`mb-2 text-sm p-1 ${
               msg.sender === sender
-                ? 'text-right text-blue-400'
+                ? 'text-right text-blue-300'
                 : 'text-left text-gray-800'
             }`}
           >
-            <div className="font-bold">{msg.sender}</div>
-            <div>{msg.text}</div>
-            <div className="text-xs text-gray-500">{msg.time}</div>
+            <div className="text-[11px]">{msg.sender}</div>
+            <div
+              className="text-[13px] border rounded-xl p-1 inline-block
+            "
+              style={{ maxWidth: '80%', wordWrap: 'break-word' }}
+            >
+              {msg.text}
+            </div>
+            <div className="text-[8px] text-gray-500">{msg.time}</div>
           </div>
         ))}
       </div>
@@ -74,7 +80,7 @@ const LiveMessage: React.FC<LiveMessageProps> = ({
           onKeyDown={handleKeyDown}
         />
         <button
-          className="ml-2 bg-blue-500 text-white px-2 py-2 rounded-full"
+          className="ml-2 bg-blue-400 text-white px-2 py-2 rounded-full"
           onClick={handleSendMessage}
         >
           <FaLongArrowAltUp />

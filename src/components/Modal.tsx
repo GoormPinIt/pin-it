@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { IoClose } from 'react-icons/io5';
 import { FaRegPenToSquare } from 'react-icons/fa6';
 import LiveMessage from './LiveMessage';
@@ -15,6 +15,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  where,
 } from 'firebase/firestore';
 import useCurrentUserUid from '../hooks/useCurrentUserUid';
 
@@ -49,6 +50,11 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
   const [newMessageText, setNewMessageText] = useState('');
   const [currentUserName, setCurrentUserName] = useState<string>('');
   const currentUserUid = useCurrentUserUid();
+  const [searchResults, setSearchResults] = useState<
+    { uid: string; name: string }[]
+  >([]);
+  const dropdownRef = useRef<HTMLDivElement | null>(null); // 검색 결과 목록 영역
+  const modalRef = useRef<HTMLDivElement | null>(null); // 모달 영역
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userNames, setUserNames] = useState<Record<string, string>>({});
 
@@ -296,11 +302,44 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
     fetchChatUsers();
   }, [currentUserUid]);
 
+  useEffect(() => {
+    const handleClickOutsideDropdown = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setSearchResults([]); // 목록 닫기
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutsideDropdown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideDropdown);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutsideModal = (event: MouseEvent) => {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        onClose();
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutsideModal);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideModal);
+    };
+  }, [onClose]);
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed top-0 left-12 w-full h-full rounded-lg bg-opacity-50 z-50000 flex justify-start items-center">
-      <div className="w-[210px] h-[98%] bg-white shadow-lg rounded-md">
+      <div
+        ref={modalRef}
+        className="w-[210px] h-[98%] bg-white shadow-lg rounded-md"
+      >
         <div className="p-1 flex justify-between items-center">
           <button className="text-gray-800" onClick={onClose}>
             <IoClose />
@@ -311,28 +350,77 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
         {isNewMessage ? (
           <div>
             <div className="p-1 text-sm font-bold">새 메시지</div>
-            <input
-              type="text"
-              placeholder="대상 사용자 이름"
-              className="w-full p-2 text-xs border rounded mb-2"
-              value={newMessageReceiver}
-              onChange={(e) => setNewMessageReceiver(e.target.value)}
-            />
+            <div>
+              <input
+                type="text"
+                placeholder="이름 검색"
+                className="w-full p-2 text-xs border rounded-xl mt-2 mb-2"
+                value={newMessageReceiver}
+                onChange={async (e) => {
+                  const searchTerm = e.target.value;
+                  setNewMessageReceiver(searchTerm);
+                  try {
+                    const usersRef = collection(db, 'users');
+                    const querySnapshot = await getDocs(
+                      query(
+                        usersRef,
+                        where('name', '>=', searchTerm),
+                        where('name', '<=', searchTerm + '\uf8ff'),
+                      ),
+                    );
+
+                    const results: { uid: string; name: string }[] = [];
+                    querySnapshot.forEach((doc) => {
+                      const { uid, name } = doc.data();
+                      if (uid && name) {
+                        results.push({ uid, name });
+                      }
+                    });
+
+                    setSearchResults(results);
+                  } catch (error) {
+                    console.error('사용자 검색 중 오류 발생:', error);
+                  }
+                }}
+              />
+            </div>
+            {searchResults.length > 0 && (
+              <div
+                ref={dropdownRef}
+                className="bg-gray-50 border rounded text-[12px] p-2 max-h-32 overflow-y-auto"
+              >
+                {searchResults.map((user) => (
+                  <div
+                    key={user.uid}
+                    onClick={() => {
+                      setNewMessageReceiver(user.uid);
+                      setSearchResults([]);
+                    }}
+                    className="cursor-pointer hover:bg-gray-200 p-1 rounded"
+                  >
+                    {user.name}
+                  </div>
+                ))}
+              </div>
+            )}
+
             <textarea
               placeholder="메시지 내용"
-              className="w-full p-2 text-xs border rounded mb-2"
+              className="w-full p-1 text-xs border rounded-xl mt-2 mb-2"
               value={newMessageText}
               onChange={(e) => setNewMessageText(e.target.value)}
             />
+
             <div className="flex gap-2">
               <button
-                className="flex-1 bg-blue-500 text-white py-1 rounded text-xs"
+                className="flex-1 bg-gray-200 hover:bg-gray-300 py-1 rounded text-xs"
                 onClick={handleNewMessage}
               >
                 메시지 보내기
               </button>
+
               <button
-                className="flex-1 bg-gray-300 text-black py-1 rounded text-xs"
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-black py-1 rounded text-xs"
                 onClick={() => setIsNewMessage(false)}
               >
                 취소
@@ -342,14 +430,14 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
         ) : !selectedChat ? (
           <div>
             <div
-              className="hover:bg-gray-300 rounded-lg cursor-pointer p-2"
+              className="hover:bg-gray-200 rounded-lg cursor-pointer p-2"
               onClick={() => setIsNewMessage(true)}
             >
               <div className="text-xs flex">
-                <button className="bg-red-600 rounded-full w-5 h-5 items-center justify-center">
+                <button className="bg-red-600 rounded-full w-6 h-6 items-center justify-center">
                   <FaRegPenToSquare
                     style={{ fontSize: '12px', lineHeight: '1' }}
-                    className="text-[15px] ml-1"
+                    className="text-[15px] ml-[6px]"
                     color="#fff"
                   />
                 </button>
@@ -367,14 +455,14 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
                   <div
                     key={name}
                     onClick={() => setSelectedChat(name)}
-                    className="flex cursor-pointer items-center justify-between pb-2 mb-2 hover:bg-gray-300 rounded-lg"
+                    className="flex cursor-pointer items-center justify-between pb-2 mb-2 hover:bg-gray-200 rounded-lg"
                   >
                     <div className="flex items-center gap-2">
-                      <div className="bg-red-400 w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px]">
+                      <div className="bg-red-400 w-6 h-6 rounded-full flex items-center mt-1 justify-center text-white text-[9px]">
                         {name[0] || '?'}
                       </div>
                       <div>
-                        <div className="font-bold text-[10px]">{name}</div>
+                        <div className="font-bold text-[11px]">{name}</div>
                       </div>
                     </div>
                   </div>

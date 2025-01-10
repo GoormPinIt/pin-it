@@ -15,8 +15,6 @@ const io = new Server(server, {
 
 // 클라이언트 연결 처리
 io.on('connection', (socket) => {
-  console.log('A user connected');
-
   socket.on('send_message', (data) => {
     console.log('Message received: ', data);
 
