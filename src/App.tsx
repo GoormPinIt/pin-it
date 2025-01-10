@@ -19,6 +19,7 @@ import LandingPage from './pages/LandingPage';
 import AllPinsPage from './pages/AllPinsPage';
 import StoryPage from './pages/StoryPage';
 import CreateStory from './pages/CreateStory';
+import PhotoEditPage from './pages/PhotoEditPage';
 
 const App = (): JSX.Element => {
   return (
@@ -55,7 +56,7 @@ const AppRoutes = (): JSX.Element => {
     <>
       <Header />
       {isLoggedIn ? (
-        <div className="flex pt-20">
+        <div className="flex pt-16">
           <NavBar />
           <div className="flex-1 pl-16">
             <Routes>
@@ -66,6 +67,7 @@ const AppRoutes = (): JSX.Element => {
               <Route path="/boardDetail" element={<ProfileBoardDetail />} />
               <Route path="/pin-creation-tool" element={<PinBuilder />} />
               <Route path="/pin/:pinId" element={<PinPage />} />
+              <Route path="/photo_edit" element={<PhotoEditPage />} />
               <Route path="/settings/*" element={<Settings />} />
               <Route path="/story/:userUid/:storyId" element={<StoryPage />} />
               <Route path="/create-story" element={<CreateStory />} />

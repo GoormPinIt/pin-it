@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FaRegPlusSquare, FaRegBell } from 'react-icons/fa';
+import { FaRegPlusSquare } from 'react-icons/fa';
+import { PiPaintBrushBold } from 'react-icons/pi';
 import {
   AiOutlineMessage,
   AiOutlineHome,
@@ -45,7 +46,7 @@ const NavBar: React.FC = () => {
   };
 
   const handleUpdateClick = () => {
-    toggleModal('update', '업데이트');
+    nav('/photo_edit');
   };
 
   const handleMessageClick = () => {
@@ -78,7 +79,7 @@ const NavBar: React.FC = () => {
           className="flex justify-center items-center"
           onClick={handleUpdateClick}
         >
-          <FaRegBell size={25} />
+          <PiPaintBrushBold size={25} />
         </button>
         <button
           className="flex justify-center items-center"
