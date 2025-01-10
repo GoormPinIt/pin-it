@@ -1,9 +1,11 @@
-import PinterestLayout from '../components/PinterestLayout';
 import React, { act, useEffect, useState } from 'react';
 import { auth, db } from '../firebase';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBoards, setActiveKey, setUserId } from '../features/boardSlice';
 import { AppDispatch, RootState } from '../store';
+import PinterestLayout from '../components/PinterestLayout';
+import StoryList from '../components/StoryList';
+
 interface Board {
   description: string;
   title: string;
@@ -52,7 +54,12 @@ const Home = (): JSX.Element => {
   console.log('boards in Home:', boards);
   console.log('userId in Home:', userId);
   return (
+
     <div className="flex flex-col mt-0">
+      <div className="w-11/12 h-30 p-4 overflow-x-auto">
+        <StoryList />
+      </div>
+      
       <div
         className={`-mt-2 py-2 fixed z-10 bg-white text-center flex items-center justify-start w-full gap-10 pl-3 ${visible ? 'opacity-100' : 'opacity-0'}`}
       >
