@@ -86,8 +86,6 @@ const saveImageToFirestore = async (imageName: string, userId: string) => {
       userId,
       timestamp: new Date(),
     };
-
-    // Firestore의 특정 컬렉션에 데이터 추가 (예: 'pins')
     await setDoc(doc(db, 'pins', imageName), pinData);
 
     console.log('Image URL saved to Firestore:', imageUrl);
