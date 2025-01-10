@@ -168,6 +168,20 @@ const BoardDetails = (): JSX.Element => {
       alert('보드를 업데이트하는 중 문제가 발생했습니다.');
     }
   };
+  const handleArchive = async () => {
+    if (!boardId) return;
+
+    try {
+      const boardRef = doc(db, 'boards', boardId);
+      await updateDoc(boardRef, {
+        isPrivate: true,
+      });
+      alert('보드가 저장되었습니다');
+    } catch (error) {
+      console.error(error);
+      alert('문제 발생');
+    }
+  };
 
   if (!board) {
     return <p>보드 데이터를 로드 중...</p>;
@@ -211,7 +225,13 @@ const BoardDetails = (): JSX.Element => {
               >
                 병합
               </button>
-              <button className="block px-1 py-1 hover:bg-gray-100 text-left text-[9px] font-bold w-full">
+              <button
+                className="block px-1 py-1 hover:bg-gray-100 text-left text-[9px] font-bold w-full"
+                onClick={() => {
+                  handleArchive();
+                  setShowModal(false);
+                }}
+              >
                 보관
               </button>
             </div>

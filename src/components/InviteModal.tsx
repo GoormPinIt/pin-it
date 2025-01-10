@@ -7,6 +7,7 @@ import {
   where,
   getDocs,
   collection,
+  getDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -71,6 +72,24 @@ const InviteModal = ({
       if (!boardId || !currentUserUid) return;
 
       const boardRef = doc(db, 'boards', boardId);
+      const boardSnap = await getDoc(boardRef);
+      if (!boardSnap.exists()) {
+        alert('보드 데이터를 찾을 수 없습니다.');
+        return;
+      }
+      const boardData = boardSnap.data();
+      const pinsToAdd = boardData.pins || [];
+
+      await Promise.all(
+        selectedUsers.map(async (userId) => {
+          const userRef = doc(db, 'users', userId);
+
+          await updateDoc(userRef, {
+            createdPins: arrayUnion(...pinsToAdd),
+          });
+        }),
+      );
+
       await updateDoc(boardRef, {
         ownerId: arrayUnion(...selectedUsers),
       });
@@ -88,6 +107,7 @@ const InviteModal = ({
       setTimeout(() => setCopied(false), 2000); // 2초 후 복사 완료 메시지 숨김
     });
   };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
       <div className="bg-white p-4 rounded-md shadow-md w-96">
