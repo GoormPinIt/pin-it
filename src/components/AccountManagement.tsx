@@ -10,17 +10,14 @@ import {
 } from 'firebase/auth';
 import { RootState } from '../store';
 
-interface AccountManagementProps {
-  title: string;
-}
-
-const AccountManagement: React.FC<AccountManagementProps> = ({ title }) => {
+const AccountManagement: React.FC = () => {
   const userEmail = useSelector(
     (state: RootState) => state.auth.userData?.email,
   );
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [deleteAccountPassword, setDeleteAccountPassword] = useState('');
 
   const user = useSelector((state: RootState) => state.auth.userData);
 
@@ -81,7 +78,7 @@ const AccountManagement: React.FC<AccountManagementProps> = ({ title }) => {
     // 사용자 재인증
     const credential = EmailAuthProvider.credential(
       user.email!,
-      currentPassword,
+      deleteAccountPassword,
     );
 
     try {
@@ -105,27 +102,27 @@ const AccountManagement: React.FC<AccountManagementProps> = ({ title }) => {
   };
 
   return (
-    <div className="account-management">
-      <h2 className="text-2xl font-semibold mb-2 text-gray-800">{title}</h2>
-      <p className="text-sm mb-2">개인 정보 또는 계정 유형을 변경합니다.</p>
+    <div className="w-[488px]">
+      <h2 className="text-3xl font-semibold mb-2">계정 관리 페이지</h2>
+      <p className="mb-6">개인 정보 또는 계정 유형을 변경합니다.</p>
       <form className="mt-10 mb-10">
-        <h3 className="text-xl mb-4 font-semibold text-gray-800 ">내 계정</h3>
+        <h3 className="text-xl mb-2 font-semibold text-gray-800 ">내 계정</h3>
         <input
           type="email"
           value={userEmail || ''}
           readOnly
-          className="w-full border border-gray-300 mb-2 px-4 py-2 mt-2 rounded-xl"
+          className="w-full p-2 border-2 border-gray-300 rounded-xl"
         />
       </form>
 
       <form onSubmit={handlePasswordChange} className="mb-10">
-        <h3 className="text-xl font-semibold mb-4">비밀번호 변경</h3>
+        <h3 className="text-xl font-semibold mb-2">비밀번호 변경</h3>
         <input
           type="password"
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
           placeholder="현재 비밀번호"
-          className="w-full border border-gray-300 mb-2 px-4 py-2 mt-2 rounded-xl"
+          className="w-full p-2 border-2 border-gray-300 rounded-xl my-2"
           required
         />
         <input
@@ -133,7 +130,7 @@ const AccountManagement: React.FC<AccountManagementProps> = ({ title }) => {
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           placeholder="새 비밀번호"
-          className="w-full border border-gray-300 mb-2 px-4 py-2 mt-2 rounded-xl"
+          className="w-full p-2 border-2 border-gray-300 rounded-xl my-2"
           required
         />
         <input
@@ -141,19 +138,21 @@ const AccountManagement: React.FC<AccountManagementProps> = ({ title }) => {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           placeholder="새 비밀번호 확인"
-          className="w-full border border-gray-300 mb-2 px-4 py-2 mt-2 rounded-xl"
+          className="w-full p-2 border-2 border-gray-300 rounded-xl my-2"
           required
         />
-        <button
-          type="submit"
-          className="bg-btn_h_gray text-gray-800 p-2 mt-4 rounded hover:bg-btn_gray"
-        >
-          변경
-        </button>
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            className="px-4 py-2 font-medium rounded-full hover:bg-btn_h_gray bg-btn_gray"
+          >
+            변경
+          </button>
+        </div>
       </form>
 
       <div className="mb-10">
-        <h3 className="text-xl mb-4 font-semibold text-gray-800">
+        <h3 className="text-xl mb-2 font-semibold text-gray-800">
           데이터 및 계정 삭제
         </h3>
         <p className="text-sm mb-2">
@@ -161,18 +160,20 @@ const AccountManagement: React.FC<AccountManagementProps> = ({ title }) => {
         </p>
         <input
           type="password"
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
+          value={deleteAccountPassword}
+          onChange={(e) => setDeleteAccountPassword(e.target.value)}
           placeholder="현재 비밀번호"
-          className="w-full border border-gray-300 mb-2 px-4 py-2 mt-2 rounded-xl"
+          className="w-full p-2 border-2 border-gray-300 rounded-xl my-2"
           required
         />
-        <button
-          onClick={handleAccountDelete}
-          className="bg-btn_h_gray text-gray-800 p-2 mt-4 rounded hover:bg-btn_gray"
-        >
-          계정 삭제
-        </button>
+        <div className="flex justify-end">
+          <button
+            onClick={handleAccountDelete}
+            className="px-4 py-2 font-medium text-white rounded-full hover:bg-btn_h_red bg-btn_red"
+          >
+            계정 삭제
+          </button>
+        </div>
       </div>
     </div>
   );

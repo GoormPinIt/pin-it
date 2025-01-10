@@ -17,6 +17,8 @@ import PinPage from './pages/PinPage';
 import Settings from './pages/Settings';
 import LandingPage from './pages/LandingPage';
 import AllPinsPage from './pages/AllPinsPage';
+import StoryPage from './pages/StoryPage';
+import CreateStory from './pages/CreateStory';
 import PhotoEditPage from './pages/PhotoEditPage';
 import OrganizePins from './pages/OrganizePins';
 const App = (): JSX.Element => {
@@ -71,6 +73,8 @@ const AppRoutes = (): JSX.Element => {
               <Route path="/pin/:pinId" element={<PinPage />} />
               <Route path="/photo_edit" element={<PhotoEditPage />} />
               <Route path="/settings/*" element={<Settings />} />
+              <Route path="/story/:userUid/:storyId" element={<StoryPage />} />
+              <Route path="/create-story" element={<CreateStory />} />
             </Routes>
           </div>
         </div>
