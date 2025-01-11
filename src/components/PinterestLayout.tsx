@@ -127,7 +127,7 @@ const PinterestLayout: React.FC = () => {
   }, []);
 
   return (
-    <div className="columns-2 sm:columns-3 lg:columns-5 py-2 md:py-5 gap-4 px-2 mt-12">
+    <div className="columns-2 sm:columns-3 lg:columns-5 py-2 md:py-5 gap-4 px-2 mt-0">
       {pins.map((pin) => (
         <div key={pin.id} className="mb-4 break-inside-avoid">
           <Pin src={pin.src} id={pin.id} />

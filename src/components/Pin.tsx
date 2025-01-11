@@ -9,6 +9,7 @@ import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store';
 import { savePinToBoard, fetchBoards } from '../features/boardSlice';
+import SaveModal from './SaveModal';
 
 interface PinProps {
   src: string;
@@ -237,7 +238,7 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
   const { boards, userId } = useSelector((state: RootState) => state.boards);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
-  // const [showBoardsList, setShowBoardsList] = useState(false);
+  const [showBoardsList, setShowBoardsList] = useState(false);
   const [selectedBoard, setSelectedBoard] = useState<{
     id: string;
     title: string;
@@ -251,46 +252,50 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
     }
   }, [userId]);
 
+  const handleModalClose = () => {
+    setShowBoardsList(false);
+  };
   // boards 상태 변경 확인을 위한 useEffect
   // useEffect(() => {
   //   console.log('Current boards:', boards);
   // }, [boards]);
 
-  // const handleSaveClick = (e: React.MouseEvent) => {
-  //   e.preventDefault();
-  //   e.stopPropagation();
-  //   console.log('저장');
-  //   setShowBoardsList((prev) => !prev);
-  // };
-  // const handleSaveToBoard = async (boardId: string, boardName: string) => {
-  //   try {
-  //     console.log('보드 선택 됨', boardName);
-  //     await dispatch(savePinToBoard({ boardId, pinId: id })).unwrap();
-  //     alert(`${boardName}에 저장 완료`);
-  //     setShowBoardsList(false);
-  //   } catch (error) {
-  //     console.error('핀 저장 실패:', error);
-  //     alert('Error: 핀 저장 실패');
-  //   }
-  // };
+  const handleSaveClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('저장');
+    setShowBoardsList((prev) => !prev);
+  };
+  const handleSaveToBoard = async (boardId: string, boardName: string) => {
+    try {
+      console.log('보드 선택 됨', boardName);
+      await dispatch(savePinToBoard({ boardId, pinId: id })).unwrap();
+      alert(`${boardName}에 저장 완료`);
+      setShowBoardsList(false);
+    } catch (error) {
+      console.error('핀 저장 실패:', error);
+      alert('Error: 핀 저장 실패');
+    }
+  };
   const handleQuickSave = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     console.log('Available boards:', boards); // 현재 boards 상태 확인
-    if (boards.length === 0) {
+
+    if (!selectedBoard) {
       alert('저장할 보드가 없습니다.');
       return;
     }
-    // 랜덤으로 보드 선택
+
     const randomBoard = boards[Math.floor(Math.random() * boards.length)];
     setSelectedBoard(randomBoard);
 
     try {
       await dispatch(
-        savePinToBoard({ boardId: randomBoard.id, pinId: id }),
+        savePinToBoard({ boardId: selectedBoard.id, pinId: id }),
       ).unwrap();
-      alert(`"${randomBoard.title}"에 저장되었습니다.`);
-      setIsSaved((prev) => !prev);
+      alert(`"${selectedBoard.title}"에 저장되었습니다.`);
+      setIsSaved(true);
     } catch (error) {
       console.error('핀 저장 실패:', error);
       alert('저장 실패');
@@ -316,15 +321,19 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
     setIsOptionsModalOpen((prev) => !prev);
     setIsShareModalOpen(false);
   };
-
+  console.log(showBoardsList);
   return (
     <div className="relative hover:bg-blend-darken">
       <Link to={`/pin/${id}`} className="relative">
         <img src={src} className="w-full object-cover rounded-3xl" />
         <div className="z-10 absolute inset-0 hover:bg-black hover:bg-opacity-50 w-full rounded-3xl opacity-0 hover:opacity-100">
-          <button className="absolute top-3 rounded-2xl left-3 text-white block py-2 px-3 hover:bg-black/30 font-medium bg-transparent outline-none">
-            {selectedBoard ? selectedBoard.title : '...'}
+          <button
+            className="absolute top-3 rounded-2xl left-3 text-white block py-2 px-3 hover:bg-black/30 font-medium bg-transparent outline-none"
+            onClick={handleSaveClick}
+          >
+            {selectedBoard?.title || '...'}
           </button>
+          {showBoardsList && <SaveModal onClose={handleModalClose} />}
           <Button
             className="absolute top-3 right-3 px-5 py-3 z-20 pointer-events-auto"
             onClick={handleQuickSave}
