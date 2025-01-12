@@ -177,6 +177,8 @@ const PinPage: React.FC = () => {
           .catch((error) => {
             console.error('Error adding comment to Firestore:', error);
           });
+
+        setIsCommentOpen(true);
       } else {
         console.log('No such user document!');
         return;
@@ -262,17 +264,6 @@ const PinPage: React.FC = () => {
 
             {/* 제목 */}
             <h1 className="text-3xl font-semibold mb-4">{pinData?.title}</h1>
-
-            {/* 사용자 */}
-            {/* <header className="flex items-center mb-4">
-              <figure className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                <img
-                  src="https://eu.ui-avatars.com/api/?name=John+Doe&size=250"
-                  alt="사용자 프로필"
-                />
-              </figure>
-              <span className="font-normal">vicky 🐧</span>
-            </header> */}
             <UserTag uid={pinData?.userId || ''} />
 
             {/* 글 */}
