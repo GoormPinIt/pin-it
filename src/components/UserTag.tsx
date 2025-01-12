@@ -23,7 +23,7 @@ const UserTag: React.FC<ProfileProps> = ({ uid }) => {
 
   return (
     <header
-      className="flex items-center mb-4 cursor-pointer"
+      className="flex items-center mb-2 cursor-pointer"
       onClick={handleClick}
     >
       <figure className="w-8 h-8 rounded-full overflow-hidden mr-2">

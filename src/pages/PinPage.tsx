@@ -267,7 +267,7 @@ const PinPage: React.FC = () => {
             <UserTag uid={pinData?.userId || ''} />
 
             {/* 글 */}
-            <p className="text-black mb-4">{pinData?.description}</p>
+            <p className="text-black mb-4 text-sm">{pinData?.description}</p>
             {/* <p className="text-blue-500 mb-4">
               <a href="#tag" className="hover:underline">
                 #miffy
@@ -317,7 +317,11 @@ const PinPage: React.FC = () => {
           {/* 하단 영역 */}
           <div className="mt-auto">
             {/* 설명 */}
-            <p className="text-black font-semibold mb-4">어떠셨나요?</p>
+            {comments.length ? (
+              <></>
+            ) : (
+              <p className="text-black font-semibold mb-4">어떠셨나요?</p>
+            )}
 
             {/* 댓글 입력란 */}
             <footer className="sticky bottom-0 bg-white pt-2">
