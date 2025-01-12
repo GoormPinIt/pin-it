@@ -7,18 +7,7 @@ import {
   getDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
-
-interface Board {
-  id: string;
-  description: string;
-  isPrivate: boolean;
-  ownerIds: string[];
-  pins: {
-    pinId: string[];
-  };
-  title: string;
-  icon: string;
-}
+import { Board } from '../types';
 
 const getPinImageUrl = async (pinId: string): Promise<string> => {
   try {

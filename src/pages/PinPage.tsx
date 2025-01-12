@@ -9,7 +9,7 @@ import { addCommentToFirestore } from '../utils/firestoreUtils';
 // import { FaSmile } from 'react-icons/fa';
 // import { LuSticker } from 'react-icons/lu';
 // import { AiOutlinePicture } from 'react-icons/ai';
-import SaveModal from './../components/SaveModal';
+import SaveDropdown from '../components/SaveDropdown';
 import ProfileComment from '../components/ProfileComment';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -18,11 +18,11 @@ import {
   doc,
   getDoc,
   getDocs,
-  addDoc,
   where,
   query,
   collection,
 } from 'firebase/firestore';
+import UserTag from '../components/UserTag';
 
 interface PinData {
   pinId: string;
@@ -56,10 +56,15 @@ const PinPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [comments, setComments] = useState<Comment[]>([]);
   const [comment, setComment] = useState('');
+  const [boardName, setBoardName] = useState<string>('');
 
   const handleModalOpen = () => {
     setIsModalOpen(true); // 모달 열기
   };
+
+  useEffect(() => {
+    setBoardName('보드 이름');
+  }, []);
 
   const handleModalClose = () => {
     setIsModalOpen(false); // 모달 닫기
@@ -126,10 +131,10 @@ const PinPage: React.FC = () => {
 
         const fetchedComments: Comment[] = querySnapshot.docs.map((doc) => ({
           commentId: doc.id, // 문서 ID
-          content: doc.data().content || '', // Firestore에서 가져온 content
-          pinId: doc.data().pinId || '', // Firestore에서 가져온 pinId
-          nickname: doc.data().nickname || '', // Firestore에서 가져온 nickname
-          userId: doc.data().userId || '', // Firestore에서 가져온 userId
+          content: doc.data().content || '',
+          pinId: doc.data().pinId || '',
+          nickname: doc.data().nickname || '',
+          userId: doc.data().userId || '',
           parentCommentId: doc.data().parentCommentId || null, // Firestore에서 가져온 parentCommentId
         }));
         setComments(fetchedComments); // 댓글 상태에 저장
@@ -179,7 +184,7 @@ const PinPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex h-screen justify-center">
+    <div className="flex h-screen justify-center mt-3">
       {/* 메인 콘텐츠 */}
       <main className="flex w-[80%] border border-gray-200 rounded-3xl overflow-hidden mt-[5px] h-[550px] max-w-[815px] bg-white">
         {/* 좌측 이미지 섹션 */}
@@ -209,7 +214,7 @@ const PinPage: React.FC = () => {
                   onClick={handleModalOpen}
                 >
                   <button className="text-black text-sm font-semibold">
-                    보드이름
+                    {boardName}
                   </button>
                   <svg
                     aria-label="댓글 열기"
@@ -229,7 +234,8 @@ const PinPage: React.FC = () => {
               {/* SaveModal 컴포넌트 */}
               {isModalOpen && (
                 <div ref={modalRef}>
-                  <SaveModal
+                  <SaveDropdown
+                    pinId={pinId || ''}
                     onClose={handleModalClose} // 모달 닫기 핸들러 전달
                   />
                 </div>
@@ -240,7 +246,7 @@ const PinPage: React.FC = () => {
             <h1 className="text-3xl font-semibold mb-4">{pinData?.title}</h1>
 
             {/* 사용자 */}
-            <header className="flex items-center mb-4">
+            {/* <header className="flex items-center mb-4">
               <figure className="w-8 h-8 rounded-full overflow-hidden mr-2">
                 <img
                   src="https://eu.ui-avatars.com/api/?name=John+Doe&size=250"
@@ -248,7 +254,8 @@ const PinPage: React.FC = () => {
                 />
               </figure>
               <span className="font-normal">vicky 🐧</span>
-            </header>
+            </header> */}
+            <UserTag uid={pinData?.creatorId || ''} />
 
             {/* 글 */}
             <p className="text-black mb-4">{pinData?.description}</p>
