@@ -148,26 +148,43 @@ const PinPage: React.FC = () => {
     fetchCommentsData();
   }, [pinId]);
 
-  const handleAddComment = () => {
-    if (!comment.trim()) return; // 빈 문자열은 무시
+  const handleAddComment = async (userId: string): Promise<void> => {
+    try {
+      if (!comment.trim()) return;
 
-    const newComment = {
-      commentId: uuidv4(),
-      content: comment,
-      nickname: 'test7',
-      parentCommentId: '',
-      pinId: pinId || '',
-      userId: userId || '',
-    };
+      const userDocRef = doc(db, 'users', userId);
 
-    addCommentToFirestore(newComment)
-      .then(() => {
-        setComments([...comments, newComment]); // 로컬 상태 갱신
-        setComment(''); // 입력 필드 초기화
-      })
-      .catch((error) => {
-        console.error('Error adding comment to Firestore:', error);
-      });
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const userName = userDoc.data().name;
+        console.log('User Name:', userName);
+
+        const newComment = {
+          commentId: uuidv4(),
+          content: comment,
+          nickname: userName,
+          parentCommentId: '',
+          pinId: pinId || '',
+          userId: userId || '',
+        };
+
+        addCommentToFirestore(newComment)
+          .then(() => {
+            setComments([...comments, newComment]); // 로컬 상태 갱신
+            setComment(''); // 입력 필드 초기화
+          })
+          .catch((error) => {
+            console.error('Error adding comment to Firestore:', error);
+          });
+      } else {
+        console.log('No such user document!');
+        return;
+      }
+    } catch (error) {
+      console.error('Error fetching user name:', error);
+      return;
+    }
   };
 
   useEffect(() => {
@@ -328,7 +345,7 @@ const PinPage: React.FC = () => {
                   />
                   <button
                     type="button"
-                    onClick={handleAddComment}
+                    onClick={() => handleAddComment(userId || '')}
                     disabled={!comment.trim()}
                     className={`absolute top-1/2 right-[15px] -translate-y-1/2 p-2 rounded-full font-semibold focus:outline-none focus:ring-2 ${
                       comment.trim()
