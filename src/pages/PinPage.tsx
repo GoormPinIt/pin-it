@@ -34,7 +34,7 @@ interface PinData {
   tag: string;
   allowComments: boolean;
   showSimilarProducts: boolean;
-  creatorId: string;
+  userId: string;
 }
 
 interface Comment {
@@ -237,6 +237,7 @@ const PinPage: React.FC = () => {
                   <SaveDropdown
                     pinId={pinId || ''}
                     onClose={handleModalClose} // 모달 닫기 핸들러 전달
+                    setBoardName={setBoardName}
                   />
                 </div>
               )}
@@ -255,7 +256,7 @@ const PinPage: React.FC = () => {
               </figure>
               <span className="font-normal">vicky 🐧</span>
             </header> */}
-            <UserTag uid={pinData?.creatorId || ''} />
+            <UserTag uid={pinData?.userId || ''} />
 
             {/* 글 */}
             <p className="text-black mb-4">{pinData?.description}</p>
@@ -296,6 +297,7 @@ const PinPage: React.FC = () => {
                     key={comment.commentId}
                     profileUrl={''} // 프로필 URL이 없는 경우
                     userName={comment.nickname}
+                    userId={comment.userId}
                     comment={comment.content}
                     onReplyClick={() => handleReplyClick(comment.commentId)}
                   />
