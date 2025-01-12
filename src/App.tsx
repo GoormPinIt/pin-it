@@ -74,6 +74,10 @@ const AppRoutes = (): JSX.Element => {
                 path="/board/:boardId/organize"
                 element={<OrganizePins />}
               />
+              <Route
+                path="/board/:boardId/organize"
+                element={<OrganizePins />}
+              />
               <Route path="/boardDetail" element={<ProfileBoardDetail />} />
               <Route path="/pin-creation-tool" element={<PinBuilder />} />
               <Route path="/pin/:pinId" element={<PinPage />} />

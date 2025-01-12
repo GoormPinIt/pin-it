@@ -15,7 +15,8 @@ const PhotoEditPage = () => {
   const [isFilling, setIsFilling] = useState<boolean>(false);
   const [text, setText] = useState<string>('');
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
-
+  const [textSize, setTextSize] = useState<number>(20);
+  const [isTextAdding, setIsTextAdding] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -63,21 +64,30 @@ const PhotoEditPage = () => {
     setLineWidth(Number(e.target.value));
   };
 
-  const handleModeToggle = () => {
-    setIsFilling(!isFilling);
-  };
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isDrawing) return;
 
-  const handleCanvasClick = () => {
-    if (isFilling) {
-      const canvas = canvasRef.current;
-      const ctx = canvas?.getContext('2d');
-      if (ctx) {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+
+    if (ctx) {
+      if (isFilling) {
+        ctx.fillStyle = color;
         ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      } else if (isTextAdding && text) {
+        const x = e.nativeEvent.offsetX;
+        const y = e.nativeEvent.offsetY;
+        ctx.font = `${textSize}px Arial`;
+        ctx.fillStyle = color;
+        ctx.fillText(text, x, y);
+        setIsTextAdding(false);
       }
     }
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isTextAdding) return;
+
     setIsDrawing(true);
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
@@ -109,14 +119,9 @@ const PhotoEditPage = () => {
     setColor('#FFFFFF');
   };
 
-  const handleAddText = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (ctx && text) {
-      ctx.font = '20px Arial';
-      ctx.fillStyle = color;
-      ctx.fillText(text, 50, 50);
-    }
+  const handleAddTextMode = () => {
+    setIsTextAdding(true);
+    setIsDrawing(false);
   };
 
   const handleSaveImage = () => {
@@ -183,7 +188,7 @@ const PhotoEditPage = () => {
               onChange={handleLineWidthChange}
             />
           </div>
-          <button onClick={handleModeToggle}>
+          <button onClick={() => setIsFilling(!isFilling)}>
             {isFilling ? <PiPaintBrushBold size={30} /> : <GrPaint size={30} />}
           </button>
           <button onClick={handleClearCanvas}>
@@ -192,6 +197,16 @@ const PhotoEditPage = () => {
           <button onClick={handleErase}>
             <LuEraser size={30} />
           </button>
+          <label className="block text-sm font-medium text-gray-700">
+            텍스트 크기
+          </label>
+          <input
+            type="range"
+            min="10"
+            max="100"
+            value={textSize}
+            onChange={(e) => setTextSize(Number(e.target.value))}
+          />
           <input
             type="text"
             value={text}
@@ -199,7 +214,7 @@ const PhotoEditPage = () => {
             placeholder="Enter text"
             className="w-36 px-4 py-2 border rounded"
           />
-          <button onClick={handleAddText}>
+          <button onClick={handleAddTextMode}>
             <IoText size={30} />
           </button>
           <button onClick={handleSaveImage}>
