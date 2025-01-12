@@ -9,8 +9,13 @@ import {
   deleteUser,
 } from 'firebase/auth';
 import { RootState } from '../store';
+import { useNavigate } from 'react-router-dom';
+import { deleteDoc, doc, getFirestore } from 'firebase/firestore';
 
 const AccountManagement: React.FC = () => {
+  const navigate = useNavigate();
+  const db = getFirestore();
+
   const userEmail = useSelector(
     (state: RootState) => state.auth.userData?.email,
   );
@@ -83,9 +88,14 @@ const AccountManagement: React.FC = () => {
 
     try {
       await reauthenticateWithCredential(user, credential); // 재인증
-      await deleteUser(user); // 계정 삭제
+      // Firestore에서 사용자 데이터 삭제
+      await deleteDoc(doc(db, 'users', user.uid));
+
+      // Authentication에서 사용자 삭제
+      await deleteUser(user);
       console.log('계정이 성공적으로 삭제되었습니다.');
       alert('계정이 성공적으로 삭제되었습니다.');
+      navigate('/');
     } catch (error) {
       // 에러 처리
       if (error instanceof FirebaseError) {
