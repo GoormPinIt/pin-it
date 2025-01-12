@@ -7,7 +7,30 @@ import { FiSearch } from 'react-icons/fi';
 import CardImg from './CardImg';
 import './Style.css';
 import SignUp from '../../pages/Signup';
-
+import interior1 from '../../assets/img_landingPage/interior1.jpeg';
+import interior2 from '../../assets/img_landingPage/interior2.jpeg';
+import interior3 from '../../assets/img_landingPage/interior3.jpeg';
+import interior4 from '../../assets/img_landingPage/interior4.jpeg';
+import interior5 from '../../assets/img_landingPage/interior5.jpeg';
+import interior6 from '../../assets/img_landingPage/interior6.jpeg';
+import meal1 from '../../assets/img_landingPage/meal1.jpeg';
+import meal2 from '../../assets/img_landingPage/meal2.jpeg';
+import meal3 from '../../assets/img_landingPage/meal3.jpeg';
+import meal4 from '../../assets/img_landingPage/meal4.jpeg';
+import meal5 from '../../assets/img_landingPage/meal5.jpeg';
+import meal6 from '../../assets/img_landingPage/meal6.jpeg';
+import gardening1 from '../../assets/img_landingPage/gardening1.jpeg';
+import gardening2 from '../../assets/img_landingPage/gardening2.jpeg';
+import gardening3 from '../../assets/img_landingPage/gardening3.jpeg';
+import gardening4 from '../../assets/img_landingPage/gardening4.jpeg';
+import gardening5 from '../../assets/img_landingPage/gardening5.jpeg';
+import gardening6 from '../../assets/img_landingPage/gardening6.jpeg';
+import fashion1 from '../../assets/img_landingPage/fashion1.jpeg';
+import fashion2 from '../../assets/img_landingPage/fashion2.jpeg';
+import fashion3 from '../../assets/img_landingPage/fashion3.jpeg';
+import fashion4 from '../../assets/img_landingPage/fashion4.jpeg';
+import fashion5 from '../../assets/img_landingPage/fashion5.jpeg';
+import fashion6 from '../../assets/img_landingPage/fashion6.jpeg';
 const Sec1: React.FC = () => {
   type Message = {
     text: string;
@@ -22,34 +45,43 @@ const Sec1: React.FC = () => {
       text: '저녁 식사 메뉴 아이디어를',
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-600',
-      img: [],
+      img: [meal1, meal2, meal3, meal4, meal5, meal6],
       id: 1,
     },
     {
       text: '집안 꾸미기 아이디어를',
       color: 'text-green-900',
       bgColor: 'bg-green-900',
-      img: [],
+      img: [interior1, interior2, interior3, interior4, interior5, interior6],
       id: 2,
     },
     {
       text: '새로운 패션을',
       color: 'text-sky-600',
       bgColor: 'bg-sky-600',
-      img: [],
+      img: [fashion1, fashion2, fashion3, fashion4, fashion5, fashion6],
       id: 3,
     },
     {
       text: '정원 가꾸기 아이디어를',
       color: 'text-green-900',
       bgColor: 'bg-green-900',
-      img: [],
+      img: [
+        gardening1,
+        gardening2,
+        gardening3,
+        gardening4,
+        gardening5,
+        gardening6,
+      ],
       id: 4,
     },
   ];
 
   const [index, setIndex] = useState<number>(0);
-
+  const handleIndexChange = (newIndex: number) => {
+    setIndex(newIndex);
+  };
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prevIndex) => (prevIndex + 1) % Messages.length);
@@ -76,8 +108,9 @@ const Sec1: React.FC = () => {
             activeIndex={index}
             total={Messages.length}
             messages={Messages}
+            onIndexChange={handleIndexChange}
           />
-          <Images />
+          <Images messages={Messages} activeIndex={index} />
           <IoIosArrowDropdownCircle
             className={`text-5xl rounded-full ${msg.color} relative z-40 animate-bounce mb-3`}
           />
@@ -220,7 +253,7 @@ const Sec4: React.FC = () => {
           무엇보다도 Pinterest에서는 전 세계 사람들의 아이디어와 새로운 것을
           발견할 수 있습니다.
         </p>
-        <Button className="px-5 py-3">Explore</Button>
+        <Button className="px-5 py-3">탐색</Button>
       </div>
     </div>
   );

@@ -1,42 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from './Button';
 import { IoIosMore } from 'react-icons/io';
 import { RiShare2Line } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 import { FaLink } from 'react-icons/fa6';
 import { FaSearch } from 'react-icons/fa';
-// import { ShareModal } from './Profile';
-// Pin 컴포넌트의 props 타입 정의
+import { getStorage, ref, getDownloadURL } from 'firebase/storage';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../store';
+import { savePinToBoard, fetchBoards } from '../features/boardSlice';
+import SaveModal from './SaveModal';
+
 interface PinProps {
-  src: string; // src는 string 타입이어야 합니다.
-  // ShareModal: React.FC;
+  src: string;
   id: string;
-  // OptionsModal: React.FC;
+  onClose?: () => void;
 }
 interface OptionsModalProps {
   src: string;
   id: string;
+  onClose: () => void;
+}
+interface ShareModalProps {
+  onClose: () => void;
 }
 type LocalUser = {
   id: string;
   name: string;
   profileImage: string;
 };
-const ShareModal = () => {
+const ShareModal: React.FC<ShareModalProps> = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredUsers, setFilteredUsers] = useState<LocalUser[]>([]);
   const [copied, setCopied] = useState(false);
   const currentUrl = window.location.href;
   const facebookAppId = process.env.REACT_APP_FACEBOOK_APP_ID;
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const handleShareClick = () => {
-    setIsShareModalOpen((prev) => !prev);
-  };
-
-  const handleSend = (id: string) => {
-    alert(`${id}에게 내 프로필을 보냈습니다.`);
-    // 메시지로 내 프로필 보내는 로직 추가하기
-  };
+  // const handleSend = (id: string) => {
+  //   alert(`${id}에게 내 프로필을 보냈습니다.`);
+  //   // 메시지로 내 프로필 보내는 로직 추가하기
+  // };
 
   const handleCopyLink = () => {
     navigator.clipboard
@@ -192,17 +194,27 @@ const ShareModal = () => {
 };
 // console.log('boards in Pin:', boards);
 const OptionsModal: React.FC<OptionsModalProps> = ({ src, id }) => {
-  // const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
-  // const handleOptionsClick = () => {
-  //   setIsOptionsModalOpen((prev) => !prev);
-  // };
-  const handleDownload = () => {
-    const a = document.createElement('a');
-    a.href = src;
-    a.download = `pin-${id}.jpg`; // 파일 이름 설정 (필요 시 확장자도 변경)
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const handleSaveImage = async () => {
+    try {
+      // Firebase Storage 참조 생성
+      const storage = getStorage();
+      const imageRef = ref(storage, src);
+
+      // 다운로드 URL 가져오기
+      const downloadURL = await getDownloadURL(imageRef);
+
+      // 다운로드 링크 생성
+      const link = document.createElement('a');
+      link.href = downloadURL;
+      link.download = `pin-${id}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('다운로드 실패:', error);
+      // 실패 시 새 탭에서 열기
+      window.open(src, '_blank');
+    }
   };
   return (
     <div
@@ -217,7 +229,7 @@ const OptionsModal: React.FC<OptionsModalProps> = ({ src, id }) => {
       </div>
       <div
         className="text-left p-2 hover:bg-black/15 rounded-2xl"
-        onClick={() => handleDownload()}
+        onClick={handleSaveImage}
       >
         이미지 다운로드
       </div>
@@ -227,8 +239,112 @@ const OptionsModal: React.FC<OptionsModalProps> = ({ src, id }) => {
 };
 
 const Pin: React.FC<PinProps> = ({ id, src }) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { boards, userId } = useSelector((state: RootState) => state.boards);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
+  const [showBoardsList, setShowBoardsList] = useState(false);
+  const [selectedBoard, setSelectedBoard] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
+  // 컴포넌트 마운트 시 보드 목록 가져오기
+  // const modalRef = useRef<HTMLDivElement>(null);
+  const handleCloseShareModal = () => {
+    setIsShareModalOpen(false);
+  };
+  const handleCloseOptionModal = () => {
+    setIsOptionsModalOpen(false);
+  };
+  // useEffect(() => {
+  //   const handleClickOutside = (event: MouseEvent) => {
+  //     if (
+  //       modalRef.current &&
+  //       !modalRef.current.contains(event.target as Node)
+  //     ) {
+  //       onclose();
+  //     }
+  //   };
+  //   document.addEventListener('mousedown', handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener('mousedown', handleClickOutside);
+  //   };
+  // }, [onclose]);
+
+  useEffect(() => {
+    if (userId) {
+      console.log('Fetching boards for userId:', userId);
+      dispatch(fetchBoards(userId));
+    }
+  }, [userId]);
+
+  const handleModalClose = () => {
+    setShowBoardsList(false);
+  };
+  // boards 상태 변경 확인을 위한 useEffect
+  // useEffect(() => {
+  //   console.log('Current boards:', boards);
+  // }, [boards]);
+
+  const handleSaveClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('저장');
+    setShowBoardsList((prev) => !prev);
+  };
+  // const handleSaveToBoard = async (boardId: string, boardName: string) => {
+  //   try {
+  //     console.log('보드 선택 됨', boardName);
+  //     await dispatch(savePinToBoard({ boardId, pinId: id })).unwrap();
+  //     alert(`${boardName}에 저장 완료`);
+  //     setShowBoardsList(false);
+  //   } catch (error) {
+  //     console.error('핀 저장 실패:', error);
+  //     alert('Error: 핀 저장 실패');
+  //   }
+  // };
+  const handleSaveToBoard = async (boardId: string, boardTitle: string) => {
+    try {
+      await dispatch(savePinToBoard({ boardId, pinId: id })).unwrap();
+      setSelectedBoard({ id: boardId, title: boardTitle });
+      alert(`${boardTitle}에 저장되었습니다.`);
+    } catch (error) {
+      console.error('핀 저장 실패:', error);
+    }
+  };
+  const handleQuickSave = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Available boards:', boards); // 현재 boards 상태 확인
+
+    if (!selectedBoard) {
+      alert('저장할 보드가 없습니다.');
+      return;
+    }
+
+    const randomBoard = boards[Math.floor(Math.random() * boards.length)];
+    setSelectedBoard(randomBoard);
+
+    try {
+      await dispatch(
+        savePinToBoard({ boardId: selectedBoard.id, pinId: id }),
+      ).unwrap();
+      alert(`"${selectedBoard.title}"에 저장되었습니다.`);
+      setIsSaved(true);
+    } catch (error) {
+      console.error('핀 저장 실패:', error);
+      alert('저장 실패');
+    }
+  };
+
+  useEffect(() => {
+    if (userId && boards.length > 0) {
+      // 컴포넌트 마운트 시 랜덤으로 보드 선택
+      const randomBoard = boards[Math.floor(Math.random() * boards.length)];
+      setSelectedBoard(randomBoard);
+    }
+  }, [userId]);
 
   const handleShareClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -241,37 +357,57 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
     setIsOptionsModalOpen((prev) => !prev);
     setIsShareModalOpen(false);
   };
-
+  console.log(showBoardsList);
   return (
-    <div className="relative hover:bg-blend-darken">
-      <Link to={`/pin/${id}`} className="relative">
+    <Link to={`/pin/${id}`}>
+      <div className="relative hover:bg-blend-darken">
         <img src={src} className="w-full object-cover rounded-3xl" />
         <div className="z-10 absolute inset-0 hover:bg-black hover:bg-opacity-50 w-full rounded-3xl opacity-0 hover:opacity-100">
-          <button className="absolute top-3 rounded-2xl left-3 text-white block py-2 px-3 hover:bg-black/30 font-medium bg-transparent outline-none">
-            ...
+          <button
+            className="absolute top-3 rounded-2xl left-3 text-white block py-2 px-3 hover:bg-black/30 font-medium bg-transparent outline-none"
+            onClick={handleSaveClick}
+          >
+            {selectedBoard?.title || '...'}
           </button>
-          <Button className="absolute top-3 right-3 px-5 py-3 z-20 pointer-events-auto">
+          {showBoardsList && (
+            <SaveModal
+              onClose={() => setShowBoardsList(false)}
+              onSave={handleSaveToBoard}
+              boards={boards}
+              selectedBoard={selectedBoard}
+            />
+          )}
+          <Button
+            className="absolute top-3 right-3 px-5 py-3 z-20 pointer-events-auto"
+            onClick={handleQuickSave}
+          >
             저장
           </Button>
-          <div className="absolute bottom-3 w-full flex justify-end gap-1 right-3 ">
+          <div className="absolute bottom-3 w-full flex justify-end gap-1 right-3">
             <Button
               className="bg-slate-200 hover:bg-slate-300 rounded-full p-3 z-10 pointer-events-auto"
               onClick={handleShareClick}
             >
               <RiShare2Line className="text-neutral-900 font-black text-sm " />
             </Button>
-            {isShareModalOpen && <ShareModal />}
+            {isShareModalOpen && <ShareModal onClose={handleCloseShareModal} />}
             <Button
               className="bg-slate-200 hover:bg-slate-300 rounded-full text-sm p-3 z-10 pointer-events-auto"
               onClick={handleOptionsClick}
             >
-              {isOptionsModalOpen && <OptionsModal src={src} id={id} />}
+              {isOptionsModalOpen && (
+                <OptionsModal
+                  src={src}
+                  id={id}
+                  onClose={handleCloseOptionModal}
+                />
+              )}
               <IoIosMore className="text-neutral-900" />
             </Button>
           </div>
         </div>
-      </Link>
-    </div>
+      </div>
+    </Link>
   );
 };
 

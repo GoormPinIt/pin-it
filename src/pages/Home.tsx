@@ -55,13 +55,23 @@ const Home = (): JSX.Element => {
   console.log('userId in Home:', userId);
   return (
     <div className="flex flex-col mt-0">
-      <div className="w-11/12 h-30 p-4 overflow-x-auto">
+      <div className="w-11/12 h-30 p-4 mt-2 overflow-x-auto">
         <StoryList />
       </div>
-
       <div
-        className={`-mt-2 py-2 fixed z-10 bg-white text-center flex items-center justify-start w-full gap-10 pl-3 ${visible ? 'opacity-100' : 'opacity-0'}`}
+        className={`-mt-2 pb-2 pt-6fixed z-10 bg-white text-center flex items-center justify-start w-full gap-10 pl-3 ${visible ? 'opacity-100' : 'opacity-0'}`}
       >
+        <div className="relative">
+          <h2
+            className="hover:bg-gray-400/30 rounded-xl px-2 py-1 inline-block font-medium sm:font-bold sm:text-base lg:font-bold lg:text-base text-sm "
+            onClick={() => handleClick('전체')}
+          >
+            전체
+          </h2>
+          {activeKey === '전체' && ( // 조건부 렌더링: 클릭된 항목의 span만 표시
+            <span className="block absolute bottom-0 w-full bg-black h-0.5 rounded-3xl"></span>
+          )}
+        </div>
         {boards.map((item: Board, index: number) => (
           <div className="relative" key={index}>
             <h2
