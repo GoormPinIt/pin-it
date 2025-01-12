@@ -104,7 +104,7 @@ const BoardCreateModal: React.FC<BoardModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-100">
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-[9999]">
       <div className="bg-white pt-6 rounded-lg shadow-lg w-[90%] relative h-[580px] max-w-[700px] flex flex-col mt-16">
         <h2 className="text-2xl font-semibold m-4 text-center">보드 만들기</h2>
 

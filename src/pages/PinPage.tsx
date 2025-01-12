@@ -18,8 +18,10 @@ import {
   doc,
   getDoc,
   getDocs,
+  updateDoc,
   where,
   query,
+  arrayRemove,
   collection,
 } from 'firebase/firestore';
 import UserTag from '../components/UserTag';
@@ -57,17 +59,76 @@ const PinPage: React.FC = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [comment, setComment] = useState('');
   const [boardName, setBoardName] = useState<string>('');
+  const [savedState, setSavedState] = useState({
+    isSaved: false,
+    boardName: '보드 선택',
+    boardId: '',
+  });
+
+  useEffect(() => {
+    if (userId && pinId) {
+      checkIfPinSaved();
+    }
+  }, [userId, pinId]);
+
+  const handleDelete = async () => {
+    if (!savedState.boardId || !pinId) return;
+    try {
+      const boardRef = doc(db, 'boards', savedState.boardId);
+      await updateDoc(boardRef, {
+        pins: arrayRemove(pinId),
+      });
+      setSavedState({ isSaved: false, boardName: '보드 선택', boardId: '' });
+      console.log(
+        `핀 ${pinId}이 보드 ${savedState.boardId}에서 삭제되었습니다.`,
+      );
+
+      await checkIfPinSaved();
+    } catch (error) {
+      console.error('핀 삭제 중 오류 발생:', error);
+    }
+  };
+
+  const checkIfPinSaved = async () => {
+    if (!userId || !pinId) return;
+    try {
+      const boardsRef = collection(db, 'boards');
+      const q = query(boardsRef, where('ownerId', 'array-contains', userId));
+      const querySnapshot = await getDocs(q);
+
+      for (const docSnap of querySnapshot.docs) {
+        const data = docSnap.data();
+        if (data.pins?.includes(pinId)) {
+          setSavedState({
+            isSaved: true,
+            boardName: data.title,
+            boardId: docSnap.id,
+          });
+          return;
+        }
+      }
+      setSavedState({ isSaved: false, boardName: '보드 선택', boardId: '' });
+    } catch (error) {
+      console.error('핀 저장 여부 확인 중 오류:', error);
+    }
+  };
 
   const handleModalOpen = () => {
     setIsModalOpen(true); // 모달 열기
   };
 
   useEffect(() => {
-    setBoardName('보드 이름');
+    setBoardName('강아지');
+    checkIfPinSaved();
+  }, []);
+
+  useEffect(() => {
+    checkIfPinSaved();
   }, []);
 
   const handleModalClose = () => {
     setIsModalOpen(false); // 모달 닫기
+    checkIfPinSaved();
   };
 
   const handleReplyClick = (commentId: string) => {
@@ -190,6 +251,10 @@ const PinPage: React.FC = () => {
   };
 
   useEffect(() => {
+    console.log('Saved state updated:', savedState);
+  }, [savedState]);
+
+  useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -229,29 +294,45 @@ const PinPage: React.FC = () => {
                 <RiShare2Line />
                 <HiDotsHorizontal />
               </div>
-              <div className="flex items-center space-x-2">
-                <div
-                  className="flex items-center bg-white hover:bg-[#e2e2e2] px-4 py-2 rounded-full"
-                  onClick={handleModalOpen}
-                >
-                  <button className="text-black text-sm font-semibold">
-                    {boardName}
-                  </button>
-                  <svg
-                    aria-label="보드 목록 열기"
-                    className="ml-2"
-                    height="12"
-                    role="img"
-                    viewBox="0 0 24 24"
-                    width="12"
+              {savedState.isSaved ? (
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center bg-white hover:bg-[#e2e2e2] px-4 py-2 rounded-full">
+                    <button className="text-black text-sm font-semibold">
+                      {boardName}
+                    </button>
+                  </div>
+                  <button
+                    onClick={handleDelete}
+                    className="bg-black text-white px-4 py-2 rounded-full text-sm font-semibold"
                   >
-                    <path d="M20.16 6.65 12 14.71 3.84 6.65a2.27 2.27 0 0 0-3.18 0 2.2 2.2 0 0 0 0 3.15L12 21 23.34 9.8a2.2 2.2 0 0 0 0-3.15 2.26 2.26 0 0 0-3.18 0"></path>
-                  </svg>
+                    저장됨
+                  </button>
                 </div>
-                <button className="bg-[#e60023] text-white px-4 py-2 rounded-full text-sm font-semibold">
-                  저장
-                </button>
-              </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center bg-white hover:bg-[#e2e2e2] px-4 py-2 rounded-full">
+                    <button
+                      onClick={handleModalOpen}
+                      className="text-black text-sm font-semibold"
+                    >
+                      {boardName}
+                    </button>
+                    <svg
+                      aria-label="보드 목록 열기"
+                      className="ml-2"
+                      height="12"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="12"
+                    >
+                      <path d="M20.16 6.65 12 14.71 3.84 6.65a2.27 2.27 0 0 0-3.18 0 2.2 2.2 0 0 0 0 3.15L12 21 23.34 9.8a2.2 2.2 0 0 0 0-3.15 2.26 2.26 0 0 0-3.18 0"></path>
+                    </svg>
+                  </div>
+                  <button className="bg-[#e60023] text-white px-4 py-2 rounded-full text-sm font-semibold">
+                    저장
+                  </button>
+                </div>
+              )}
               {isModalOpen && (
                 <div ref={modalRef}>
                   <SaveDropdown

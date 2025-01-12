@@ -5,21 +5,40 @@ import useCurrentUserUid from '../hooks/useCurrentUserUid';
 import { useFetchBoardItem } from '../hooks/useFetchBoardItem';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { db } from '../firebase';
+import BoardCreateModal from './BoardCreateModal';
 
 interface SaveDropdownProps {
   onClose: () => void;
   pinId: string;
+  imageUrl: string;
+  setBoardName: (boardName: string) => void;
   items?: { icon?: string; title: string }[]; // `items`를 옵셔널로 설정
 }
 
-const SaveDropdown: React.FC<SaveDropdownProps> = ({ pinId, onClose }) => {
+const SaveDropdown: React.FC<SaveDropdownProps> = ({
+  pinId,
+  onClose,
+  imageUrl,
+  setBoardName,
+}) => {
   const uid = useCurrentUserUid();
-  const { boardItems } = useFetchBoardItem(uid || '');
+  const { boardItems, refresh } = useFetchBoardItem(uid || '');
   const modalRef = useRef<HTMLDivElement>(null);
+  const [isBoardModalOpen, setIsBoardModalOpen] = useState<boolean>(false); // 보드 추가 모달 상태
+
+  const handleBoardModalOpen = () => {
+    setIsBoardModalOpen(true); // 보드 추가 모달 열기
+  };
+
+  const handleBoardModalClose = () => {
+    setIsBoardModalOpen(false); // 보드 추가 모달 닫기
+    refresh();
+  };
 
   const handleBoardClick = async (item: BoardItem, onClose: () => void) => {
     try {
       console.log(`${item.title} 클릭됨`);
+      setBoardName(item.title);
       const boardId = item.id;
       console.log('boardId:', boardId);
 
@@ -75,29 +94,42 @@ const SaveDropdown: React.FC<SaveDropdownProps> = ({ pinId, onClose }) => {
           </div>
         </div>
 
-        {/* 리스트 */}
-        <ul className="space-y-2 h-[300px] overflow-y-auto">
-          {boardItems.map((item, index) => (
-            <SaveModalItem
-              key={index}
-              icon={item.icon}
-              title={item.title}
-              onClick={() => {
-                handleBoardClick(item, onClose);
-              }}
-            />
-          ))}
-        </ul>
+        {boardItems.length ? (
+          <ul className="space-y-2 h-[300px] overflow-y-auto">
+            {boardItems.map((item, index) => (
+              <SaveModalItem
+                key={index}
+                icon={item.icon}
+                title={item.title}
+                onClick={() => {
+                  handleBoardClick(item, onClose);
+                }}
+              />
+            ))}
+          </ul>
+        ) : (
+          <div className="h-[300px] flex flex-col justify-center items-center">
+            <p className="text-base text-gray-400">보드가 없습니다.</p>
+          </div>
+        )}
 
         {/* 보드 생성 버튼 */}
         <div className="mt-4 modal-footer">
           <button
             className="flex items-center justify-center w-full px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
-            onClick={() => alert('보드 만들기 클릭됨')}
+            onClick={handleBoardModalOpen}
           >
             <span className="font-semibold">+ 보드 만들기</span>
           </button>
         </div>
+
+        {isBoardModalOpen && (
+          <BoardCreateModal
+            imageUrl={imageUrl}
+            currentUserUid={uid || ''}
+            onClose={handleBoardModalClose} // 모달 닫기 핸들러
+          />
+        )}
       </div>
     </div>
   );
