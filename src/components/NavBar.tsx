@@ -42,7 +42,7 @@ const NavBar: React.FC = () => {
   };
 
   const handleCreateClick = () => {
-    nav('/');
+    nav('/pin-creation-tool');
   };
 
   const handleUpdateClick = () => {
