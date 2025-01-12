@@ -218,25 +218,27 @@ const PinPage: React.FC = () => {
         </section>
 
         {/* 우측 콘텐츠 섹션 */}
-        <section className="w-1/2 pl-3 h-full flex flex-col justify-between">
-          <div className="overflow-y-auto pb-10">
-            <div className="flex items-center justify-between mb-4 pt-5 pr-5">
-              <div className="flex items-center space-x-4 text-gray-600">
+        {/* 우측 콘텐츠 섹션 */}
+        {/* 우측 콘텐츠 섹션 */}
+        <section className="w-1/2 pl-3 h-full flex flex-col">
+          {/* 헤더 영역 */}
+          <header className="sticky top-0 bg-white z-10 px-2 pt-3">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-4 text-black text-xl font-extrabold max-w-[400px]">
                 <FaRegHeart />
-                <span className="text-black"></span>
                 <RiShare2Line />
                 <HiDotsHorizontal />
               </div>
               <div className="flex items-center space-x-2">
                 <div
-                  className="flex items-center bg-white hover:bg-[#e2e2e2] px-4 py-2 rounded-full "
+                  className="flex items-center bg-white hover:bg-[#e2e2e2] px-4 py-2 rounded-full"
                   onClick={handleModalOpen}
                 >
                   <button className="text-black text-sm font-semibold">
                     {boardName}
                   </button>
                   <svg
-                    aria-label="댓글 열기"
+                    aria-label="보드 목록 열기"
                     className="ml-2"
                     height="12"
                     role="img"
@@ -250,60 +252,54 @@ const PinPage: React.FC = () => {
                   저장
                 </button>
               </div>
-              {/* SaveModal 컴포넌트 */}
               {isModalOpen && (
                 <div ref={modalRef}>
                   <SaveDropdown
+                    imageUrl={pinData!.imageUrl}
                     pinId={pinId || ''}
-                    onClose={handleModalClose} // 모달 닫기 핸들러 전달
+                    onClose={handleModalClose}
                     setBoardName={setBoardName}
                   />
                 </div>
               )}
             </div>
+          </header>
 
-            {/* 제목 */}
-            <h1 className="text-3xl font-semibold mb-4">{pinData?.title}</h1>
-            <UserTag uid={pinData?.userId || ''} />
+          {/* 스크롤 가능한 콘텐츠 */}
+          <div className="flex-grow overflow-y-auto">
+            <div className="flex flex-col">
+              <h1 className="text-3xl font-semibold mb-4">{pinData?.title}</h1>
+              <UserTag uid={pinData?.userId || ''} />
+              <p className="text-black mb-4 text-sm">{pinData?.description}</p>
 
-            {/* 글 */}
-            <p className="text-black mb-4 text-sm">{pinData?.description}</p>
-            {/* <p className="text-blue-500 mb-4">
-              <a href="#tag" className="hover:underline">
-                #miffy
-              </a>
-            </p> */}
-
-            <div
-              className="flex flex-row justify-between items-center pr-5 cursor-pointer"
-              onClick={() => {
-                setIsCommentOpen(!isCommentOpen);
-              }}
-            >
-              <div className="inline-block font-semibold ">
-                <span className="inline-block">댓글</span>
-                <span className="inline-block ml-1">{comments.length}</span>
-                <span className="inline-block">개</span>
+              {/* 댓글 영역 */}
+              <div
+                className="flex flex-row justify-between items-center pr-5 cursor-pointer"
+                onClick={() => setIsCommentOpen(!isCommentOpen)}
+              >
+                <div className="inline-block font-semibold">
+                  <span>댓글</span>
+                  <span className="ml-1">{comments.length}</span>
+                  <span>개</span>
+                </div>
+                <div className="inline-block ml-[7px]">
+                  <svg
+                    aria-label="댓글 열기"
+                    className="Uvi gUZ U9O kVc"
+                    height="12"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="12"
+                  >
+                    <path d="M20.16 6.65 12 14.71 3.84 6.65a2.27 2.27 0 0 0-3.18 0 2.2 2.2 0 0 0 0 3.15L12 21 23.34 9.8a2.2 2.2 0 0 0 0-3.15 2.26 2.26 0 0 0-3.18 0"></path>
+                  </svg>
+                </div>
               </div>
-              <div className="inline-block ml-[7px]">
-                <svg
-                  aria-label="댓글 열기"
-                  className="Uvi gUZ U9O kVc"
-                  height="12"
-                  role="img"
-                  viewBox="0 0 24 24"
-                  width="12"
-                >
-                  <path d="M20.16 6.65 12 14.71 3.84 6.65a2.27 2.27 0 0 0-3.18 0 2.2 2.2 0 0 0 0 3.15L12 21 23.34 9.8a2.2 2.2 0 0 0 0-3.15 2.26 2.26 0 0 0-3.18 0"></path>
-                </svg>
-              </div>
-            </div>
-            <div>
               {isCommentOpen &&
                 comments.map((comment) => (
                   <ProfileComment
                     key={comment.commentId}
-                    profileUrl={''} // 프로필 URL이 없는 경우
+                    profileUrl={''}
                     userName={comment.nickname}
                     userId={comment.userId}
                     comment={comment.content}
@@ -311,59 +307,53 @@ const PinPage: React.FC = () => {
                   />
                 ))}
             </div>
-            <article className="chat"></article>
           </div>
 
           {/* 하단 영역 */}
-          <div className="mt-auto">
-            {/* 설명 */}
+          <footer className="bg-white pt-2">
             {comments.length ? (
               <></>
             ) : (
               <p className="text-black font-semibold mb-4">어떠셨나요?</p>
             )}
-
-            {/* 댓글 입력란 */}
-            <footer className="sticky bottom-0 bg-white pt-2">
-              <form>
-                <label htmlFor="comment" className="sr-only">
-                  댓글 입력
-                </label>
-                <div className="relative w-full mb-4 pr-2">
-                  <input
-                    id="comment"
-                    type="text"
-                    placeholder="댓글을 추가..."
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    className="w-full border px-[15px] py-[13px] pr-[50px] rounded-full bg-[#e9e9e9] focus:outline-none focus:ring-2 focus:ring-gray-400"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleAddComment(userId || '')}
-                    disabled={!comment.trim()}
-                    className={`absolute top-1/2 right-[15px] -translate-y-1/2 p-2 rounded-full font-semibold focus:outline-none focus:ring-2 ${
-                      comment.trim()
-                        ? 'bg-[#e60023] text-white hover:bg-red-700 focus:ring-red-400'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    }`}
+            <form>
+              <label htmlFor="comment" className="sr-only">
+                댓글 입력
+              </label>
+              <div className="relative w-full mb-4 pr-2">
+                <input
+                  id="comment"
+                  type="text"
+                  placeholder="댓글을 추가..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  className="w-full border px-[15px] py-[13px] pr-[50px] rounded-full bg-[#e9e9e9] focus:outline-none focus:ring-2 focus:ring-gray-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleAddComment(userId || '')}
+                  disabled={!comment.trim()}
+                  className={`absolute top-1/2 right-[15px] -translate-y-1/2 p-2 rounded-full font-semibold focus:outline-none focus:ring-2 ${
+                    comment.trim()
+                      ? 'bg-[#e60023] text-white hover:bg-red-700 focus:ring-red-400'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  <svg
+                    aria-hidden="true"
+                    aria-label=""
+                    height="16"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    fill="currentColor"
                   >
-                    <svg
-                      aria-hidden="true"
-                      aria-label=""
-                      height="16"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="16"
-                      fill="currentColor"
-                    >
-                      <path d="m.46 2.43-.03.03c-.4.42-.58 1.06-.28 1.68L3 10.5 16 12 3 13.5.15 19.86c-.3.62-.13 1.26.27 1.67l.05.05c.4.38 1 .56 1.62.3l20.99-8.5q.28-.12.47-.3l.04-.04c.68-.71.51-2-.51-2.42L2.09 2.12Q1.79 2 1.49 2q-.61.01-1.03.43"></path>
-                    </svg>
-                  </button>
-                </div>
-              </form>
-            </footer>
-          </div>
+                    <path d="m.46 2.43-.03.03c-.4.42-.58 1.06-.28 1.68L3 10.5 16 12 3 13.5.15 19.86c-.3.62-.13 1.26.27 1.67l.05.05c.4.38 1 .56 1.62.3l20.99-8.5q.28-.12.47-.3l.04-.04c.68-.71.51-2-.51-2.42L2.09 2.12Q1.79 2 1.49 2q-.61.01-1.03.43"></path>
+                  </svg>
+                </button>
+              </div>
+            </form>
+          </footer>
         </section>
       </main>
     </div>
