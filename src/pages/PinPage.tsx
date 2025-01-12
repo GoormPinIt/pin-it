@@ -231,6 +231,14 @@ const PinPage: React.FC = () => {
                 <div ref={modalRef}>
                   <SaveModal
                     onClose={handleModalClose} // 모달 닫기 핸들러 전달
+                    onSave={function (
+                      boardId: string,
+                      boardTitle: string,
+                    ): Promise<void> {
+                      throw new Error('Function not implemented.');
+                    }}
+                    selectedBoard={null}
+                    boards={[]}
                   />
                 </div>
               )}
