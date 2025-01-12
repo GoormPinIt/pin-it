@@ -14,17 +14,22 @@ import SaveModal from './SaveModal';
 interface PinProps {
   src: string;
   id: string;
+  onClose?: () => void;
 }
 interface OptionsModalProps {
   src: string;
   id: string;
+  onClose: () => void;
+}
+interface ShareModalProps {
+  onClose: () => void;
 }
 type LocalUser = {
   id: string;
   name: string;
   profileImage: string;
 };
-const ShareModal = () => {
+const ShareModal: React.FC<ShareModalProps> = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredUsers, setFilteredUsers] = useState<LocalUser[]>([]);
   const [copied, setCopied] = useState(false);
@@ -245,6 +250,28 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
   } | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   // 컴포넌트 마운트 시 보드 목록 가져오기
+  // const modalRef = useRef<HTMLDivElement>(null);
+  const handleCloseShareModal = () => {
+    setIsShareModalOpen(false);
+  };
+  const handleCloseOptionModal = () => {
+    setIsOptionsModalOpen(false);
+  };
+  // useEffect(() => {
+  //   const handleClickOutside = (event: MouseEvent) => {
+  //     if (
+  //       modalRef.current &&
+  //       !modalRef.current.contains(event.target as Node)
+  //     ) {
+  //       onclose();
+  //     }
+  //   };
+  //   document.addEventListener('mousedown', handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener('mousedown', handleClickOutside);
+  //   };
+  // }, [onclose]);
+
   useEffect(() => {
     if (userId) {
       console.log('Fetching boards for userId:', userId);
@@ -266,15 +293,24 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
     console.log('저장');
     setShowBoardsList((prev) => !prev);
   };
-  const handleSaveToBoard = async (boardId: string, boardName: string) => {
+  // const handleSaveToBoard = async (boardId: string, boardName: string) => {
+  //   try {
+  //     console.log('보드 선택 됨', boardName);
+  //     await dispatch(savePinToBoard({ boardId, pinId: id })).unwrap();
+  //     alert(`${boardName}에 저장 완료`);
+  //     setShowBoardsList(false);
+  //   } catch (error) {
+  //     console.error('핀 저장 실패:', error);
+  //     alert('Error: 핀 저장 실패');
+  //   }
+  // };
+  const handleSaveToBoard = async (boardId: string, boardTitle: string) => {
     try {
-      console.log('보드 선택 됨', boardName);
       await dispatch(savePinToBoard({ boardId, pinId: id })).unwrap();
-      alert(`${boardName}에 저장 완료`);
-      setShowBoardsList(false);
+      setSelectedBoard({ id: boardId, title: boardTitle });
+      alert(`${boardTitle}에 저장되었습니다.`);
     } catch (error) {
       console.error('핀 저장 실패:', error);
-      alert('Error: 핀 저장 실패');
     }
   };
   const handleQuickSave = async (e: React.MouseEvent) => {
@@ -323,8 +359,8 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
   };
   console.log(showBoardsList);
   return (
-    <div className="relative hover:bg-blend-darken">
-      <Link to={`/pin/${id}`} className="relative">
+    <Link to={`/pin/${id}`}>
+      <div className="relative hover:bg-blend-darken">
         <img src={src} className="w-full object-cover rounded-3xl" />
         <div className="z-10 absolute inset-0 hover:bg-black hover:bg-opacity-50 w-full rounded-3xl opacity-0 hover:opacity-100">
           <button
@@ -333,32 +369,45 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
           >
             {selectedBoard?.title || '...'}
           </button>
-          {showBoardsList && <SaveModal onClose={handleModalClose} />}
+          {showBoardsList && (
+            <SaveModal
+              onClose={() => setShowBoardsList(false)}
+              onSave={handleSaveToBoard}
+              boards={boards}
+              selectedBoard={selectedBoard}
+            />
+          )}
           <Button
             className="absolute top-3 right-3 px-5 py-3 z-20 pointer-events-auto"
             onClick={handleQuickSave}
           >
             저장
           </Button>
-          <div className="absolute bottom-3 w-full flex justify-end gap-1 right-3 ">
+          <div className="absolute bottom-3 w-full flex justify-end gap-1 right-3">
             <Button
               className="bg-slate-200 hover:bg-slate-300 rounded-full p-3 z-10 pointer-events-auto"
               onClick={handleShareClick}
             >
               <RiShare2Line className="text-neutral-900 font-black text-sm " />
             </Button>
-            {isShareModalOpen && <ShareModal />}
+            {isShareModalOpen && <ShareModal onClose={handleCloseShareModal} />}
             <Button
               className="bg-slate-200 hover:bg-slate-300 rounded-full text-sm p-3 z-10 pointer-events-auto"
               onClick={handleOptionsClick}
             >
-              {isOptionsModalOpen && <OptionsModal src={src} id={id} />}
+              {isOptionsModalOpen && (
+                <OptionsModal
+                  src={src}
+                  id={id}
+                  onClose={handleCloseOptionModal}
+                />
+              )}
               <IoIosMore className="text-neutral-900" />
             </Button>
           </div>
         </div>
-      </Link>
-    </div>
+      </div>
+    </Link>
   );
 };
 

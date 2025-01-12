@@ -4,6 +4,12 @@ import SaveModalItem from './SaveModalItem';
 interface SaveModalProps {
   onClose: () => void;
   items?: { icon?: string; title: string; buttonLabel?: string }[]; // `items`를 옵셔널로 설정
+  onSave: (boardId: string, boardTitle: string) => Promise<void>;
+  selectedBoard: {
+    id: string;
+    title: string;
+  } | null;
+  boards: { id: string; title: string; icon?: string }[];
 }
 
 interface BoardItem {
@@ -12,7 +18,12 @@ interface BoardItem {
   buttonLabel?: string;
 }
 
-const SaveModal: React.FC<SaveModalProps> = ({ onClose }) => {
+const SaveModal: React.FC<SaveModalProps> = ({
+  onClose,
+  selectedBoard,
+  onSave,
+  boards,
+}) => {
   const [items, setItems] = useState<BoardItem[]>([]); // 서버에서 불러온 데이터를 저장
   const [isLoading, setIsLoading] = useState<boolean>(true); // 로딩 상태 관리
   const modalRef = useRef<HTMLDivElement>(null);
@@ -106,13 +117,18 @@ const SaveModal: React.FC<SaveModalProps> = ({ onClose }) => {
 
         {/* 리스트 */}
         <ul className="space-y-2 h-[300px] overflow-y-auto">
-          {items.map((item, index) => (
+          {boards.map((board) => (
             <SaveModalItem
-              key={index}
-              icon={item.icon}
-              title={item.title}
-              buttonLabel={item.buttonLabel}
-              onClick={() => alert(`${item.title} 클릭됨`)}
+              key={board.id}
+              icon={board.icon}
+              title={board.title}
+              buttonLabel="저장"
+              onClick={() => {
+                if (selectedBoard) {
+                  onSave(board.id, board.title);
+                  onClose();
+                }
+              }}
             />
           ))}
         </ul>
