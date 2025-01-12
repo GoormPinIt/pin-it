@@ -23,6 +23,9 @@ import {
   query,
   collection,
 } from 'firebase/firestore';
+import { useDispatch, useSelector } from 'react-redux';
+import { savePinToBoard } from '../features/boardSlice';
+import { AppDispatch, RootState } from '../store';
 
 interface PinData {
   pinId: string;
@@ -56,6 +59,12 @@ const PinPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [comments, setComments] = useState<Comment[]>([]);
   const [comment, setComment] = useState('');
+  const dispatch = useDispatch<AppDispatch>();
+  const [selectedBoard, setSelectedBoard] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
+  const { boards } = useSelector((state: RootState) => state.boards);
 
   const handleModalOpen = () => {
     setIsModalOpen(true); // 모달 열기
@@ -67,6 +76,19 @@ const PinPage: React.FC = () => {
 
   const handleReplyClick = (commentId: string) => {
     console.log(`답변 버튼 클릭됨! 댓글 ID: ${commentId}`);
+  };
+
+  const handleSaveToBoard = async (boardId: string, boardTitle: string) => {
+    if (!pinId) return;
+    try {
+      await dispatch(savePinToBoard({ boardId, pinId })).unwrap();
+      setSelectedBoard({ id: boardId, title: boardTitle });
+      console.log('Pin saved successfully');
+      alert(`${boardTitle}에 저장되었습니다.`);
+      handleModalClose();
+    } catch (error) {
+      console.error('핀 저장 실패:', error);
+    }
   };
 
   useEffect(() => {
@@ -231,6 +253,9 @@ const PinPage: React.FC = () => {
                 <div ref={modalRef}>
                   <SaveModal
                     onClose={handleModalClose} // 모달 닫기 핸들러 전달
+                    onSave={handleSaveToBoard}
+                    boards={boards}
+                    selectedBoard={selectedBoard}
                   />
                 </div>
               )}
