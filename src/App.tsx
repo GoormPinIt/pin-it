@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { RootState, store } from './store';
@@ -20,6 +20,9 @@ import AllPinsPage from './pages/AllPinsPage';
 import StoryPage from './pages/StoryPage';
 import CreateStory from './pages/CreateStory';
 import PhotoEditPage from './pages/PhotoEditPage';
+import OrganizePins from './pages/OrganizePins';
+
+const auth = getAuth();
 
 const App = (): JSX.Element => {
   return (
@@ -35,22 +38,25 @@ export default App;
 
 const AppRoutes = (): JSX.Element => {
   const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(true);
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
-  const auth = getAuth();
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const userData = {
-          email: user.email || '',
-          uid: user.uid || '',
-        };
-        dispatch(loginSuccess(userData));
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && user.emailVerified) {
+        dispatch(loginSuccess({ email: user.email || '', uid: user.uid }));
       } else {
         dispatch(logout());
       }
+      setIsLoading(false);
     });
-  }, [dispatch, auth]);
+
+    return () => unsubscribe();
+  }, [dispatch]);
+
+  if (isLoading) {
+    return <div>Loading...</div>; // 또는 로딩 컴포넌트
+  }
 
   return (
     <>
@@ -64,6 +70,10 @@ const AppRoutes = (): JSX.Element => {
               <Route path="/profile/:userId" element={<UserProfile />} />
               <Route path="/profile/:uid/all-pins" element={<AllPinsPage />} />
               <Route path="/board/:boardId" element={<BoardDetails />} />
+              <Route
+                path="/board/:boardId/organize"
+                element={<OrganizePins />}
+              />
               <Route path="/boardDetail" element={<ProfileBoardDetail />} />
               <Route path="/pin-creation-tool" element={<PinBuilder />} />
               <Route path="/pin/:pinId" element={<PinPage />} />

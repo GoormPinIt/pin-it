@@ -97,6 +97,7 @@ const SignUp: React.FC = () => {
       });
 
       console.log('회원가입 성공:', user);
+      await auth.signOut();
       alert('회원가입 성공!');
       navigate('/login');
     } catch (error) {

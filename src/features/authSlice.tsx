@@ -4,6 +4,7 @@ import {
   deleteUser,
   EmailAuthProvider,
   reauthenticateWithCredential,
+  onAuthStateChanged,
 } from 'firebase/auth';
 
 export interface UserData {
@@ -16,6 +17,7 @@ interface AuthState {
   userData: UserData | null;
   loading: boolean;
   error: string | null;
+  initialized: boolean;
 }
 
 const initialState: AuthState = {
@@ -23,6 +25,7 @@ const initialState: AuthState = {
   userData: null,
   loading: false,
   error: null,
+  initialized: false,
 };
 
 export const deleteAccount = createAsyncThunk(
@@ -38,6 +41,27 @@ export const deleteAccount = createAsyncThunk(
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
+  },
+);
+
+export const initializeAuth = createAsyncThunk(
+  'auth/initializeAuth',
+  async (_, { dispatch }) => {
+    return new Promise<void>((resolve) => {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          dispatch(
+            loginSuccess({
+              email: user.email,
+              uid: user.uid,
+            }),
+          );
+        } else {
+          dispatch(logout());
+        }
+        resolve();
+      });
+    });
   },
 );
 
@@ -68,6 +92,9 @@ const authSlice = createSlice({
       .addCase(deleteAccount.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(initializeAuth.fulfilled, (state) => {
+        state.initialized = true;
       });
   },
 });
