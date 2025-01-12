@@ -20,7 +20,7 @@ import AllPinsPage from './pages/AllPinsPage';
 import StoryPage from './pages/StoryPage';
 import CreateStory from './pages/CreateStory';
 import PhotoEditPage from './pages/PhotoEditPage';
-
+import OrganizePins from './pages/OrganizePins';
 const App = (): JSX.Element => {
   return (
     <Provider store={store}>
@@ -64,6 +64,10 @@ const AppRoutes = (): JSX.Element => {
               <Route path="/profile/:userId" element={<UserProfile />} />
               <Route path="/profile/:uid/all-pins" element={<AllPinsPage />} />
               <Route path="/board/:boardId" element={<BoardDetails />} />
+              <Route
+                path="/board/:boardId/organize"
+                element={<OrganizePins />}
+              />
               <Route path="/boardDetail" element={<ProfileBoardDetail />} />
               <Route path="/pin-creation-tool" element={<PinBuilder />} />
               <Route path="/pin/:pinId" element={<PinPage />} />
