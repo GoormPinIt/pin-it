@@ -7,7 +7,9 @@ import {
   getDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
+
 import { Board } from '../types';
+import { createAction } from '@reduxjs/toolkit';
 
 const getPinImageUrl = async (pinId: string): Promise<string> => {
   try {
@@ -63,3 +65,5 @@ export const fetchBoards = async (userId: string): Promise<Board[]> => {
     return [];
   }
 };
+
+export const setBoards = createAction<Board[]>('boards/setBoards');

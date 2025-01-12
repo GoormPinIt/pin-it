@@ -11,30 +11,21 @@ import Modal from './Modal';
 
 const NavBar: React.FC = () => {
   const nav = useNavigate();
-  const [modalState, setModalState] = useState<{
-    isOpen: boolean;
-    title: string;
-    type: string | null;
-  }>({
+  const [modalState, setModalState] = useState({
     isOpen: false,
     title: '',
-    type: null,
+    currentChatId: null as string | null,
   });
-  const messages = [
-    { sender: '가영', text: '안녕하세요', time: '1주' },
-    { sender: '민지', text: '잘 지내시죠?', time: '3일' },
-    { sender: '철수', text: '반갑습니다', time: '5시간' },
-  ];
 
   const toggleModal = (
     type: string,
     title: string,
-    // content: React.ReactNode,
+    chatId: string | null = null,
   ) => {
-    if (modalState.isOpen && modalState.type === type) {
-      setModalState({ isOpen: false, title: '', type: null });
+    if (modalState.isOpen && modalState.currentChatId === chatId) {
+      setModalState({ isOpen: false, title: '', currentChatId: null });
     } else {
-      setModalState({ isOpen: true, title, type });
+      setModalState({ isOpen: true, title, currentChatId: chatId });
     }
   };
   const handleHomeClick = () => {
@@ -57,7 +48,7 @@ const NavBar: React.FC = () => {
     nav('/settings');
   };
   const closeModal = () => {
-    setModalState({ isOpen: false, title: '', type: null });
+    setModalState({ isOpen: false, title: '', currentChatId: null });
   };
 
   return (
@@ -97,7 +88,6 @@ const NavBar: React.FC = () => {
         isOpen={modalState.isOpen}
         onClose={closeModal}
         title={modalState.title}
-        messages={modalState.type === 'message' ? messages : undefined}
       />
     </div>
   );

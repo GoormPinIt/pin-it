@@ -80,6 +80,7 @@ const LoginForm: React.FC = () => {
 
       // 로그인 성공 후 처리 (예: 페이지 리다이렉트)
       console.log('로그인 성공:', user);
+      navigate('/');
     } catch (error) {
       console.error('로그인 실패:', error);
     }
