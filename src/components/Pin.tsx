@@ -9,7 +9,9 @@ import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store';
 import { savePinToBoard, fetchBoards } from '../features/boardSlice';
-import SaveModal from './SaveModal';
+import SaveModal from './SaveDropdown';
+import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 interface PinProps {
   src: string;
@@ -196,16 +198,20 @@ const ShareModal: React.FC<ShareModalProps> = () => {
 const OptionsModal: React.FC<OptionsModalProps> = ({ src, id }) => {
   const handleSaveImage = async () => {
     try {
-      // Firebase Storage 참조 생성
-      const storage = getStorage();
-      const imageRef = ref(storage, src);
+      const response = await fetch(src, {
+        mode: 'cors', // CORS 모드 명시
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
 
-      // 다운로드 URL 가져오기
-      const downloadURL = await getDownloadURL(imageRef);
+      if (!response.ok) throw new Error('Network response was not ok');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
 
       // 다운로드 링크 생성
       const link = document.createElement('a');
-      link.href = downloadURL;
+      link.href = url;
       link.download = `pin-${id}.jpg`;
       document.body.appendChild(link);
       link.click();
@@ -249,6 +255,7 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
     title: string;
   } | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [boardName, setBoardName] = useState<string>('');
   // 컴포넌트 마운트 시 보드 목록 가져오기
   // const modalRef = useRef<HTMLDivElement>(null);
   const handleCloseShareModal = () => {
@@ -257,6 +264,7 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
   const handleCloseOptionModal = () => {
     setIsOptionsModalOpen(false);
   };
+
   // useEffect(() => {
   //   const handleClickOutside = (event: MouseEvent) => {
   //     if (
@@ -293,26 +301,31 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
     console.log('저장');
     setShowBoardsList((prev) => !prev);
   };
-  // const handleSaveToBoard = async (boardId: string, boardName: string) => {
-  //   try {
-  //     console.log('보드 선택 됨', boardName);
-  //     await dispatch(savePinToBoard({ boardId, pinId: id })).unwrap();
-  //     alert(`${boardName}에 저장 완료`);
-  //     setShowBoardsList(false);
-  //   } catch (error) {
-  //     console.error('핀 저장 실패:', error);
-  //     alert('Error: 핀 저장 실패');
-  //   }
-  // };
+
+  const savedCompletely = () => {
+    alert(`저장되었습니다.`);
+  };
+
   const handleSaveToBoard = async (boardId: string, boardTitle: string) => {
     try {
-      await dispatch(savePinToBoard({ boardId, pinId: id })).unwrap();
-      setSelectedBoard({ id: boardId, title: boardTitle });
+      console.log(`${boardTitle} 클릭됨`);
+      setBoardName(boardTitle);
+      // Firestore의 board 문서 참조
+      const boardRef = doc(db, 'boards', boardId);
+
+      // pins 배열에 새 pinId 추가
+      await updateDoc(boardRef, {
+        pins: arrayUnion(id),
+      });
+
+      console.log(`Board ${boardId}의 pins에 ${id} 추가 완료`);
       alert(`${boardTitle}에 저장되었습니다.`);
+      setShowBoardsList(false); // 모달 닫기
     } catch (error) {
-      console.error('핀 저장 실패:', error);
+      console.error('pins 추가 중 오류 발생:', error);
     }
   };
+
   const handleQuickSave = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -371,10 +384,14 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
           </button>
           {showBoardsList && (
             <SaveModal
-              onClose={() => setShowBoardsList(false)}
-              onSave={handleSaveToBoard}
-              boards={boards}
-              selectedBoard={selectedBoard}
+              // onClose={() => setShowBoardsList(false)}
+              // onSave={handleSaveToBoard}
+              // boards={boards}
+              // selectedBoard={selectedBoard}
+              pinId={id}
+              imageUrl={src}
+              onClose={handleModalClose}
+              setBoardName={setBoardName}
             />
           )}
           <Button
