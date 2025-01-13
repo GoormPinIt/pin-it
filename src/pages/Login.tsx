@@ -7,6 +7,19 @@ import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import logo from '../assets/pinit_logo.png';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { UserData } from '../features/authSlice';
+
+const getCurrentUserUid = () => {
+  const user = auth.currentUser;
+  if (user) {
+    return user.uid;
+  }
+  return null;
+};
+
+console.log('현재 로그인한 UID:', getCurrentUserUid());
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -17,10 +30,30 @@ const LoginForm: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      dispatch(loginSuccess(email));
-      alert('로그인 성공!');
-      navigate('/');
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      const user = userCredential.user;
+
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data() as UserData;
+        dispatch(
+          loginSuccess({
+            email: user.email || '',
+            uid: user.uid,
+          }),
+        );
+        alert('로그인 성공!');
+        navigate('/');
+      } else {
+        console.error('유저 데이터가 존재하지 않습니다.');
+        alert('사용자 정보를 찾을 수 없습니다.');
+      }
     } catch (error: unknown) {
       if (error instanceof Error) {
         alert(`로그인 실패: ${error.message}`);
@@ -38,19 +71,23 @@ const LoginForm: React.FC = () => {
       const user = result.user;
 
       // Redux 상태 업데이트
-      dispatch(loginSuccess(user.email || ''));
+      dispatch(
+        loginSuccess({
+          email: user.email || '',
+          uid: user.uid,
+        }),
+      );
 
       // 로그인 성공 후 처리 (예: 페이지 리다이렉트)
       console.log('로그인 성공:', user);
-      // 여기에 리다이렉트 로직을 추가할 수 있습니다.
+      navigate('/');
     } catch (error) {
       console.error('로그인 실패:', error);
-      // 에러 처리 로직 (예: 사용자에게 에러 메시지 표시)
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen ">
+    <div className="flex items-center justify-center min-h-screen mx-auto my-0">
       <div className="w-96 rounded-3xl px-8 py-6 mt-4 text-left bg-white shadow-xl">
         <div className="flex justify-center mb-4">
           <img src={logo} alt="logo" className="w-12 h-12" />
@@ -88,7 +125,7 @@ const LoginForm: React.FC = () => {
           </div>
           <button
             type="submit"
-            className="w-full px-4 py-2 mt-4 text-white bg-red-600 rounded-3xl hover:bg-red-700 "
+            className="w-full px-4 py-2 mt-4 text-white bg-btn_red rounded-3xl hover:bg-btn_h_red "
           >
             로그인
           </button>
@@ -96,14 +133,14 @@ const LoginForm: React.FC = () => {
         <div>
           <button
             onClick={handleGoogleLogin}
-            className="w-full px-4 py-2 mt-4 text-white bg-gray-300 rounded-3xl hover:bg-gray-400"
+            className="w-full px-4 py-2 mt-4 text-white bg-btn_gray rounded-3xl hover:bg-btn_h_gray"
           >
             Google로 로그인
           </button>
         </div>
         <div className="text-center mt-4">
           <span>계정이 없으신가요? </span>
-          <Link to="/signup" className="text-red-600 hover:underline">
+          <Link to="/signup" className="text-t2_red hover:underline">
             회원가입
           </Link>
         </div>

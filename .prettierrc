@@ -4,6 +4,7 @@
   "tabWidth": 2,
   "printWidth": 80,
   "trailingComma": "all",
+  "endOfLine": "auto",
   "overrides": [
     {
       "files": [".eslintrc", "*.json"],
