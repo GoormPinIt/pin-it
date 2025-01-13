@@ -7,19 +7,9 @@ import {
   getDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
-import { createAction } from '@reduxjs/toolkit';
 
-export interface Board {
-  id: string;
-  description: string;
-  isPrivate: boolean;
-  ownerIds: string[];
-  pins: {
-    pinId: string[];
-  };
-  title: string;
-  icon: string;
-}
+import { Board } from '../types';
+import { createAction } from '@reduxjs/toolkit';
 
 const getPinImageUrl = async (pinId: string): Promise<string> => {
   try {
