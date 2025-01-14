@@ -1,4 +1,4 @@
-# 📍핀잇
+# 📍 핀잇
 <p align="center">
   <img src="https://github.com/user-attachments/assets/89019269-0d03-4534-9f08-2fdcacc9a41b">
 </p>
@@ -8,7 +8,7 @@
 - Test ID : hyoju123@naver.com
 - Test PW : 123456
 
-## 프로젝트 소개
+## ✨ 프로젝트 소개
 - Pinterest를 클론 코딩한 팀 프로젝트로, 핵심 기능을 구현하고 사용자 경험을 개선할 새로운 기능을 추가했습니다.
 - 개인 프로필 페이지에서 자신이 업로드한 이미지와 저장한 핀들을 보드 별로 확인 및 관리할 수 있습니다.
 - 다른 사용자를 팔로우하고 핀에 좋아요를 누르거나 댓글을 작성할 수 있습니다.
@@ -16,7 +16,7 @@
 - 새로운 핀을 업로드하거나 기존 핀을 꾸밀 수 있습니다.
 - 스토리를 추가해 24시간 동안 팔로워들과 특별한 순간을 공유할 수 있습니다.
 
-## 팀원 구성
+## 👥 팀원 구성
 
 <div align="center">
 
@@ -27,7 +27,7 @@
 </div>
 
 ## 1. 개발 환경
-- **Frontend:** HTML5, TypeScript, Tailwind.css
+- **Frontend:** React, TypeScript, Tailwind.css
 - **Backend:** Firebase, Express
 - **Design:** Figma
 - **Version Control**: Git, GitHub
@@ -142,7 +142,7 @@ src/
 - 생성한 핀 목록
 - 저장된 핀 목록
 - 보드 목록
-  - 최신순/알파벳순 정렬
+  - 최신순 / 알파벳순 정렬
 - 보드 만들기
   - 비밀 보드로 유지
   - 참여자 초대
