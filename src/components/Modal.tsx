@@ -434,14 +434,14 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
               onClick={() => setIsNewMessage(true)}
             >
               <div className="text-xs flex">
-                <button className="bg-red-600 rounded-full w-6 h-6 items-center justify-center">
+                <button className="bg-red-600 rounded-full w-6 h-6 mr-2 mb-1 items-center justify-center">
                   <FaRegPenToSquare
                     style={{ fontSize: '12px', lineHeight: '1' }}
                     className="text-[15px] ml-[6px]"
                     color="#fff"
                   />
                 </button>
-                새 메시지
+                <div className="mt-1">새 메시지</div>
               </div>
             </div>
             <div className="text-[8px] p-2">메시지</div>
