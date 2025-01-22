@@ -48,19 +48,24 @@ export const initializeAuth = createAsyncThunk(
   'auth/initializeAuth',
   async (_, { dispatch }) => {
     return new Promise<void>((resolve) => {
-      onAuthStateChanged(auth, (user) => {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
         if (user) {
-          dispatch(
-            loginSuccess({
-              email: user.email,
-              uid: user.uid,
-            }),
-          );
+          // 사용자가 로그인 상태
+          dispatch(loginSuccess({ email: user.email, uid: user.uid }));
         } else {
-          dispatch(logout());
+          // 로컬 스토리지에서 토큰 확인
+          const token = localStorage.getItem('authToken');
+          if (token) {
+            // 토큰이 있으면 서버에 유효성 검증 요청
+            // 유효하다면 loginSuccess 디스패치, 아니면 logout 디스패치
+          } else {
+            dispatch(logout());
+          }
         }
         resolve();
       });
+
+      return () => unsubscribe();
     });
   },
 );
@@ -93,8 +98,17 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+      .addCase(initializeAuth.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(initializeAuth.fulfilled, (state) => {
+        state.loading = false;
         state.initialized = true;
+      })
+      .addCase(initializeAuth.rejected, (state) => {
+        state.loading = false;
+        state.initialized = true;
+        state.error = 'Failed to initialize auth';
       });
   },
 });
