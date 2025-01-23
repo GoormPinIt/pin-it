@@ -295,7 +295,8 @@ const BoardDetails = (): JSX.Element => {
             <img
               src={pin.imageUrl}
               alt={pin.title || `핀 ${index + 1}`}
-              className="w-full h-auto object-cover rounded-lg"
+              className="w-full h-auto object-cover rounded-lg cursor-pointer"
+              onClick={() => navigate(`/pin/${pin.id}`)}
             />
           </div>
         ))}
