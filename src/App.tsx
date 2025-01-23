@@ -22,6 +22,7 @@ import CreateStory from './pages/CreateStory';
 import PhotoEditPage from './pages/PhotoEditPage';
 import OrganizePins from './pages/OrganizePins';
 import ScrollTop from './components/ScrollTop';
+import loadingCircle from './assets/loading.gif';
 
 const auth = getAuth();
 
@@ -49,7 +50,11 @@ const AppRoutes = (): JSX.Element => {
   }, [dispatch]);
 
   if (!initialized) {
-    return <div>Loading...</div>; // 또는 로딩 컴포넌트
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <img src={loadingCircle} alt="로딩 중..." className="w-12" />
+      </div>
+    );
   }
 
   return (
