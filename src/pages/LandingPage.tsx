@@ -4,7 +4,7 @@ import React from 'react';
 
 const LandingPage = (): JSX.Element => {
   return (
-    <div className="relative scroll-smooth">
+    <div className="relative scroll-smooth overflow-x-hidden">
       <Head />
       <Sec1 />
       <Sec2 />
