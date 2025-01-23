@@ -21,6 +21,7 @@ import StoryPage from './pages/StoryPage';
 import CreateStory from './pages/CreateStory';
 import PhotoEditPage from './pages/PhotoEditPage';
 import OrganizePins from './pages/OrganizePins';
+import ScrollTop from './components/ScrollTop';
 
 const auth = getAuth();
 
@@ -28,6 +29,7 @@ const App = (): JSX.Element => {
   return (
     <Provider store={store}>
       <Router>
+        <ScrollTop />
         <AppRoutes />
       </Router>
     </Provider>
