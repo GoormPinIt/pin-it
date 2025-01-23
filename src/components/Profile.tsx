@@ -1261,14 +1261,20 @@ const Profile = ({
 
           <div className="pt-4">
             <MasonryLayout
-              images={userData.savedPins.map((pin) => pin.imageUrl)}
+              pins={userData.savedPins.map((pin) => ({
+                pinId: pin.id,
+                imageUrl: pin.imageUrl,
+              }))}
             />
           </div>
         </>
       ) : (
         <div className="pt-4">
           <MasonryLayout
-            images={userData.createdPins.map((pin) => pin.imageUrl)}
+            pins={userData.createdPins.map((pin) => ({
+              pinId: pin.id,
+              imageUrl: pin.imageUrl,
+            }))}
           />
         </div>
       )}
