@@ -10,6 +10,7 @@ import logo from '../assets/pinit_logo.png';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { UserData } from '../features/authSlice';
+import { toast } from 'react-toastify';
 
 const getCurrentUserUid = () => {
   const user = auth.currentUser;
@@ -48,17 +49,17 @@ const LoginForm: React.FC = () => {
             uid: user.uid,
           }),
         );
-        alert('로그인 성공!');
+        toast.success('로그인 성공!');
         navigate('/');
       } else {
         console.error('유저 데이터가 존재하지 않습니다.');
-        alert('사용자 정보를 찾을 수 없습니다.');
+        toast.error('사용자 정보를 찾을 수 없습니다.');
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
-        alert(`로그인 실패: ${error.message}`);
+        toast.error(`로그인 실패`);
       } else {
-        alert('로그인 실패: 알 수 없는 오류가 발생했습니다.');
+        toast.error('로그인 실패: 알 수 없는 오류가 발생했습니다.');
       }
     }
   };
@@ -79,10 +80,11 @@ const LoginForm: React.FC = () => {
       );
 
       // 로그인 성공 후 처리 (예: 페이지 리다이렉트)
-      console.log('로그인 성공:', user);
+      toast.success('Google 로그인 성공!');
       navigate('/');
     } catch (error) {
-      console.error('로그인 실패:', error);
+      console.error('로그인 실패');
+      toast.error('Google 로그인 실패');
     }
   };
 

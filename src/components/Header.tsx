@@ -7,6 +7,8 @@ import { logout } from '../features/authSlice';
 import { auth } from '../firebase';
 import { RootState } from '../store';
 import useCurrentUserUid from '../hooks/useCurrentUserUid';
+import { toast, ToastContainer } from 'react-toastify';
+
 // import SearchModal from './SearchModal';
 
 const Header: React.FC = () => {
@@ -31,10 +33,10 @@ const Header: React.FC = () => {
       await signOut(auth);
       dispatch(logout());
       setIsActive(false);
-      alert('로그아웃되었습니다.');
+      toast.success('로그아웃되었습니다.');
     } catch (error) {
-      console.error('로그아웃 실패:', error);
-      alert('로그아웃에 실패했습니다.');
+      console.error('로그아웃 실패');
+      toast.error('로그아웃에 실패했습니다.');
     }
   };
 
