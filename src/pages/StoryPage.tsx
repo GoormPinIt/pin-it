@@ -1,10 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  doc,
+  deleteDoc,
+} from 'firebase/firestore';
 import { db } from '../firebase';
+import useCurrentUserUid from '../hooks/useCurrentUserUid';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaTrash } from 'react-icons/fa';
 import loadingCircle from '../assets/loading.gif';
 
 const defaultProfileImage =
@@ -14,6 +23,7 @@ type Story = {
   storyId: string;
   imageUrl: string;
   createdAt: string;
+  userUid: string;
 };
 
 type User = {
@@ -37,6 +47,7 @@ const StoryPage = (): JSX.Element => {
     profileImage: defaultProfileImage,
   });
   const [loading, setLoading] = useState(true);
+  const currentUserUid = useCurrentUserUid();
 
   useEffect(() => {
     const fetchUserAndStories = async () => {
@@ -68,6 +79,7 @@ const StoryPage = (): JSX.Element => {
           storyId: doc.id,
           imageUrl: doc.data().imageUrl,
           createdAt: doc.data().createdAt,
+          userUid: doc.data().userUid,
         }));
 
         setStories(fetchedStories);
@@ -93,6 +105,29 @@ const StoryPage = (): JSX.Element => {
   const handlePreviousStory = () => {
     if (currentStoryIndex > 0) {
       setCurrentStoryIndex((prev) => prev - 1);
+    }
+  };
+
+  const deleteStory = async () => {
+    if (!currentStory) return;
+
+    const confirmDelete = window.confirm('이 스토리를 삭제하시겠습니까?');
+    if (!confirmDelete) return;
+
+    try {
+      await deleteDoc(doc(db, 'stories', currentStory.storyId));
+      const updatedStories = stories.filter(
+        (story) => story.storyId !== currentStory.storyId,
+      );
+
+      if (updatedStories.length === 0) {
+        navigate('/');
+      } else {
+        setStories(updatedStories);
+        setCurrentStoryIndex((prev) => Math.max(prev - 1, 0));
+      }
+    } catch (error) {
+      console.error('스토리 삭제 중 오류 발생:', error);
     }
   };
 
@@ -163,6 +198,14 @@ const StoryPage = (): JSX.Element => {
             onClick={handleNextStory}
           >
             <FaArrowRight />
+          </button>
+        )}
+        {currentStory.userUid === currentUserUid && (
+          <button
+            className="absolute top-4 right-4 text-xl bg-zinc-200 bg-opacity-70 p-2 rounded-full hover:bg-zinc-700 hover:text-white"
+            onClick={deleteStory}
+          >
+            <FaTrash />
           </button>
         )}
       </div>
