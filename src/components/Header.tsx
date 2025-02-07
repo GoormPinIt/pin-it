@@ -64,10 +64,8 @@ const Header: React.FC = () => {
 
   return (
     <div className="fixed top-0 left-14 right-0 flex items-center justify-between p-4 bg-white z-50">
-      <div className="flex-1 mx-4">
-        {/* <div className="relative" ref={modalRef}> */}
-        <div>
-          {/* <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" /> */}
+      {isLoggedIn ? (
+        <div className="flex-1 mx-4">
           <form onSubmit={onSearchSubmit} className="relative">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -77,20 +75,16 @@ const Header: React.FC = () => {
                 type="text"
                 className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 bg-btn_h_gray"
                 placeholder="검색"
-                // onClick={() => setIsSearchModalOpen(true)}
                 onChange={(e) => setInput(e.target.value)}
                 value={input}
               />
             </div>
             <button type="submit" className="hidden"></button>
           </form>
-
-          {/* <SearchModal
-            isOpen={isSearchModalOpen}
-            onClose={() => setIsSearchModalOpen(false)}
-          /> */}
         </div>
-      </div>
+      ) : (
+        <div className="flex-1 mx-4"></div> // 로그인하지 않은 경우 빈 div로 대체
+      )}
       <div className="flex items-center">
         {isLoggedIn ? (
           <>
