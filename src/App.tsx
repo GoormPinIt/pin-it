@@ -23,6 +23,8 @@ import PhotoEditPage from './pages/PhotoEditPage';
 import OrganizePins from './pages/OrganizePins';
 import ScrollTop from './components/ScrollTop';
 import loadingCircle from './assets/loading.gif';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const auth = getAuth();
 
@@ -60,6 +62,17 @@ const AppRoutes = (): JSX.Element => {
   return (
     <>
       <Header />
+      <ToastContainer
+        autoClose={2000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        style={{ zIndex: 9999 }}
+      />
       {initialized &&
         (isLoggedIn ? (
           <div className="flex pt-16">
