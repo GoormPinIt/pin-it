@@ -15,6 +15,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { FaArrowLeft, FaArrowRight, FaTrash } from 'react-icons/fa';
 import loadingCircle from '../assets/loading.gif';
+import { toast } from 'react-toastify';
 
 const defaultProfileImage =
   'https://i.pinimg.com/736x/3b/73/a1/3b73a13983f88f8b84e130bb3fb29e17.jpg';
@@ -119,7 +120,7 @@ const StoryPage = (): JSX.Element => {
       const updatedStories = stories.filter(
         (story) => story.storyId !== currentStory.storyId,
       );
-
+      toast.success('스토리가 성공적으로 삭제되었습니다.');
       if (updatedStories.length === 0) {
         navigate('/');
       } else {

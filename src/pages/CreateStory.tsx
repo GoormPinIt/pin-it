@@ -10,6 +10,7 @@ import {
 import { db } from '../firebase';
 import { HiArrowUpCircle } from 'react-icons/hi2';
 import useCurrentUserUid from '../hooks/useCurrentUserUid';
+import { toast } from 'react-toastify';
 
 const CreateStory = (): JSX.Element => {
   const [imgBase64, setImgBase64] = useState<string>(''); // 파일 base64
@@ -35,7 +36,7 @@ const CreateStory = (): JSX.Element => {
 
   const handleUpload = async () => {
     if (!imgFile || !currentUserUid) {
-      alert('사진을 업로드하세요.');
+      toast.error('사진을 업로드하세요.');
       return;
     }
 
@@ -62,11 +63,11 @@ const CreateStory = (): JSX.Element => {
         storyId: docRef.id,
       });
 
-      alert('스토리가 성공적으로 업로드되었습니다.');
+      toast.success('스토리가 성공적으로 업로드되었습니다.');
       navigate('/');
     } catch (error) {
       console.error('스토리 업로드 중 오류 발생:', error);
-      alert('스토리 업로드에 실패했습니다.');
+      toast.error('스토리 업로드에 실패했습니다.');
     } finally {
       setIsUploading(false);
     }
