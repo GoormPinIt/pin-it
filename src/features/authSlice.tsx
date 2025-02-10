@@ -10,6 +10,7 @@ import {
 export interface UserData {
   email: string | null;
   uid: string;
+  profileImage?: string;
 }
 
 interface AuthState {
@@ -82,6 +83,11 @@ const authSlice = createSlice({
       state.isLoggedIn = false;
       state.userData = null;
     },
+    updateProfileImage: (state, action: PayloadAction<string>) => {
+      if (state.userData) {
+        state.userData.profileImage = action.payload;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -113,5 +119,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { loginSuccess, logout } = authSlice.actions;
+export const { loginSuccess, logout, updateProfileImage } = authSlice.actions;
 export default authSlice.reducer;

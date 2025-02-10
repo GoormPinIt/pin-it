@@ -18,6 +18,9 @@ const Header: React.FC = () => {
   const dispatch = useDispatch();
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
   const currentUserUid = useCurrentUserUid();
+  const profileImage = useSelector(
+    (state: RootState) => state.auth.userData?.profileImage,
+  );
   // const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   const onSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -92,7 +95,15 @@ const Header: React.FC = () => {
               onClick={() => navigate(`/profile/${currentUserUid}`)}
               className="mx-2"
             >
-              <Face className="text-gray-700" />
+              {profileImage ? (
+                <img
+                  src={profileImage}
+                  alt="프로필"
+                  className="w-8 h-8 rounded-full"
+                />
+              ) : (
+                <Face className="text-gray-700" />
+              )}
             </button>
             <div className="relative">
               <button onClick={toggleActive} className="mx-2">
