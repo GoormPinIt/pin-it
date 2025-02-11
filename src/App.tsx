@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider, useDispatch, useSelector } from 'react-redux';
-import { RootState, store } from './store';
+import { AppDispatch, RootState, store } from './store';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { loginSuccess, logout } from './features/authSlice';
+import { initializeAuth, loginSuccess, logout } from './features/authSlice';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import UserProfile from './pages/UserProfilePage';
@@ -37,64 +37,63 @@ const App = (): JSX.Element => {
 export default App;
 
 const AppRoutes = (): JSX.Element => {
-  const dispatch = useDispatch();
-  const [isLoading, setIsLoading] = useState(true);
-  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
+  const dispatch = useDispatch<AppDispatch>();
+  const { isLoggedIn, initialized } = useSelector(
+    (state: RootState) => state.auth,
+  );
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && user.emailVerified) {
-        dispatch(loginSuccess({ email: user.email || '', uid: user.uid }));
-      } else {
-        dispatch(logout());
-      }
-      setIsLoading(false);
-    });
-
-    return () => unsubscribe();
+    dispatch(initializeAuth());
   }, [dispatch]);
 
-  if (isLoading) {
+  if (!initialized) {
     return <div>Loading...</div>; // 또는 로딩 컴포넌트
   }
 
   return (
     <>
       <Header />
-      {isLoggedIn ? (
-        <div className="flex pt-16">
-          <NavBar />
-          <div className="flex-1 pl-16">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/profile/:userId" element={<UserProfile />} />
-              <Route path="/profile/:uid/all-pins" element={<AllPinsPage />} />
-              <Route path="/board/:boardId" element={<BoardDetails />} />
-              <Route
-                path="/board/:boardId/organize"
-                element={<OrganizePins />}
-              />
-              <Route
-                path="/board/:boardId/organize"
-                element={<OrganizePins />}
-              />
-              <Route path="/boardDetail" element={<ProfileBoardDetail />} />
-              <Route path="/pin-creation-tool" element={<PinBuilder />} />
-              <Route path="/pin/:pinId" element={<PinPage />} />
-              <Route path="/photo_edit" element={<PhotoEditPage />} />
-              <Route path="/settings/*" element={<Settings />} />
-              <Route path="/story/:userUid/:storyId" element={<StoryPage />} />
-              <Route path="/create-story" element={<CreateStory />} />
-            </Routes>
+      {initialized &&
+        (isLoggedIn ? (
+          <div className="flex pt-16">
+            <NavBar />
+            <div className="flex-1 pl-16">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/profile/:userId" element={<UserProfile />} />
+                <Route
+                  path="/profile/:uid/all-pins"
+                  element={<AllPinsPage />}
+                />
+                <Route path="/board/:boardId" element={<BoardDetails />} />
+                <Route
+                  path="/board/:boardId/organize"
+                  element={<OrganizePins />}
+                />
+                <Route
+                  path="/board/:boardId/organize"
+                  element={<OrganizePins />}
+                />
+                <Route path="/boardDetail" element={<ProfileBoardDetail />} />
+                <Route path="/pin-creation-tool" element={<PinBuilder />} />
+                <Route path="/pin/:pinId" element={<PinPage />} />
+                <Route path="/photo_edit" element={<PhotoEditPage />} />
+                <Route path="/settings/*" element={<Settings />} />
+                <Route
+                  path="/story/:userUid/:storyId"
+                  element={<StoryPage />}
+                />
+                <Route path="/create-story" element={<CreateStory />} />
+              </Routes>
+            </div>
           </div>
-        </div>
-      ) : (
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-        </Routes>
-      )}
+        ) : (
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+          </Routes>
+        ))}
     </>
   );
 };

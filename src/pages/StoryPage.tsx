@@ -5,6 +5,7 @@ import { db } from '../firebase';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import loadingCircle from '../assets/loading.gif';
 
 const defaultProfileImage =
   'https://i.pinimg.com/736x/3b/73/a1/3b73a13983f88f8b84e130bb3fb29e17.jpg';
@@ -35,6 +36,7 @@ const StoryPage = (): JSX.Element => {
     id: 'unknown',
     profileImage: defaultProfileImage,
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserAndStories = async () => {
@@ -74,6 +76,8 @@ const StoryPage = (): JSX.Element => {
           '스토리 데이터 및 유저 데이터를 가져오는 중 오류 발생:',
           error,
         );
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -92,10 +96,10 @@ const StoryPage = (): JSX.Element => {
     }
   };
 
-  if (stories.length === 0) {
+  if (loading) {
     return (
-      <div>
-        <p>스토리가 없습니다.</p>
+      <div className="flex items-center justify-center h-screen">
+        <img src={loadingCircle} alt="로딩 중..." className="w-12" />
       </div>
     );
   }
