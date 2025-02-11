@@ -3,12 +3,9 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import useCurrentUserUid from '../hooks/useCurrentUserUid';
 import useUploadImage from '../hooks/useUploadImage';
-import { useDispatch } from 'react-redux';
-import { updateProfileImage } from '../features/authSlice';
 import { toast } from 'react-toastify';
 
 const EditProfile = (): JSX.Element => {
-  const dispatch = useDispatch();
   const currentUserUid = useCurrentUserUid();
   const uploadImage = useUploadImage();
 
@@ -90,7 +87,6 @@ const EditProfile = (): JSX.Element => {
           profileImage: downloadURL,
         }));
 
-        dispatch(updateProfileImage(downloadURL));
         toast.success('프로필 이미지가 성공적으로 업로드되었습니다!');
       } catch (error) {
         toast.error('이미지 업로드 중 오류가 발생했습니다:');
@@ -136,7 +132,7 @@ const EditProfile = (): JSX.Element => {
           <label className="block text-sm text-gray-700 mb-1">사진</label>
           <div className="flex items-center gap-4 mb-6">
             <img
-              className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-full text-2xl font-semibold"
+              className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-full text-2xl font-semibold object-cover"
               src={profile.profileImage}
               alt="프로필"
             />
