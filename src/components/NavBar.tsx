@@ -52,7 +52,7 @@ const NavBar: React.FC = () => {
   };
 
   return (
-    <div className="fixed top-0 left-0  w-16 h-screen flex flex-col border-r-2 z-[100]">
+    <div className="fixed top-0 left-0 bg-white  w-16 h-screen flex flex-col border-r-2 z-[100]">
       <div className="flex-1 flex flex-col gap-10 pt-10">
         <button
           className="flex justify-center items-center"

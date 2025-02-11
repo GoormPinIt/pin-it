@@ -140,7 +140,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
             sender: doc.data().sender,
             receiver: doc.data().receiver,
             text: doc.data().text,
-            time: doc.data().time.toDate().toISOString(),
+            time: doc.data().time.toDate().toString().split(' GMT')[0],
           }));
 
           setMessages((prev) => {
@@ -214,7 +214,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
       sender,
       receiver,
       text,
-      time: new Date().toISOString(),
+      time: new Date().toString().split(' GMT')[0],
     };
 
     try {
@@ -393,7 +393,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
                   <div
                     key={user.uid}
                     onClick={() => {
-                      setNewMessageReceiver(user.uid);
+                      setNewMessageReceiver(user.name);
                       setSearchResults([]);
                     }}
                     className="cursor-pointer hover:bg-gray-200 p-1 rounded"
@@ -434,14 +434,14 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
               onClick={() => setIsNewMessage(true)}
             >
               <div className="text-xs flex">
-                <button className="bg-red-600 rounded-full w-6 h-6 mr-2 mb-1 items-center justify-center">
+                <button className="bg-red-600 rounded-full w-6 h-6 items-center justify-center">
                   <FaRegPenToSquare
                     style={{ fontSize: '12px', lineHeight: '1' }}
                     className="text-[15px] ml-[6px]"
                     color="#fff"
                   />
                 </button>
-                <div className="mt-1">새 메시지</div>
+                새 메시지
               </div>
             </div>
             <div className="text-[8px] p-2">메시지</div>

@@ -4,19 +4,19 @@ import { GrPaint } from 'react-icons/gr';
 import { RiDeleteBin5Line } from 'react-icons/ri';
 import { LuEraser } from 'react-icons/lu';
 import { IoText } from 'react-icons/io5';
-import { MdOutlineAddPhotoAlternate } from 'react-icons/md';
 import { HiOutlineSave } from 'react-icons/hi';
 import { PiPaintBrushBold } from 'react-icons/pi';
+
+type ToolMode = 'draw' | 'fill' | 'text';
 
 const PhotoEditPage = () => {
   const [imgBase64, setImgBase64] = useState<string>('');
   const [color, setColor] = useState<string>('#000000');
   const [lineWidth, setLineWidth] = useState<number>(5);
-  const [isFilling, setIsFilling] = useState<boolean>(false);
   const [text, setText] = useState<string>('');
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
   const [textSize, setTextSize] = useState<number>(20);
-  const [isTextAdding, setIsTextAdding] = useState<boolean>(false);
+  const [mode, setMode] = useState<ToolMode>('draw');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -28,12 +28,8 @@ const PhotoEditPage = () => {
     if (canvas && imgBase64) {
       canvas.width = CANVAS_WIDTH;
       canvas.height = CANVAS_HEIGHT;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas?.getContext('2d');
       if (ctx) {
-        ctx.lineWidth = lineWidth;
-        ctx.strokeStyle = color;
-        ctx.fillStyle = color;
-        ctx.lineCap = 'round';
         const img = new Image();
         img.onload = () => {
           ctx.drawImage(img, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -41,7 +37,7 @@ const PhotoEditPage = () => {
         img.src = imgBase64;
       }
     }
-  }, [imgBase64, color, lineWidth]);
+  }, [imgBase64]);
 
   const handleChangeFile = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -69,36 +65,39 @@ const PhotoEditPage = () => {
 
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
+    if (!ctx) return;
 
-    if (ctx) {
-      if (isFilling) {
-        ctx.fillStyle = color;
-        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      } else if (isTextAdding && text) {
-        const x = e.nativeEvent.offsetX;
-        const y = e.nativeEvent.offsetY;
-        ctx.font = `${textSize}px Arial`;
-        ctx.fillStyle = color;
-        ctx.fillText(text, x, y);
-        setIsTextAdding(false);
-      }
+    if (mode === 'fill') {
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    } else if (mode === 'text' && text) {
+      const x = e.nativeEvent.offsetX;
+      const y = e.nativeEvent.offsetY;
+      ctx.font = `${textSize}px Arial`;
+      ctx.fillStyle = color;
+      ctx.fillText(text, x, y);
+      setMode('draw');
     }
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (isTextAdding) return;
+    if (mode !== 'draw') return;
 
     setIsDrawing(true);
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     if (ctx) {
+      ctx.lineWidth = lineWidth;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
     }
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return;
+    if (!isDrawing || mode !== 'draw') return;
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     if (ctx) {
@@ -117,11 +116,6 @@ const PhotoEditPage = () => {
 
   const handleErase = () => {
     setColor('#FFFFFF');
-  };
-
-  const handleAddTextMode = () => {
-    setIsTextAdding(true);
-    setIsDrawing(false);
   };
 
   const handleSaveImage = () => {
@@ -188,8 +182,12 @@ const PhotoEditPage = () => {
               onChange={handleLineWidthChange}
             />
           </div>
-          <button onClick={() => setIsFilling(!isFilling)}>
-            {isFilling ? <PiPaintBrushBold size={30} /> : <GrPaint size={30} />}
+          <button onClick={() => setMode(mode === 'fill' ? 'draw' : 'fill')}>
+            {mode === 'fill' ? (
+              <PiPaintBrushBold size={30} />
+            ) : (
+              <GrPaint size={30} />
+            )}
           </button>
           <button onClick={handleClearCanvas}>
             <RiDeleteBin5Line size={30} />
@@ -214,7 +212,7 @@ const PhotoEditPage = () => {
             placeholder="Enter text"
             className="w-36 px-4 py-2 border rounded"
           />
-          <button onClick={handleAddTextMode}>
+          <button onClick={() => setMode('text')}>
             <IoText size={30} />
           </button>
           <button onClick={handleSaveImage}>
