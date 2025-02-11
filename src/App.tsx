@@ -21,6 +21,10 @@ import StoryPage from './pages/StoryPage';
 import CreateStory from './pages/CreateStory';
 import PhotoEditPage from './pages/PhotoEditPage';
 import OrganizePins from './pages/OrganizePins';
+import ScrollTop from './components/ScrollTop';
+import loadingCircle from './assets/loading.gif';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const auth = getAuth();
 
@@ -28,6 +32,7 @@ const App = (): JSX.Element => {
   return (
     <Provider store={store}>
       <Router>
+        <ScrollTop />
         <AppRoutes />
       </Router>
     </Provider>
@@ -47,12 +52,27 @@ const AppRoutes = (): JSX.Element => {
   }, [dispatch]);
 
   if (!initialized) {
-    return <div>Loading...</div>; // 또는 로딩 컴포넌트
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <img src={loadingCircle} alt="로딩 중..." className="w-12" />
+      </div>
+    );
   }
 
   return (
     <>
       <Header />
+      <ToastContainer
+        autoClose={2000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        style={{ zIndex: 9999 }}
+      />
       {initialized &&
         (isLoggedIn ? (
           <div className="flex pt-16">

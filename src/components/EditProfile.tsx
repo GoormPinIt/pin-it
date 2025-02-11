@@ -3,8 +3,11 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import useCurrentUserUid from '../hooks/useCurrentUserUid';
 import useUploadImage from '../hooks/useUploadImage';
+import { useDispatch } from 'react-redux';
+import { updateProfileImage } from '../features/authSlice';
 
 const EditProfile = (): JSX.Element => {
+  const dispatch = useDispatch();
   const currentUserUid = useCurrentUserUid();
   const uploadImage = useUploadImage();
 
@@ -86,6 +89,12 @@ const EditProfile = (): JSX.Element => {
           profileImage: downloadURL,
         }));
 
+        console.log(
+          '프로필 이미지가 성공적으로 업로드되었습니다:',
+          downloadURL,
+        );
+
+        dispatch(updateProfileImage(downloadURL));
         console.log(
           '프로필 이미지가 성공적으로 업로드되었습니다:',
           downloadURL,

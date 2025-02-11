@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 type MasonryLayoutProps = {
-  images: string[];
+  pins: { pinId: string; imageUrl: string }[];
 };
 
-const MasonryLayout = ({ images }: MasonryLayoutProps) => {
+const MasonryLayout = ({ pins }: MasonryLayoutProps) => {
   const [columnCount, setColumnCount] = useState<number>(6);
+  const navigate = useNavigate();
 
   const updateColumnCount = () => {
     const columnWidth = 224;
@@ -27,17 +29,19 @@ const MasonryLayout = ({ images }: MasonryLayoutProps) => {
         columnGap: '16px',
       }}
     >
-      {images.map((src, index) => (
+      {pins.map((pin) => (
         <img
-          key={index}
-          src={src}
-          alt={`Image ${index + 1}`}
+          key={pin.pinId}
+          src={pin.imageUrl}
+          alt={`Pin ${pin.pinId}`}
+          onClick={() => navigate(`/pin/${pin.pinId}`)}
           style={{
             width: '100%',
             display: 'block',
             marginBottom: '16px',
             objectFit: 'cover',
             borderRadius: '1rem',
+            cursor: 'pointer',
           }}
         />
       ))}
