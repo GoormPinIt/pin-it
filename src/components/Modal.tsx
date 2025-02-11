@@ -140,7 +140,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
             sender: doc.data().sender,
             receiver: doc.data().receiver,
             text: doc.data().text,
-            time: doc.data().time.toDate().toISOString(),
+            time: doc.data().time.toDate().toString().split(' GMT')[0],
           }));
 
           setMessages((prev) => {
@@ -214,7 +214,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
       sender,
       receiver,
       text,
-      time: new Date().toISOString(),
+      time: new Date().toString().split(' GMT')[0],
     };
 
     try {
