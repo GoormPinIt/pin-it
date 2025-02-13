@@ -38,6 +38,7 @@ interface PinData {
   boards: string[]; // 핀을 저장한 보드드 ID 배열
   comments: string[]; // 핀에 작성된 코멘트 배열
   createdAt: Date; // 핀 생성 날짜
+  keywords: string[];
 }
 //firebase
 
@@ -132,6 +133,19 @@ const PinBuilder = () => {
     setIsImageUploaded(false);
   };
 
+  const generateKeywords = (title: string): string[] => {
+    const keywords = new Set<string>();
+
+    // 모든 가능한 N-gram 생성
+    for (let i = 0; i < title.length; i++) {
+      for (let j = i + 1; j <= title.length; j++) {
+        keywords.add(title.slice(i, j));
+      }
+    }
+
+    return Array.from(keywords);
+  };
+
   const handleSubmit = async () => {
     try {
       let downloadUrl = '';
@@ -141,6 +155,9 @@ const PinBuilder = () => {
         console.log('다운된 이미지: ', downloadUrl);
         setImgUrl(downloadUrl);
       }
+
+      // 키워드 생성
+      const keywords = generateKeywords(title);
 
       const pinData: PinData = {
         pinId: '',
@@ -157,6 +174,7 @@ const PinBuilder = () => {
         boards: [],
         comments: [],
         createdAt: new Date(),
+        keywords,
       };
 
       pinData.boards.push(selectedBoardId);
