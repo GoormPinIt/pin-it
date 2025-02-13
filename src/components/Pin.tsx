@@ -100,7 +100,7 @@ const ShareModal: React.FC<ShareModalProps> = () => {
 
   return (
     <div
-      className="bg-white p-6 rounded-xl shadow-lg w-96 absolute bottom-11 z-30"
+      className="bg-white p-6 rounded-xl shadow-lg w-96 absolute bottom-11 fixed z-30"
       style={{ left: '40%', boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.1)' }}
     >
       <p className="mb-4 text-center">공유</p>
@@ -224,8 +224,16 @@ const OptionsModal: React.FC<OptionsModalProps> = ({ src, id }) => {
   };
   return (
     <div
-      className="bg-white p-2 pt-4 rounded-xl shadow-lg w-80 absolute top-11 z-30 text-black"
-      style={{ left: '40%', boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.1)' }}
+      className="bg-white p-2 pt-4 rounded-xl shadow-lg w-80 absolute z-30 text-black"
+      style={{
+        bottom: '50px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        maxWidth: '90vw',
+        maxHeight: '90vh',
+        overflowY: 'auto',
+        boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.1)',
+      }}
     >
       <p className="mb-4 text-center text-sm font-light">
         회원님의 최근 활동을 바탕으로 추천된 핀입니다.
@@ -383,19 +391,28 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
             {selectedBoard?.title || '...'}
           </button>
           {showBoardsList && (
-            <SaveModal
-              // onClose={() => setShowBoardsList(false)}
-              // onSave={handleSaveToBoard}
-              // boards={boards}
-              // selectedBoard={selectedBoard}
-              pinId={id}
-              imageUrl={src}
-              onClose={handleModalClose}
-              setBoardName={setBoardName}
-            />
+            <div
+              className="bg-white p-2 pt-4 rounded-xl shadow-lg w-80 absolute bottom-11 z-30 text-black"
+              style={{
+                left: '40%',
+                boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.1)',
+                transform: 'translateX(-50%)', // 중앙 정렬을 위해 추가
+              }}
+            >
+              <SaveModal
+                // onClose={() => setShowBoardsList(false)}
+                // onSave={handleSaveToBoard}
+                // boards={boards}
+                // selectedBoard={selectedBoard}
+                pinId={id}
+                imageUrl={src}
+                onClose={handleModalClose}
+                setBoardName={setBoardName}
+              />
+            </div>
           )}
           <Button
-            className="absolute top-3 right-3 px-5 py-3 z-20 pointer-events-auto"
+            className="absolute top-3 right-3 px-5 py-3 z-2 pointer-events-auto"
             onClick={handleQuickSave}
           >
             저장
