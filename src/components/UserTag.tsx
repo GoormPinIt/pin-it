@@ -28,7 +28,11 @@ const UserTag: React.FC<ProfileProps> = ({ uid }) => {
     >
       <figure className="w-8 h-8 rounded-full overflow-hidden mr-2">
         {user?.profileImage ? (
-          <img src={user.profileImage} alt="사용자 프로필" />
+          <img
+            src={user.profileImage}
+            alt="사용자 프로필"
+            className="w-8 h-8 rounded-full object-cover"
+          />
         ) : (
           <img
             src="https://i.pinimg.com/736x/3b/73/a1/3b73a13983f88f8b84e130bb3fb29e17.jpg"

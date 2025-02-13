@@ -3,6 +3,7 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import useCurrentUserUid from '../hooks/useCurrentUserUid';
 import useUploadImage from '../hooks/useUploadImage';
+import { toast } from 'react-toastify';
 
 const EditProfile = (): JSX.Element => {
   const currentUserUid = useCurrentUserUid();
@@ -86,17 +87,10 @@ const EditProfile = (): JSX.Element => {
           profileImage: downloadURL,
         }));
 
-        console.log(
-          '프로필 이미지가 성공적으로 업로드되었습니다:',
-          downloadURL,
-        );
+        toast.success('프로필 이미지가 성공적으로 업로드되었습니다!');
 
-        console.log(
-          '프로필 이미지가 성공적으로 업로드되었습니다:',
-          downloadURL,
-        );
       } catch (error) {
-        console.error('이미지 업로드 중 오류가 발생했습니다:', error);
+        toast.error('이미지 업로드 중 오류가 발생했습니다:');
       } finally {
         setIsUploading(false);
       }
@@ -120,10 +114,10 @@ const EditProfile = (): JSX.Element => {
         id: profile.id,
         profileImage: profile.profileImage,
       });
-      console.log('프로필이 성공적으로 저장되었습니다:', profile);
+      toast.success('프로필이 성공적으로 저장되었습니다!');
       setOriginalProfile(profile);
     } catch (error) {
-      console.error('프로필 저장 중 오류가 발생했습니다:', error);
+      toast.error('프로필 저장 중 오류가 발생했습니다.');
     }
   };
 
