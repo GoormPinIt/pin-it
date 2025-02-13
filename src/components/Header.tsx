@@ -4,24 +4,44 @@ import { Search, Face, KeyboardArrowDown } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { signOut } from 'firebase/auth';
 import { logout } from '../features/authSlice';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
 import { RootState } from '../store';
 import useCurrentUserUid from '../hooks/useCurrentUserUid';
 import { toast, ToastContainer } from 'react-toastify';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 
 // import SearchModal from './SearchModal';
 
 const Header: React.FC = () => {
   const [input, setInput] = useState<string>('');
   const [isActive, setIsActive] = useState<boolean>(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
   const currentUserUid = useCurrentUserUid();
-  const profileImage = useSelector(
-    (state: RootState) => state.auth.userData?.profileImage,
-  );
   // const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!currentUserUid || !isLoggedIn) return;
+
+    const userDoc = doc(db, 'users', currentUserUid);
+    const unsubscribe = onSnapshot(
+      userDoc,
+      (docSnapshot) => {
+        if (docSnapshot.exists()) {
+          const userData = docSnapshot.data();
+          setProfileImage(userData.profileImage || null);
+        }
+      },
+      (error) => {
+        console.error('프로필 이미지 실시간 업데이트 중 오류 발생:', error);
+      },
+    );
+
+    // Clean up the listener when the component unmounts
+    return () => unsubscribe();
+  }, [currentUserUid, isLoggedIn]);
 
   const onSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -99,7 +119,7 @@ const Header: React.FC = () => {
                 <img
                   src={profileImage}
                   alt="프로필"
-                  className="w-8 h-8 rounded-full"
+                  className="w-8 h-8 rounded-full object-cover"
                 />
               ) : (
                 <Face className="text-gray-700" />
