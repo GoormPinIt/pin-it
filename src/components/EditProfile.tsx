@@ -88,6 +88,7 @@ const EditProfile = (): JSX.Element => {
         }));
 
         toast.success('프로필 이미지가 성공적으로 업로드되었습니다!');
+
       } catch (error) {
         toast.error('이미지 업로드 중 오류가 발생했습니다:');
       } finally {
