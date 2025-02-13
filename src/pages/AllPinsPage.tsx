@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import MasonryLayout from '../components/MasonryLayout';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import Pin from '../components/Pin';
 
 const AllPinsPage = (): JSX.Element => {
   const { uid } = useParams<{ uid: string }>();
@@ -54,7 +55,11 @@ const AllPinsPage = (): JSX.Element => {
   return (
     <div className="p-4">
       <p className="text-center text-xl font-semibold mb-4">모든 핀</p>
-      <MasonryLayout pins={allPins} />
+      <MasonryLayout
+        pins={allPins.map((pin) => (
+          <Pin key={pin.pinId} id={pin.pinId} src={pin.imageUrl} />
+        ))}
+      />
     </div>
   );
 };
