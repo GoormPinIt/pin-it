@@ -25,6 +25,7 @@ import ScrollTop from './components/ScrollTop';
 import loadingCircle from './assets/loading.gif';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import SearchResultsPage from './pages/SearchResultPage';
 
 const auth = getAuth();
 
@@ -80,6 +81,7 @@ const AppRoutes = (): JSX.Element => {
             <div className="flex-1 pl-16">
               <Routes>
                 <Route path="/" element={<Home />} />
+
                 <Route path="/profile/:userId" element={<UserProfile />} />
                 <Route
                   path="/profile/:uid/all-pins"
@@ -104,6 +106,7 @@ const AppRoutes = (): JSX.Element => {
                   element={<StoryPage />}
                 />
                 <Route path="/create-story" element={<CreateStory />} />
+                <Route path="/search" element={<SearchResultsPage />} />
               </Routes>
             </div>
           </div>

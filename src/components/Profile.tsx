@@ -23,6 +23,7 @@ import {
   collection,
 } from 'firebase/firestore';
 import { db } from '../firebase';
+import Pin from './Pin';
 
 type ProfileProps = {
   uid: string;
@@ -1261,20 +1262,18 @@ const Profile = ({
 
           <div className="pt-4">
             <MasonryLayout
-              pins={userData.savedPins.map((pin) => ({
-                pinId: pin.id,
-                imageUrl: pin.imageUrl,
-              }))}
+              pins={userData.savedPins.map((pin) => (
+                <Pin key={pin.id} id={pin.id} src={pin.imageUrl} />
+              ))}
             />
           </div>
         </>
       ) : (
         <div className="pt-4">
           <MasonryLayout
-            pins={userData.createdPins.map((pin) => ({
-              pinId: pin.id,
-              imageUrl: pin.imageUrl,
-            }))}
+            pins={userData.createdPins.map((pin) => (
+              <Pin key={pin.id} id={pin.id} src={pin.imageUrl} />
+            ))}
           />
         </div>
       )}
