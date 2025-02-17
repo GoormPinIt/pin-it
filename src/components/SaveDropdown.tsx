@@ -35,7 +35,16 @@ const SaveDropdown: React.FC<SaveDropdownProps> = ({
     refresh();
   };
 
-  const handleBoardClick = async (item: BoardItem, onClose: () => void) => {
+  const handleBoardClick = async (
+    item: BoardItem,
+    onClose: () => void,
+    uid: string | null,
+  ) => {
+    if (!uid) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
     try {
       console.log(`${item.title} 클릭됨`);
       setBoardName(item.title);
@@ -44,13 +53,16 @@ const SaveDropdown: React.FC<SaveDropdownProps> = ({
 
       // Firestore에서 boardId를 참조하여 문서 가져오기
       const boardRef = doc(db, 'boards', boardId);
+      const userRef = doc(db, 'users', uid);
 
       // pins 배열에 새 pinId 추가
       await updateDoc(boardRef, {
         pins: arrayUnion(pinId), // 기존 배열에 새 pinId 추가
       });
-
-      console.log(`Board ${boardId}의 pins에 ${pinId} 추가 완료`);
+      updateDoc(userRef, {
+        savedPins: arrayUnion(pinId),
+      }),
+        console.log(`Board ${boardId}의 pins에 ${pinId} 추가 완료`);
 
       // 모달 닫기
       onClose();
@@ -102,7 +114,7 @@ const SaveDropdown: React.FC<SaveDropdownProps> = ({
                 icon={item.icon}
                 title={item.title}
                 onClick={() => {
-                  handleBoardClick(item, onClose);
+                  handleBoardClick(item, onClose, uid);
                 }}
               />
             ))}

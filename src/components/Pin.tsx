@@ -12,6 +12,7 @@ import { savePinToBoard, fetchBoards } from '../features/boardSlice';
 import SaveModal from './SaveDropdown';
 import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import useCurrentUserUid from '../hooks/useCurrentUserUid';
 
 interface PinProps {
   src: string;
@@ -264,6 +265,9 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
   } | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const [boardName, setBoardName] = useState<string>('');
+
+  const currentUserUid = useCurrentUserUid();
+
   // 컴포넌트 마운트 시 보드 목록 가져오기
   // const modalRef = useRef<HTMLDivElement>(null);
   const handleCloseShareModal = () => {
@@ -335,6 +339,11 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
   };
 
   const handleQuickSave = async (e: React.MouseEvent) => {
+    if (!currentUserUid) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
     e.preventDefault();
     e.stopPropagation();
     console.log('Available boards:', boards); // 현재 boards 상태 확인
@@ -349,7 +358,11 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
 
     try {
       await dispatch(
-        savePinToBoard({ boardId: selectedBoard.id, pinId: id }),
+        savePinToBoard({
+          boardId: selectedBoard.id,
+          pinId: id,
+          userId: currentUserUid,
+        }),
       ).unwrap();
       alert(`"${selectedBoard.title}"에 저장되었습니다.`);
       setIsSaved(true);
@@ -378,7 +391,7 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
     setIsOptionsModalOpen((prev) => !prev);
     setIsShareModalOpen(false);
   };
-  console.log(showBoardsList);
+
   return (
     <Link to={`/pin/${id}`}>
       <div className="relative hover:bg-blend-darken">
