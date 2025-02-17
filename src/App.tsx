@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from 'react-router-dom';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState, store } from './store';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
@@ -26,6 +31,7 @@ import loadingCircle from './assets/loading.gif';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SearchResultsPage from './pages/SearchResultPage';
+import { resetSearchTerm } from './features/searchSlice';
 
 const auth = getAuth();
 
@@ -34,7 +40,7 @@ const App = (): JSX.Element => {
     <Provider store={store}>
       <Router>
         <ScrollTop />
-        <AppRoutes />
+        <AppContent />
       </Router>
     </Provider>
   );
@@ -119,4 +125,19 @@ const AppRoutes = (): JSX.Element => {
         ))}
     </>
   );
+};
+
+const AppContent = (): JSX.Element => {
+  const location = useLocation();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    // 검색 결과 페이지가 아닐 때만 검색어 리셋
+    if (!location.pathname.startsWith('/search')) {
+      console.log('Resetting search term'); // 디버깅용
+      dispatch(resetSearchTerm());
+    }
+  }, [location.pathname, dispatch]);
+
+  return <AppRoutes />;
 };
