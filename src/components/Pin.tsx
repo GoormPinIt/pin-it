@@ -37,9 +37,6 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
   const handleCloseShareModal = () => {
     setIsShareModalOpen(false);
   };
-  const handleCloseOptionModal = () => {
-    setIsOptionsModalOpen(false);
-  };
   const handleSaveImage = async () => {
     try {
       const response = await fetch(src, {
@@ -94,11 +91,16 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
   };
 
   const handleSaveClick = (e: React.MouseEvent) => {
-    e.preventDefault();
     e.stopPropagation();
+    e.preventDefault();
     console.log('저장');
     setShowBoardsList((prev) => !prev);
+    setShowBoardsList(false);
   };
+
+  useEffect(() => {
+    console.log('isShareModalOpen:', isShareModalOpen);
+  }, [isShareModalOpen]);
 
   const handleSaveToBoard = async (boardId: string, boardTitle: string) => {
     try {
@@ -163,8 +165,10 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
   }, [userId]);
 
   const handleShareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     e.preventDefault();
     setIsShareModalOpen((prev) => !prev);
+    console.log('isShareModalOpen:', isShareModalOpen);
     setIsOptionsModalOpen(false);
   };
 
@@ -187,6 +191,7 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
                 boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.1)',
                 transform: 'translateX(-50%)', // 중앙 정렬을 위해 추가
               }}
+              onClick={(e) => e.stopPropagation()}
             >
               <SaveModal
                 // onClose={() => setShowBoardsList(false)}
@@ -206,17 +211,33 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
           >
             저장
           </Button>
-          <div className="absolute bottom-3 w-full flex justify-end gap-1 right-3">
+          <div
+            className="absolute bottom-3 w-full flex justify-end gap-1 right-3"
+            onClick={(e) => e.stopPropagation()}
+          >
             <Button
               className="bg-slate-200 hover:bg-slate-300 rounded-full p-3 z-10 pointer-events-auto"
               onClick={handleShareClick}
             >
               <RiShare2Line className="text-neutral-900 font-black text-sm " />
             </Button>
-            {isShareModalOpen && <ShareModal onClose={handleCloseShareModal} />}
+            {isShareModalOpen && (
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
+              >
+                <ShareModal onClose={handleCloseShareModal} />
+              </div>
+            )}
             <Button
               className="bg-slate-200 hover:bg-slate-300 rounded-full text-sm p-3 z-10 pointer-events-auto"
-              onClick={handleSaveImage}
+              onClick={(e) => {
+                handleSaveImage();
+                e.stopPropagation();
+                e.preventDefault();
+              }}
             >
               <CiImageOn className="text-neutral-900" />
             </Button>
