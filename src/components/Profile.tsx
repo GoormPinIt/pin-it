@@ -14,6 +14,7 @@ import {
   getDoc,
   getDocs,
   setDoc,
+  addDoc,
   DocumentData,
   updateDoc,
   arrayRemove,
@@ -21,8 +22,11 @@ import {
   query,
   where,
   collection,
+  Timestamp,
 } from 'firebase/firestore';
 import { db } from '../firebase';
+import { io, Socket } from 'socket.io-client';
+import { toast } from 'react-toastify';
 import Pin from './Pin';
 
 type ProfileProps = {
@@ -133,6 +137,7 @@ const Profile = ({
   const [isFollowerModal, setIsFollowerModal] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
 
   const [userData, setUserData] = useState<{
     id: string;
@@ -531,11 +536,11 @@ const Profile = ({
           }),
         );
 
-        alert('보드가 생성되었습니다.');
+        toast.success('보드가 생성되었습니다.');
         setIsBoardModalOpen(false);
       } catch (error) {
         console.error('보드 생성 중 오류:', error);
-        alert('보드 생성에 실패했습니다.');
+        toast.error('보드 생성에 실패했습니다.');
       }
     };
 
@@ -901,7 +906,7 @@ const Profile = ({
     }, [currentUserUid, searchTerm]);
 
     const handleSend = (id: string) => {
-      alert(`${id}님에게 프로필을 보냈습니다.`);
+      toast.success(`${id}님에게 프로필을 보냈습니다.`);
       // 메시지로 프로필 보내는 로직 추가하기
     };
 
@@ -1066,6 +1071,118 @@ const Profile = ({
     );
   };
 
+  interface Message {
+    id?: string;
+    sender: string;
+    receiver: string;
+    text: string;
+    time: string;
+  }
+  const MessageModal = ({
+    receiverId,
+    onClose,
+  }: {
+    receiverId: string;
+    onClose: () => void;
+  }) => {
+    const socket: Socket = io('http://localhost:4000');
+
+    const [messageText, setMessageText] = useState('');
+
+    const getUserName = async (uid: string): Promise<string> => {
+      try {
+        const userRef = doc(db, 'users', uid);
+        const userDoc = await getDoc(userRef);
+        return userDoc.exists() ? userDoc.data().name : uid;
+      } catch (error) {
+        console.error('사용자 이름 가져오기 실패:', error);
+        return uid;
+      }
+    };
+
+    const generateChatId = (user1: string, user2: string): string => {
+      const sortedUsers = [user1, user2].sort();
+      return `${sortedUsers[0]}_${sortedUsers[1]}`;
+    };
+
+    const sendMessage = async () => {
+      if (!messageText.trim()) return;
+
+      try {
+        const senderName = await getUserName(currentUserUid);
+        const receiverName = await getUserName(receiverId);
+
+        const chatId = generateChatId(senderName, receiverName);
+        const message: Message = {
+          id: `${currentUserUid}_${receiverId}_${Date.now()}`,
+          sender: senderName,
+          receiver: receiverName,
+          text: messageText,
+          time: new Date().toString().split(' GMT')[0],
+        };
+
+        const messagesRef = collection(db, 'messages', chatId, 'chat');
+        await addDoc(messagesRef, {
+          ...message,
+          time: Timestamp.now(),
+        });
+
+        socket.emit('send_message', message);
+
+        const userChatsRef = doc(db, 'userChats', currentUserUid);
+        const userChatsDoc = await getDoc(userChatsRef);
+
+        const updatedChatUsers = userChatsDoc.exists()
+          ? userChatsDoc.data()?.chatUsers || []
+          : [];
+
+        if (!updatedChatUsers.includes(receiverName)) {
+          updatedChatUsers.push(receiverName);
+          await setDoc(userChatsRef, { chatUsers: updatedChatUsers });
+        }
+
+        setMessageText('');
+        toast.success(`${receiverName}님에게 메시지를 전송했습니다.`);
+        onClose();
+      } catch (error) {
+        console.error('메시지 전송 중 오류 발생:', error);
+      }
+    };
+
+    return (
+      <div className="absolute top-7 inset-0 bg-opacity-50 flex justify-center items-center z-50">
+        <div className="bg-white p-4 rounded-lg shadow-lg w-80">
+          <textarea
+            className="w-full p-2 border rounded-lg resize-none"
+            placeholder="메시지를 입력하세요."
+            rows={3}
+            value={messageText}
+            onChange={(e) => setMessageText(e.target.value)}
+          />
+          <div className="flex justify-end gap-2 mt-4">
+            <button
+              className="px-4 py-2 bg-btn_gray rounded-lg hover:bg-btn_h_gray"
+              onClick={onClose}
+            >
+              취소
+            </button>
+            <button
+              className={`px-4 py-2 rounded-lg ${
+                messageText.trim()
+                  ? 'bg-btn_red text-white hover:bg-btn_h_red'
+                  : 'bg-btn_gray cursor-not-allowed'
+              }`}
+              disabled={!messageText.trim()}
+              onClick={sendMessage}
+            >
+              보내기
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="p-4 w-full">
       <div className="pb-4 mb-6 text-center">
@@ -1131,9 +1248,18 @@ const Profile = ({
               </button>
             ) : (
               <div className="flex justify-center gap-4">
-                <button className="px-4 py-2 rounded-full bg-btn_gray hover:bg-btn_h_gray">
+                <button
+                  className="px-4 py-2 rounded-full bg-btn_gray hover:bg-btn_h_gray"
+                  onClick={() => setIsMessageModalOpen(true)}
+                >
                   메시지
                 </button>
+                {isMessageModalOpen && (
+                  <MessageModal
+                    receiverId={uid}
+                    onClose={() => setIsMessageModalOpen(false)}
+                  />
+                )}
                 <button
                   className={`px-4 py-2 rounded-full ${
                     isFollowing
@@ -1282,4 +1408,3 @@ const Profile = ({
 };
 
 export default Profile;
-// export { ShareModal };
