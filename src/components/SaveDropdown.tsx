@@ -87,7 +87,7 @@ const SaveDropdown: React.FC<SaveDropdownProps> = ({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="absolute right-0 top-full mt-[-15px]">
       <div
         className="bg-white rounded-lg shadow-lg w-11/12 max-w-md px-3 py-6 w-[350px]"
         ref={modalRef}

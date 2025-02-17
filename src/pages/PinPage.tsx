@@ -277,7 +277,7 @@ const PinPage: React.FC = () => {
             <img
               src={pinData?.imageUrl}
               alt="이미지 설명"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
           </figure>
         </section>
@@ -290,12 +290,10 @@ const PinPage: React.FC = () => {
           <header className="sticky top-0 bg-white z-10 px-2 pt-3">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-4 text-black text-xl font-extrabold max-w-[400px]">
-                <FaRegHeart />
-                <RiShare2Line />
                 <HiDotsHorizontal />
               </div>
               {savedState.isSaved ? (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-x-1">
                   <div className="flex items-center bg-white hover:bg-[#e2e2e2] px-4 py-2 rounded-full">
                     <button className="text-black text-sm font-semibold">
                       {boardName}
@@ -309,17 +307,17 @@ const PinPage: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center space-x-2">
-                  <div className="flex items-center bg-white hover:bg-[#e2e2e2] px-4 py-2 rounded-full">
-                    <button
-                      onClick={handleModalOpen}
-                      className="text-black text-sm font-semibold"
-                    >
+                <div className="flex items-center gap-x-1">
+                  <div
+                    className="flex items-center bg-white hover:bg-[#e2e2e2] px-4 py-2 rounded-full"
+                    onClick={handleModalOpen}
+                  >
+                    <button className="text-black text-sm font-semibold">
                       {boardName}
                     </button>
                     <svg
                       aria-label="보드 목록 열기"
-                      className="ml-2"
+                      className="ml-2 cursor-pointer"
                       height="12"
                       role="img"
                       viewBox="0 0 24 24"
@@ -334,7 +332,10 @@ const PinPage: React.FC = () => {
                 </div>
               )}
               {isModalOpen && (
-                <div ref={modalRef}>
+                <div
+                  ref={modalRef}
+                  className="absolute right-0 top-full mt-2 z-50"
+                >
                   <SaveDropdown
                     imageUrl={pinData!.imageUrl}
                     pinId={pinId || ''}
@@ -406,6 +407,12 @@ const PinPage: React.FC = () => {
                   id="comment"
                   type="text"
                   placeholder="댓글을 추가..."
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault(); // 엔터 입력 시 폼 제출 방지 (필요할 경우)
+                      handleAddComment(userId || '');
+                    }
+                  }}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   className="w-full border px-[15px] py-[13px] pr-[50px] rounded-full bg-[#e9e9e9] focus:outline-none focus:ring-2 focus:ring-gray-400"
