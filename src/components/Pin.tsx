@@ -170,7 +170,7 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
 
   return (
     <Link to={`/pin/${id}`}>
-      <div className="relative hover:bg-blend-darken">
+      <div className="relative hover:bg-blend-darken mb-4">
         <img src={src} className="w-full object-cover rounded-3xl" />
         <div className="z-10 absolute inset-0 hover:bg-black hover:bg-opacity-50 w-full rounded-3xl opacity-0 hover:opacity-100">
           <button

@@ -20,11 +20,11 @@ import {
   startAt,
 } from 'firebase/firestore';
 import MasonryLayout from './MasonryLayout';
+import { setSearchTerm } from '../features/searchSlice';
 
 // import SearchModal from './SearchModal';
 
 const Header: React.FC = () => {
-  const [input, setInput] = useState<string>('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isActive, setIsActive] = useState<boolean>(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -32,6 +32,13 @@ const Header: React.FC = () => {
   const dispatch = useDispatch();
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
   const currentUserUid = useCurrentUserUid();
+  const searchTerm = useSelector((state: RootState) => state.search.searchTerm);
+  const [input, setInput] = useState<string>(searchTerm);
+
+  // 컴포넌트가 마운트될 때 검색어 상태 초기화
+  useEffect(() => {
+    setInput(searchTerm);
+  }, [searchTerm]);
   // const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   useEffect(() => {
@@ -81,6 +88,9 @@ const Header: React.FC = () => {
           userId: doc.data().userId,
         }));
         setSearchResults(results);
+
+        // Redux 액션을 디스패치하여 검색어 저장
+        dispatch(setSearchTerm(input));
 
         // 검색 결과 페이지로 이동
         navigate(`/search?query=${input}`);
