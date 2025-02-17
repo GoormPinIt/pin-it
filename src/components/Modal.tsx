@@ -51,12 +51,16 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
   const [currentUserName, setCurrentUserName] = useState<string>('');
   const currentUserUid = useCurrentUserUid();
   const [searchResults, setSearchResults] = useState<
-    { uid: string; name: string }[]
+    { uid: string; name: string; profileImage?: string }[]
   >([]);
   const dropdownRef = useRef<HTMLDivElement | null>(null); // 검색 결과 목록 영역
   const modalRef = useRef<HTMLDivElement | null>(null); // 모달 영역
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userNames, setUserNames] = useState<Record<string, string>>({});
+  const [followers, setFollowers] = useState<
+    { uid: string; name: string; profileImage?: string }[]
+  >([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchUserData = async () => {
     if (!currentUserUid) return;
@@ -281,7 +285,57 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
     setNewMessageReceiver('');
     setNewMessageText('');
   };
+  useEffect(() => {
+    if (!currentUserUid || !isNewMessage) return;
 
+    const fetchFollowers = async () => {
+      try {
+        // 현재 유저 문서 읽기
+        const userDocRef = doc(db, 'users', currentUserUid);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (userDocSnap.exists()) {
+          const userData = userDocSnap.data();
+          const followerUids: string[] = userData.followers || [];
+
+          // 이미 가져온 userNames( uid -> 이름 )를 사용해 매핑
+          const followerList: {
+            uid: string;
+            name: string;
+            profileImage?: string;
+          }[] = [];
+
+          for (const fUid of followerUids) {
+            const fDocRef = doc(db, 'users', fUid);
+            const fDocSnap = await getDoc(fDocRef);
+
+            if (fDocSnap.exists()) {
+              const fData = fDocSnap.data();
+              followerList.push({
+                uid: fUid,
+                name: fData.name || fUid,
+                profileImage: fData.profileImage, // 프로필 이미지
+              });
+            } else {
+              // 혹시 문서가 없으면 최소한 uid와 기본 이름만 넣어줍니다.
+              followerList.push({
+                uid: fUid,
+                name: fUid,
+              });
+            }
+          }
+
+          setFollowers(followerList);
+          // 검색 결과 초기값도 전체 팔로워 목록으로 설정
+          setSearchResults(followerList);
+        }
+      } catch (error) {
+        console.error('팔로워 목록을 가져오는 중 오류 발생:', error);
+      }
+    };
+
+    fetchFollowers();
+  }, [currentUserUid, isNewMessage, userNames]);
   useEffect(() => {
     const fetchChatUsers = async () => {
       if (!currentUserUid) return;
@@ -318,6 +372,12 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
   }, []);
 
   useEffect(() => {
+    if (!newMessageReceiver.trim()) {
+      setSearchResults(followers);
+    }
+  }, [newMessageReceiver, followers]);
+
+  useEffect(() => {
     const handleClickOutsideModal = (event: MouseEvent) => {
       if (
         modalRef.current &&
@@ -331,6 +391,15 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
       document.removeEventListener('mousedown', handleClickOutsideModal);
     };
   }, [onClose]);
+  useEffect(() => {
+    if (!isOpen) {
+      setIsNewMessage(false);
+      setNewMessageReceiver('');
+      setNewMessageText('');
+      setSearchTerm('');
+      setSearchResults([]);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -357,29 +426,41 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
                 className="w-full p-2 text-xs border rounded-xl mt-2 mb-2"
                 value={newMessageReceiver}
                 onChange={async (e) => {
-                  const searchTerm = e.target.value;
-                  setNewMessageReceiver(searchTerm);
-                  try {
-                    const usersRef = collection(db, 'users');
-                    const querySnapshot = await getDocs(
-                      query(
+                  const term = e.target.value;
+                  setNewMessageReceiver(term);
+
+                  if (!term.trim()) {
+                    setSearchResults(followers);
+                  } else {
+                    try {
+                      const usersRef = collection(db, 'users');
+                      const q = query(
                         usersRef,
-                        where('name', '>=', searchTerm),
-                        where('name', '<=', searchTerm + '\uf8ff'),
-                      ),
-                    );
+                        where('name', '>=', term),
+                        where('name', '<=', term + '\uf8ff'),
+                      );
+                      const querySnapshot = await getDocs(q);
 
-                    const results: { uid: string; name: string }[] = [];
-                    querySnapshot.forEach((doc) => {
-                      const { uid, name } = doc.data();
-                      if (uid && name) {
-                        results.push({ uid, name });
-                      }
-                    });
+                      const results: {
+                        uid: string;
+                        name: string;
+                        profileImage?: string;
+                      }[] = [];
+                      querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        if (data.uid && data.name) {
+                          results.push({
+                            uid: data.uid,
+                            name: data.name,
+                            profileImage: data.profileImage,
+                          });
+                        }
+                      });
 
-                    setSearchResults(results);
-                  } catch (error) {
-                    console.error('사용자 검색 중 오류 발생:', error);
+                      setSearchResults(results);
+                    } catch (error) {
+                      console.error('사용자 검색 중 오류 발생:', error);
+                    }
                   }
                 }}
               />
@@ -387,17 +468,29 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
             {searchResults.length > 0 && (
               <div
                 ref={dropdownRef}
-                className="bg-gray-50 border rounded text-[12px] p-2 max-h-32 overflow-y-auto"
+                className="border rounded text-[12px] p-2 max-h-32 overflow-y-auto"
               >
                 {searchResults.map((user) => (
                   <div
                     key={user.uid}
                     onClick={() => {
                       setNewMessageReceiver(user.name);
+                      setSearchTerm(user.name);
                       setSearchResults([]);
                     }}
-                    className="cursor-pointer hover:bg-gray-200 p-1 rounded"
+                    className="cursor-pointer hover:bg-gray-200 p-1 rounded flex items-center"
                   >
+                    {user.profileImage ? (
+                      <img
+                        src={user.profileImage}
+                        alt={user.name}
+                        className="w-6 h-6 rounded-full mr-2"
+                      />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-gray-400 mr-2 flex items-center justify-center text-white text-xs">
+                        {user.name[0] || '?'}
+                      </div>
+                    )}
                     {user.name}
                   </div>
                 ))}
