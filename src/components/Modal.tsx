@@ -103,7 +103,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title }) => {
     };
 
     fetchChatUsers();
-  }, [currentUserUid]);
+  }, [currentUserUid, isOpen]);
+
   useEffect(() => {
     if (currentUserUid) {
       fetchUserData();
