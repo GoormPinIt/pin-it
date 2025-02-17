@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Button from './Button';
 import { RiShare2Line } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
-import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store';
 import { savePinToBoard, fetchBoards } from '../features/boardSlice';
@@ -31,6 +30,8 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
   } | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const [boardName, setBoardName] = useState<string>('');
+  const currentUserUid = useCurrentUserUid();
+
   // 컴포넌트 마운트 시 보드 목록 가져오기
   // const modalRef = useRef<HTMLDivElement>(null);
   const handleCloseShareModal = () => {
@@ -91,20 +92,12 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
   const handleModalClose = () => {
     setShowBoardsList(false);
   };
-  // boards 상태 변경 확인을 위한 useEffect
-  // useEffect(() => {
-  //   console.log('Current boards:', boards);
-  // }, [boards]);
 
   const handleSaveClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     console.log('저장');
     setShowBoardsList((prev) => !prev);
-  };
-
-  const savedCompletely = () => {
-    alert(`저장되었습니다.`);
   };
 
   const handleSaveToBoard = async (boardId: string, boardTitle: string) => {
@@ -173,12 +166,6 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
     e.preventDefault();
     setIsShareModalOpen((prev) => !prev);
     setIsOptionsModalOpen(false);
-  };
-
-  const handleOptionsClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsOptionsModalOpen((prev) => !prev);
-    setIsShareModalOpen(false);
   };
 
   return (
