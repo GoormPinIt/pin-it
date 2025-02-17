@@ -41,13 +41,29 @@ const initialState: BoardSliceState = {
 // 핀을 보드에 저장하는 thunk 추가
 export const savePinToBoard = createAsyncThunk(
   'boards/savePinToBoard',
-  async ({ boardId, pinId }: { boardId: string; pinId: string }) => {
+  async ({
+    boardId,
+    pinId,
+    userId,
+  }: {
+    boardId: string;
+    pinId: string;
+    userId: string;
+  }) => {
     try {
       const boardRef = doc(db, 'boards', boardId);
-      await updateDoc(boardRef, {
-        'pins.pinId': arrayUnion(pinId),
-      });
-      return { boardId, pinId };
+      const userRef = doc(db, 'users', userId);
+
+      await Promise.all([
+        updateDoc(boardRef, {
+          pins: arrayUnion(pinId),
+        }),
+        updateDoc(userRef, {
+          savedPins: arrayUnion(pinId),
+        }),
+      ]);
+
+      return { boardId, pinId, userId };
     } catch (error) {
       console.error('Error saving pin to board:', error);
       throw error;

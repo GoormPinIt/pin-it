@@ -11,6 +11,8 @@ import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { CiImageOn } from 'react-icons/ci';
 import { ShareModal } from './Home/ShareModal';
+import useCurrentUserUid from '../hooks/useCurrentUserUid';
+
 interface PinProps {
   src: string;
   id: string;
@@ -126,6 +128,11 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
   };
 
   const handleQuickSave = async (e: React.MouseEvent) => {
+    if (!currentUserUid) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
     e.preventDefault();
     e.stopPropagation();
     console.log('Available boards:', boards); // 현재 boards 상태 확인
@@ -140,7 +147,11 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
 
     try {
       await dispatch(
-        savePinToBoard({ boardId: selectedBoard.id, pinId: id }),
+        savePinToBoard({
+          boardId: selectedBoard.id,
+          pinId: id,
+          userId: currentUserUid,
+        }),
       ).unwrap();
       alert(`"${selectedBoard.title}"에 저장되었습니다.`);
       setIsSaved(true);
@@ -169,7 +180,7 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
     setIsOptionsModalOpen((prev) => !prev);
     setIsShareModalOpen(false);
   };
-  console.log(showBoardsList);
+
   return (
     <Link to={`/pin/${id}`}>
       <div className="relative hover:bg-blend-darken">
