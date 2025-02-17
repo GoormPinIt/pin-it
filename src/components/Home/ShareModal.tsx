@@ -83,7 +83,10 @@ export const ShareModal: React.FC<ShareModalProps> = () => {
     <div
       className="bg-white p-6 rounded-xl shadow-lg w-96 absolute bottom-11 fixed z-30"
       style={{ left: '40%', boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.1)' }}
-      onClick={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+      }}
     >
       <p className="mb-4 text-center">공유</p>
       <div className="flex justify-evenly mb-4 pb-4 border-b-2">
