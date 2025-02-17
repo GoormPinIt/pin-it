@@ -905,9 +905,68 @@ const Profile = ({
       fetchUsers();
     }, [currentUserUid, searchTerm]);
 
-    const handleSend = (id: string) => {
-      toast.success(`${id}님에게 프로필을 보냈습니다.`);
-      // 메시지로 프로필 보내는 로직 추가하기
+    const getUidById = async (id: string): Promise<string | null> => {
+      try {
+        const q = query(collection(db, 'users'), where('id', '==', id));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          return querySnapshot.docs[0].id;
+        } else {
+          console.warn(`사용자 아이디 ${id}에 해당하는 UID를 찾을 수 없음.`);
+          return null;
+        }
+      } catch (error) {
+        console.error('UID 조회 중 오류 발생:', error);
+        return null;
+      }
+    };
+
+    const handleSend = async (receiverId: string, receiverName: string) => {
+      try {
+        if (!currentUserUid) return;
+
+        const receiverUid = await getUidById(receiverId);
+        if (!receiverUid) {
+          toast.error('사용자를 찾을 수 없습니다.');
+          return;
+        }
+
+        const senderName = await getUserName(currentUserUid);
+        const chatId = generateChatId(senderName, receiverName);
+
+        const message: Message = {
+          id: `${currentUserUid}_${receiverUid}_${Date.now()}`,
+          sender: senderName,
+          receiver: receiverName,
+          text: `📎 프로필을 공유했습니다: ${currentUrl}`,
+          time: new Date().toString().split(' GMT')[0],
+        };
+
+        const messagesRef = collection(db, 'messages', chatId, 'chat');
+        await addDoc(messagesRef, {
+          ...message,
+          time: Timestamp.now(),
+        });
+
+        socket.emit('send_message', message);
+
+        const userChatsRef = doc(db, 'userChats', currentUserUid);
+        const userChatsDoc = await getDoc(userChatsRef);
+
+        const updatedChatUsers = userChatsDoc.exists()
+          ? userChatsDoc.data()?.chatUsers || []
+          : [];
+
+        if (!updatedChatUsers.includes(receiverName)) {
+          updatedChatUsers.push(receiverName);
+          await setDoc(userChatsRef, { chatUsers: updatedChatUsers });
+        }
+
+        toast.success(`${receiverName}님에게 프로필을 공유했습니다.`);
+      } catch (error) {
+        console.error('프로필 공유 메시지 전송 중 오류 발생:', error);
+      }
     };
 
     const handleCopyLink = () => {
@@ -1059,7 +1118,7 @@ const Profile = ({
                 </div>
               </div>
               <button
-                onClick={() => handleSend(user.id)}
+                onClick={() => handleSend(user.id, user.name)}
                 className="px-4 py-2 bg-btn_gray rounded-full hover:bg-btn_h_gray"
               >
                 보내기
@@ -1078,6 +1137,25 @@ const Profile = ({
     text: string;
     time: string;
   }
+
+  const socket: Socket = io('http://localhost:4000');
+
+  const getUserName = async (uid: string): Promise<string> => {
+    try {
+      const userRef = doc(db, 'users', uid);
+      const userDoc = await getDoc(userRef);
+      return userDoc.exists() ? userDoc.data().name : uid;
+    } catch (error) {
+      console.error('사용자 이름 가져오기 실패:', error);
+      return uid;
+    }
+  };
+
+  const generateChatId = (user1: string, user2: string): string => {
+    const sortedUsers = [user1, user2].sort();
+    return `${sortedUsers[0]}_${sortedUsers[1]}`;
+  };
+
   const MessageModal = ({
     receiverId,
     onClose,
@@ -1085,25 +1163,7 @@ const Profile = ({
     receiverId: string;
     onClose: () => void;
   }) => {
-    const socket: Socket = io('http://localhost:4000');
-
     const [messageText, setMessageText] = useState('');
-
-    const getUserName = async (uid: string): Promise<string> => {
-      try {
-        const userRef = doc(db, 'users', uid);
-        const userDoc = await getDoc(userRef);
-        return userDoc.exists() ? userDoc.data().name : uid;
-      } catch (error) {
-        console.error('사용자 이름 가져오기 실패:', error);
-        return uid;
-      }
-    };
-
-    const generateChatId = (user1: string, user2: string): string => {
-      const sortedUsers = [user1, user2].sort();
-      return `${sortedUsers[0]}_${sortedUsers[1]}`;
-    };
 
     const sendMessage = async () => {
       if (!messageText.trim()) return;
