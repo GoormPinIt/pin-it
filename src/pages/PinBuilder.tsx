@@ -301,8 +301,8 @@ const PinBuilder = () => {
                 )}
               </div>
             </div>
-            <hr className="pin-builder-divider" />
-            <button className="pin-builder-save-button">URL에서 저장</button>
+            {/* <hr className="pin-builder-divider" /> */}
+            {/* <button className="pin-builder-save-button">URL에서 저장</button> */}
           </div>
 
           {/* 두 번째 영역 */}

@@ -15,7 +15,7 @@ interface SaveDropdownProps {
   items?: { icon?: string; title: string }[]; // `items`를 옵셔널로 설정
 }
 
-const SaveDropdown: React.FC<SaveDropdownProps> = ({
+const SaveModal: React.FC<SaveDropdownProps> = ({
   pinId,
   onClose,
   imageUrl,
@@ -87,7 +87,7 @@ const SaveDropdown: React.FC<SaveDropdownProps> = ({
   }, [onClose]);
 
   return (
-    <div className="absolute right-0 top-full mt-[-15px]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
         className="bg-white rounded-lg shadow-lg w-11/12 max-w-md px-3 py-6 w-[350px]"
         ref={modalRef}
@@ -147,4 +147,4 @@ const SaveDropdown: React.FC<SaveDropdownProps> = ({
   );
 };
 
-export default SaveDropdown;
+export default SaveModal;

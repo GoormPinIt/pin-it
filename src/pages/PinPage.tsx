@@ -9,7 +9,7 @@ import { addCommentToFirestore } from '../utils/firestoreUtils';
 // import { FaSmile } from 'react-icons/fa';
 // import { LuSticker } from 'react-icons/lu';
 // import { AiOutlinePicture } from 'react-icons/ai';
-import SaveDropdown from '../components/SaveDropdown';
+import SaveModal from '../components/SaveDropdown';
 import ProfileComment from '../components/ProfileComment';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -336,7 +336,7 @@ const PinPage: React.FC = () => {
                   ref={modalRef}
                   className="absolute right-0 top-full mt-2 z-50"
                 >
-                  <SaveDropdown
+                  <SaveModal
                     imageUrl={pinData!.imageUrl}
                     pinId={pinId || ''}
                     onClose={handleModalClose}
