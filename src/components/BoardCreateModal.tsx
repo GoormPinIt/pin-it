@@ -35,7 +35,8 @@ const BoardCreateModal: React.FC<BoardModalProps> = ({
   const [boardName, setBoardName] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
 
-  const defaultProfileImage = imageUrl;
+  const defaultProfileImage =
+    'https://i.pinimg.com/736x/3b/73/a1/3b73a13983f88f8b84e130bb3fb29e17.jpg';
   const exampleImage = imageUrl;
 
   useEffect(() => {
@@ -71,27 +72,58 @@ const BoardCreateModal: React.FC<BoardModalProps> = ({
     );
   };
 
-  const createBoard = async () => {
+  const createBoard = async (
+    boardName: string,
+    isPrivate: boolean,
+    participants: string[],
+  ) => {
     try {
       const boardRef = doc(collection(db, 'boards'));
       const newBoardId = boardRef.id;
 
+      const allParticipants = await Promise.all(
+        participants.map(async (participantId) => {
+          const userQuery = query(
+            collection(db, 'users'),
+            where('id', '==', participantId),
+          );
+          const userSnapshot = await getDocs(userQuery);
+
+          if (!userSnapshot.empty) {
+            const userDoc = userSnapshot.docs[0];
+            return userDoc.id;
+          } else {
+            console.error(
+              `ID ${participantId}에 해당하는 문서를 찾을 수 없습니다.`,
+            );
+            return null;
+          }
+        }),
+      );
+
+      const validUids = allParticipants.filter(
+        (uid): uid is string => uid !== null,
+      );
+
       await setDoc(boardRef, {
         title: boardName,
-        ownerId: [currentUserUid, ...selectedUsers],
+        ownerId: [currentUserUid, ...validUids],
         pins: [],
         description: '',
         updatedTime: new Date(),
         isPrivate,
       });
 
-      // Update `createdBoards` for each participant
+      // 각 참여자의 createdBoards 필드에 보드 ID 추가
       await Promise.all(
-        [currentUserUid, ...selectedUsers].map(async (participantUid) => {
+        [currentUserUid, ...validUids].map(async (participantUid) => {
           const userRef = doc(db, 'users', participantUid);
           await updateDoc(userRef, {
             createdBoards: arrayUnion(newBoardId),
           });
+          console.log(
+            `createdBoards 업데이트됨: ${participantUid}, 보드 ID: ${newBoardId}`,
+          );
         }),
       );
 
@@ -215,7 +247,16 @@ const BoardCreateModal: React.FC<BoardModalProps> = ({
             취소
           </button>
           <button
-            onClick={createBoard}
+            onClick={(e) => {
+              e.preventDefault();
+              const boardName = (
+                document.getElementById('boardName') as HTMLInputElement
+              )?.value;
+              const isPrivate = (
+                document.getElementById('privateBoard') as HTMLInputElement
+              )?.checked;
+              createBoard(boardName, isPrivate, selectedUsers);
+            }}
             disabled={!boardName.trim()}
             className={`px-4 py-2 rounded-full ${
               boardName.trim()
