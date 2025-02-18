@@ -44,7 +44,6 @@ interface PinData {
 
 const PinBuilder = () => {
   const [imgBase64, setImgBase64] = useState<string>(''); // 파일 base64
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [imgFile, setImgFile] = useState<File | null>(null); // 파일
   const [toastVisible, setToastVisible] = useState(false);
   const [imgUrl, setImgUrl] = useState<string>(''); // 파일
@@ -64,6 +63,29 @@ const PinBuilder = () => {
 
   const [isImageUploaded, setIsImageUploaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const modalRef = useRef<HTMLDivElement>(null); // 🔹 컴포넌트 참조
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false); // 모달 닫기
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   useEffect(() => {
     const auth = getAuth();
@@ -356,12 +378,14 @@ const PinBuilder = () => {
                     readOnly
                   />
                   {isDropdownOpen && userId && (
-                    <SearchDropdown
-                      setBoard={setBoard}
-                      closeDropdown={closeDropdown}
-                      userId={userId}
-                      setSelectedBoardId={setSelectedBoardId}
-                    />
+                    <div ref={modalRef}>
+                      <SearchDropdown
+                        setBoard={setBoard}
+                        closeDropdown={closeDropdown}
+                        userId={userId}
+                        setSelectedBoardId={setSelectedBoardId}
+                      />
+                    </div>
                   )}
                 </div>
                 <div className="relative">
