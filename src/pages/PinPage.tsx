@@ -4,6 +4,7 @@ import { HiDotsHorizontal } from 'react-icons/hi';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useFetchBoardItem } from '../hooks/useFetchBoardItem';
 import { BoardItem } from '../types';
+import { HiOutlineSave } from 'react-icons/hi';
 
 import { db } from '../firebase';
 import { v4 as uuidv4 } from 'uuid';
@@ -92,6 +93,34 @@ const PinPage: React.FC = () => {
     } catch (error) {
       console.error('핀 삭제 중 오류 발생:', error);
     }
+  };
+
+  const handleSaveImage = () => {
+    const imgURL = pinData?.imageUrl; // 이미지 URL
+
+    if (!imgURL) {
+      console.error('이미지 URL이 없습니다.');
+      return;
+    }
+
+    fetch(imgURL, { method: 'GET', mode: 'no-cors' }) // (1) 이미지 데이터 가져오기
+      .then((response) => response.blob()) // (2) Blob 데이터 변환
+      .then((blob) => {
+        const blobURL = window.URL.createObjectURL(blob); // (3) Blob을 Object URL로 변환
+        const link = document.createElement('a'); // (4) 다운로드 링크 생성
+        link.href = blobURL;
+        const now = new Date();
+        const timestamp = now
+          .toISOString()
+          .replace(/[-:.T]/g, '')
+          .slice(0, 14);
+        link.download = `image-${timestamp}.png`; // (5) 저장될 파일명 설정
+        document.body.appendChild(link);
+        link.click(); // (6) 자동 클릭하여 다운로드 실행
+        document.body.removeChild(link); // (7) 링크 제거
+        window.URL.revokeObjectURL(blobURL); // (8) 메모리 해제
+      })
+      .catch((error) => console.error('이미지 다운로드 중 오류 발생:', error));
   };
 
   const checkIfPinSaved = async () => {
@@ -306,7 +335,9 @@ const PinPage: React.FC = () => {
           <header className="sticky top-0 bg-white z-10 px-2 pt-3">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-4 text-black text-xl font-extrabold max-w-[400px]">
-                <HiDotsHorizontal />
+                <button onClick={handleSaveImage}>
+                  <HiOutlineSave />
+                </button>
               </div>
               {savedState.isSaved ? (
                 <div className="flex items-center gap-x-1">
