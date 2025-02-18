@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import SaveModalItem from './SaveModalItem';
+import useCurrentUserUid from '../hooks/useCurrentUserUid';
 import { fetchBoards } from '../utils/boards';
+import SimpleBoardCreateModal from './SimpleBoardCreateModal';
 
 interface SearchDropdownProps {
   setBoard: (value: string) => void;
@@ -27,8 +29,21 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
   userId,
   setSelectedBoardId,
 }) => {
+  const uid = useCurrentUserUid();
+
   const [searchText, setSearchText] = useState('');
   const [boards, setBoards] = useState<Board[]>([]);
+  const [isBoardModalOpen, setIsBoardModalOpen] = useState<boolean>(false); // 보드 추가 모달 상태
+
+  const handleBoardModalOpen = () => {
+    setIsBoardModalOpen(true); // 보드 추가 모달 열기
+  };
+
+  const handleBoardModalClose = async () => {
+    setIsBoardModalOpen(false); // 보드 추가 모달 닫기
+    const updatedBoards = await fetchBoards(userId);
+    setBoards(updatedBoards);
+  };
 
   useEffect(() => {
     const loadBoards = async () => {
@@ -79,11 +94,20 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
       <div className="mt-4">
         <button
           className="flex items-center justify-center w-full px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
-          onClick={() => alert('보드 만들기 클릭됨')}
+          onClick={(e) => {
+            e.preventDefault();
+            handleBoardModalOpen();
+          }}
         >
           <span className="font-semibold">+ 보드 만들기</span>
         </button>
       </div>
+      {isBoardModalOpen && (
+        <SimpleBoardCreateModal
+          currentUserUid={uid || ''}
+          onClose={handleBoardModalClose} // 모달 닫기 핸들러
+        />
+      )}
     </div>
   );
 };
