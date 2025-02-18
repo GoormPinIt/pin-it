@@ -1,5 +1,5 @@
 // import { React } from 'react';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FaLink } from 'react-icons/fa6';
 import { FaSearch } from 'react-icons/fa';
 
@@ -12,16 +12,31 @@ type LocalUser = {
   profileImage: string;
 };
 
-export const ShareModal: React.FC<ShareModalProps> = () => {
+export const ShareModal: React.FC<ShareModalProps> = ({ onClose }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredUsers, setFilteredUsers] = useState<LocalUser[]>([]);
   const [copied, setCopied] = useState(false);
   const currentUrl = window.location.href;
   const facebookAppId = process.env.REACT_APP_FACEBOOK_APP_ID;
+  const modalRef = useRef<HTMLDivElement>(null);
   // const handleSend = (id: string) => {
   //   alert(`${id}에게 내 프로필을 보냈습니다.`);
   //   // 메시지로 내 프로필 보내는 로직 추가하기
   // };
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        // e.stopPropagation();
+        // e.preventDefault();
+        onClose(); // 모달 외부 클릭 시 닫기
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [onClose]);
 
   const handleCopyLink = () => {
     navigator.clipboard
@@ -29,6 +44,8 @@ export const ShareModal: React.FC<ShareModalProps> = () => {
       .then(() => {
         setCopied(true);
         setTimeout(() => setCopied(false), 3000);
+        onClose();
+        alert('링크 복사 완료');
       })
       .catch((err) => {
         console.error('링크 복사 실패:', err);
@@ -43,6 +60,13 @@ export const ShareModal: React.FC<ShareModalProps> = () => {
     )}&url=${encodeURIComponent(currentUrl)}&via=pinterest`;
 
     window.open(twitterUrl, 'twitter-share-dialog', 'width=600,height=400');
+    onClose();
+  };
+
+  const handleWhatsAppShare = () => {
+    const whatsappUrl = `https://web.whatsapp.com/send?text=${encodeURIComponent(currentUrl)}`;
+    window.open(whatsappUrl, '_blank', 'width=600,height=400');
+    onClose();
   };
 
   const handleFacebookShare = () => {
@@ -53,6 +77,7 @@ export const ShareModal: React.FC<ShareModalProps> = () => {
     )}&display=popup`;
 
     window.open(facebookUrl, 'facebook-share-dialog', 'width=600,height=400');
+    onClose();
   };
 
   const handleMessengerShare = () => {
@@ -69,6 +94,7 @@ export const ShareModal: React.FC<ShareModalProps> = () => {
     if (navigator.userAgent.match(/FBAN|FBAV/i)) {
       // Messenger 앱이 설치된 경우 실행
       window.open(messengerUrl, '_blank');
+      onClose();
     } else {
       // 일반 웹 브라우저 환경
       window.open(
@@ -76,13 +102,15 @@ export const ShareModal: React.FC<ShareModalProps> = () => {
         'messenger-share-dialog',
         'width=600,height=400',
       );
+      onClose();
     }
   };
 
   return (
     <div
-      className="bg-white p-6 rounded-xl shadow-lg w-96 absolute bottom-11 fixed z-30"
+      className="bg-white p-6 rounded-xl shadow-lg w-96 fixed bottom-40 z-30"
       style={{ left: '40%', boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.1)' }}
+      ref={modalRef}
       onClick={(e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -94,7 +122,7 @@ export const ShareModal: React.FC<ShareModalProps> = () => {
           <FaLink className="w-10 h-10 mb-2 bg-gray-200 rounded-full pl-3 pr-3" />
           <span className="text-xs"> {copied ? '복사 완료' : '링크 복사'}</span>
         </button>
-        <a
+        {/* <a
           href={`https://web.whatsapp.com/send?text=${encodeURIComponent(currentUrl)}`}
           target="_blank"
           rel="noopener noreferrer"
@@ -106,7 +134,18 @@ export const ShareModal: React.FC<ShareModalProps> = () => {
             className="w-10 h-10 rounded-full mb-2"
           />
           <span className="text-xs">WhatsApp</span>
-        </a>
+        </a> */}
+        <button
+          className="flex flex-col items-center"
+          onClick={handleWhatsAppShare}
+        >
+          <img
+            src="https://cdn.pixabay.com/photo/2021/12/10/16/38/whatsapp-6860919_1280.png"
+            alt="WhatsApp"
+            className="w-10 h-10 rounded-full mb-2"
+          />
+          <span className="text-xs">WhatsApp</span>
+        </button>
         <button
           className="flex flex-col items-center"
           onClick={handleMessengerShare}
