@@ -3,7 +3,9 @@ import { RiShare2Line } from 'react-icons/ri';
 import { HiDotsHorizontal } from 'react-icons/hi';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useFetchBoardItem } from '../hooks/useFetchBoardItem';
+
 import { BoardItem } from '../types';
+import { toast } from 'react-toastify';
 import { HiOutlineSave } from 'react-icons/hi';
 
 import { db } from '../firebase';
@@ -19,6 +21,7 @@ import ProfileComment from '../components/ProfileComment';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import {
+  arrayUnion,
   doc,
   getDoc,
   getDocs,
@@ -85,6 +88,8 @@ const PinPage: React.FC = () => {
         pins: arrayRemove(pinId),
       });
       setSavedState({ isSaved: false, boardName: '보드 선택', boardId: '' });
+      toast.success(`핀이 보드에서 삭제되었습니다.`);
+
       console.log(
         `핀 ${pinId}이 보드 ${savedState.boardId}에서 삭제되었습니다.`,
       );
@@ -93,6 +98,39 @@ const PinPage: React.FC = () => {
     } catch (error) {
       console.error('핀 삭제 중 오류 발생:', error);
     }
+  };
+
+  const handleSave = async () => {
+    if (boardName === '보드 선택') {
+      toast.error(`보드가 존재하지 않습니다. 생성해주세요`);
+
+      return;
+    }
+
+    if (!userId || !pinId) {
+      console.error('userId 또는 pinId가 존재하지 않습니다.');
+      return;
+    }
+
+    try {
+      const boardRef = doc(db, 'boards', boardItems[0].id);
+      const userRef = doc(db, 'users', userId);
+
+      await updateDoc(boardRef, {
+        pins: arrayUnion(pinId),
+      });
+
+      await updateDoc(userRef, {
+        savedPins: arrayUnion(pinId),
+      });
+
+      toast.success(`핀이 보드에 저장되었습니다.`);
+
+      console.log(`핀 ${pinId}이 보드 ${boardItems[0].id}에 저장되었습니다.`);
+    } catch (error) {
+      console.error('핀 저장 중 오류 발생:', error);
+    }
+    await checkIfPinSaved();
   };
 
   const handleSaveImage = () => {
@@ -373,7 +411,10 @@ const PinPage: React.FC = () => {
                       <path d="M20.16 6.65 12 14.71 3.84 6.65a2.27 2.27 0 0 0-3.18 0 2.2 2.2 0 0 0 0 3.15L12 21 23.34 9.8a2.2 2.2 0 0 0 0-3.15 2.26 2.26 0 0 0-3.18 0"></path>
                     </svg>
                   </div>
-                  <button className="bg-[#e60023] text-white px-4 py-2 rounded-full text-sm font-semibold">
+                  <button
+                    onClick={handleSave}
+                    className="bg-[#e60023] text-white px-4 py-2 rounded-full text-sm font-semibold"
+                  >
                     저장
                   </button>
                 </div>

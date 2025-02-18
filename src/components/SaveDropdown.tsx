@@ -4,6 +4,8 @@ import { BoardItem } from '../types';
 import useCurrentUserUid from '../hooks/useCurrentUserUid';
 import { useFetchBoardItem } from '../hooks/useFetchBoardItem';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { toast } from 'react-toastify';
+
 import { db } from '../firebase';
 import BoardCreateModal from './BoardCreateModal';
 
@@ -59,10 +61,13 @@ const SaveModal: React.FC<SaveDropdownProps> = ({
       await updateDoc(boardRef, {
         pins: arrayUnion(pinId), // 기존 배열에 새 pinId 추가
       });
-      updateDoc(userRef, {
+
+      await updateDoc(userRef, {
         savedPins: arrayUnion(pinId),
-      }),
-        console.log(`Board ${boardId}의 pins에 ${pinId} 추가 완료`);
+      });
+      toast.success(`핀이 보드에 저장되었습니다.`);
+
+      console.log(`Board ${boardId}의 pins에 ${pinId} 추가 완료`);
 
       // 모달 닫기
       onClose();
