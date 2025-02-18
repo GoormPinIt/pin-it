@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Button from './Button';
 import { RiShare2Line } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
@@ -11,6 +11,7 @@ import { db } from '../firebase';
 import { CiImageOn } from 'react-icons/ci';
 import { ShareModal } from './Home/ShareModal';
 import useCurrentUserUid from '../hooks/useCurrentUserUid';
+import { createPortal } from 'react-dom';
 
 interface PinProps {
   src: string;
@@ -31,12 +32,13 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
   const [isSaved, setIsSaved] = useState(false);
   const [boardName, setBoardName] = useState<string>('');
   const currentUserUid = useCurrentUserUid();
-
+  const shareDivRef = useRef<HTMLDivElement | null>(null);
   // 컴포넌트 마운트 시 보드 목록 가져오기
   // const modalRef = useRef<HTMLDivElement>(null);
   const handleCloseShareModal = () => {
-    setIsShareModalOpen(false);
+    setIsShareModalOpen((prev) => !prev);
   };
+
   const handleSaveImage = async () => {
     try {
       const response = await fetch(src, {
@@ -95,7 +97,6 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
     e.preventDefault();
     console.log('저장');
     setShowBoardsList((prev) => !prev);
-    setShowBoardsList(false);
   };
 
   useEffect(() => {
@@ -191,18 +192,24 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
                 boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.1)',
                 transform: 'translateX(-50%)', // 중앙 정렬을 위해 추가
               }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+              }}
             >
-              <SaveModal
-                // onClose={() => setShowBoardsList(false)}
-                // onSave={handleSaveToBoard}
-                // boards={boards}
-                // selectedBoard={selectedBoard}
-                pinId={id}
-                imageUrl={src}
-                onClose={handleModalClose}
-                setBoardName={setBoardName}
-              />
+              {createPortal(
+                <SaveModal
+                  // onClose={() => setShowBoardsList(false)}
+                  // onSave={handleSaveToBoard}
+                  // boards={boards}
+                  // selectedBoard={selectedBoard}
+                  pinId={id}
+                  imageUrl={src}
+                  onClose={handleModalClose}
+                  setBoardName={setBoardName}
+                />,
+                document.body,
+              )}
             </div>
           )}
           <Button
@@ -215,32 +222,43 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
             className="absolute bottom-3 w-full flex justify-end gap-1 right-3"
             onClick={(e) => e.stopPropagation()}
           >
-            <Button
-              className="bg-slate-200 hover:bg-slate-300 rounded-full p-3 z-10 pointer-events-auto"
-              onClick={handleShareClick}
-            >
-              <RiShare2Line className="text-neutral-900 font-black text-sm " />
-            </Button>
-            {isShareModalOpen && (
+            <div ref={shareDivRef}>
+              <Button
+                className="bg-slate-200 hover:bg-slate-300 rounded-full p-3 z-10 pointer-events-auto"
+                onClick={handleShareClick}
+              >
+                <RiShare2Line className="text-neutral-900 font-black text-sm " />
+              </Button>
               <div
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
                 }}
+                style={{
+                  width: '96px',
+                  position: 'absolute',
+                  bottom: '11px',
+                  zIndex: '30',
+                }}
               >
-                <ShareModal onClose={handleCloseShareModal} />
+                {isShareModalOpen &&
+                  shareDivRef.current &&
+                  createPortal(
+                    <ShareModal onClose={handleCloseShareModal} />,
+                    document.body,
+                  )}
               </div>
-            )}
-            <Button
-              className="bg-slate-200 hover:bg-slate-300 rounded-full text-sm p-3 z-10 pointer-events-auto"
-              onClick={(e) => {
-                handleSaveImage();
-                e.stopPropagation();
-                e.preventDefault();
-              }}
-            >
-              <CiImageOn className="text-neutral-900" />
-            </Button>
+              <Button
+                className="bg-slate-200 hover:bg-slate-300 rounded-full text-sm p-3 z-10 pointer-events-auto"
+                onClick={(e) => {
+                  handleSaveImage();
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
+              >
+                <CiImageOn className="text-neutral-900" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
