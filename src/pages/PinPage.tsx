@@ -2,6 +2,9 @@ import { FaRegHeart } from 'react-icons/fa';
 import { RiShare2Line } from 'react-icons/ri';
 import { HiDotsHorizontal } from 'react-icons/hi';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useFetchBoardItem } from '../hooks/useFetchBoardItem';
+import { BoardItem } from '../types';
+
 import { db } from '../firebase';
 import { v4 as uuidv4 } from 'uuid';
 import { addCommentToFirestore } from '../utils/firestoreUtils';
@@ -59,6 +62,8 @@ const PinPage: React.FC = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [comment, setComment] = useState('');
   const [boardName, setBoardName] = useState<string>('');
+  const { boardItems, refresh } = useFetchBoardItem(userId || '');
+
   const [savedState, setSavedState] = useState({
     isSaved: false,
     boardName: '보드 선택',
@@ -118,9 +123,20 @@ const PinPage: React.FC = () => {
   };
 
   useEffect(() => {
-    setBoardName('강아지');
+    // setBoardName('강아지');
+    if (boardItems.length) {
+      setBoardName(boardItems[0].title);
+    } else {
+      setBoardName('보드 선택');
+    }
     checkIfPinSaved();
-  }, []);
+  }, [boardItems]);
+
+  useEffect(() => {
+    if (userId) {
+      refresh();
+    }
+  }, [userId]);
 
   useEffect(() => {
     checkIfPinSaved();
