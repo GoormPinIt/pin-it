@@ -109,7 +109,7 @@ const InviteModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-[101] mt-0">
       <div className="bg-white p-4 rounded-md shadow-md w-96">
         <h2 className="text-sm font-bold mb-4 flex justify-center text-center">
           참여자 초대하기
