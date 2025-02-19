@@ -255,13 +255,6 @@ const BoardDetails = (): JSX.Element => {
         >
           <FaUserPlus size={14} />
         </button>
-        {showInviteModal && (
-          <InviteModal
-            boardId={boardId ?? ''}
-            currentUserUid={currentUserUid}
-            onClose={() => setShowInviteModal(false)}
-          />
-        )}
         <div className="flex space-x-1">
           <div className="flex flex-col items-center">
             <button className="p-1 bg-gray-100 rounded-xl w-9 h-9 flex items-center justify-center">
@@ -310,6 +303,15 @@ const BoardDetails = (): JSX.Element => {
           onSubmit={handleEditSubmit}
           onClose={() => setShowEditModal(false)}
         />
+      )}
+      {showInviteModal && (
+        <div className="mt-0">
+          <InviteModal
+            boardId={boardId ?? ''}
+            currentUserUid={currentUserUid}
+            onClose={() => setShowInviteModal(false)}
+          />
+        </div>
       )}
     </div>
   );

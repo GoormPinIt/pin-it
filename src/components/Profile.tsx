@@ -545,7 +545,7 @@ const Profile = ({
     };
 
     return (
-      <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-20">
+      <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-[101]">
         <div className="bg-white p-6 rounded-lg shadow-lg w-96">
           <h2 className="text-2xl font-semibold m-4 text-center">
             보드 만들기
@@ -769,7 +769,7 @@ const Profile = ({
     };
 
     return (
-      <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+      <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-[101]">
         <div className="bg-white p-6 rounded-lg shadow-lg w-96">
           <h2 className="text-2xl font-semibold m-4 text-center relative">
             {isFollower

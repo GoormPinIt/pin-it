@@ -94,7 +94,7 @@ const SaveModal: React.FC<SaveDropdownProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="bg-white rounded-lg shadow-lg w-11/12 max-w-md px-3 py-6 w-[350px]"
+        className="bg-white rounded-lg shadow-lg max-w-md px-3 py-6 w-[350px]"
         ref={modalRef}
       >
         {/* 모달 헤더 */}
