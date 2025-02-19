@@ -9,6 +9,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@firebase/storage": "^0.13.4",
+    "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
     "@mui/icons-material": "^6.3.0",
     "@mui/material": "^6.3.0",
     "@reduxjs/toolkit": "^2.5.0",
