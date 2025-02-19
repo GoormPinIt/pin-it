@@ -22,6 +22,7 @@ import SearchDropdown from '../components/SearchDropdown';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { addPinToBoard } from '../utils/firestoreUtils';
 import TagDropdown from '../components/TagDropdown';
+import { toast } from 'react-toastify';
 
 interface PinData {
   pinId: string;
@@ -38,12 +39,12 @@ interface PinData {
   boards: string[]; // 핀을 저장한 보드드 ID 배열
   comments: string[]; // 핀에 작성된 코멘트 배열
   createdAt: Date; // 핀 생성 날짜
+  keywords: string[];
 }
 //firebase
 
 const PinBuilder = () => {
   const [imgBase64, setImgBase64] = useState<string>(''); // 파일 base64
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [imgFile, setImgFile] = useState<File | null>(null); // 파일
   const [toastVisible, setToastVisible] = useState(false);
   const [imgUrl, setImgUrl] = useState<string>(''); // 파일
@@ -63,6 +64,29 @@ const PinBuilder = () => {
 
   const [isImageUploaded, setIsImageUploaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const modalRef = useRef<HTMLDivElement>(null); // 🔹 컴포넌트 참조
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false); // 모달 닫기
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   useEffect(() => {
     const auth = getAuth();
@@ -101,6 +125,7 @@ const PinBuilder = () => {
   };
 
   const handleChangeFile = (event: ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault();
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
       const reader = new FileReader();
@@ -132,6 +157,19 @@ const PinBuilder = () => {
     setIsImageUploaded(false);
   };
 
+  const generateKeywords = (title: string): string[] => {
+    const keywords = new Set<string>();
+
+    // 모든 가능한 N-gram 생성
+    for (let i = 0; i < title.length; i++) {
+      for (let j = i + 1; j <= title.length; j++) {
+        keywords.add(title.slice(i, j));
+      }
+    }
+
+    return Array.from(keywords);
+  };
+
   const handleSubmit = async () => {
     try {
       let downloadUrl = '';
@@ -141,6 +179,9 @@ const PinBuilder = () => {
         console.log('다운된 이미지: ', downloadUrl);
         setImgUrl(downloadUrl);
       }
+
+      // 키워드 생성
+      const keywords = generateKeywords(title);
 
       const pinData: PinData = {
         pinId: '',
@@ -157,6 +198,7 @@ const PinBuilder = () => {
         boards: [],
         comments: [],
         createdAt: new Date(),
+        keywords,
       };
 
       pinData.boards.push(selectedBoardId);
@@ -177,6 +219,7 @@ const PinBuilder = () => {
 
       console.log('저장 완료');
       setToastVisible(true); // 토스트 메시지 표시
+      toast.success('핀이 생성되었습니다!');
 
       if (selectedBoardId) {
         await addPinToBoard(selectedBoardId, docRef.id);
@@ -282,8 +325,8 @@ const PinBuilder = () => {
                 )}
               </div>
             </div>
-            <hr className="pin-builder-divider" />
-            <button className="pin-builder-save-button">URL에서 저장</button>
+            {/* <hr className="pin-builder-divider" /> */}
+            {/* <button className="pin-builder-save-button">URL에서 저장</button> */}
           </div>
 
           {/* 두 번째 영역 */}
@@ -337,12 +380,14 @@ const PinBuilder = () => {
                     readOnly
                   />
                   {isDropdownOpen && userId && (
-                    <SearchDropdown
-                      setBoard={setBoard}
-                      closeDropdown={closeDropdown}
-                      userId={userId}
-                      setSelectedBoardId={setSelectedBoardId}
-                    />
+                    <div ref={modalRef}>
+                      <SearchDropdown
+                        setBoard={setBoard}
+                        closeDropdown={closeDropdown}
+                        userId={userId}
+                        setSelectedBoardId={setSelectedBoardId}
+                      />
+                    </div>
                   )}
                 </div>
                 <div className="relative">

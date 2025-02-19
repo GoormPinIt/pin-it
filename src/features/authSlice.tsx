@@ -1,15 +1,18 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { auth } from '../firebase';
+import { db } from '../firebase';
 import {
   deleteUser,
   EmailAuthProvider,
   reauthenticateWithCredential,
   onAuthStateChanged,
 } from 'firebase/auth';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 export interface UserData {
   email: string | null;
   uid: string;
+  profileImage?: string;
 }
 
 interface AuthState {
@@ -28,6 +31,7 @@ const initialState: AuthState = {
   initialized: false,
 };
 
+// 계정 삭제 Thunk
 export const deleteAccount = createAsyncThunk(
   'auth/deleteAccount',
   async (password: string, { rejectWithValue }) => {
@@ -44,23 +48,56 @@ export const deleteAccount = createAsyncThunk(
   },
 );
 
+// 프로필 이미지 업데이트 Thunk
+export const updateProfileImage = createAsyncThunk(
+  'auth/updateProfileImage',
+  async (
+    { uid, profileImage }: { uid: string; profileImage: string },
+    { rejectWithValue },
+  ) => {
+    try {
+      const userDoc = doc(db, 'users', uid);
+      await updateDoc(userDoc, { profileImage });
+      return profileImage;
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
+    }
+  },
+);
+
+// 인증 초기화 Thunk
 export const initializeAuth = createAsyncThunk(
   'auth/initializeAuth',
   async (_, { dispatch }) => {
     return new Promise<void>((resolve) => {
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
+      const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
-          // 사용자가 로그인 상태
-          dispatch(loginSuccess({ email: user.email, uid: user.uid }));
-        } else {
-          // 로컬 스토리지에서 토큰 확인
-          const token = localStorage.getItem('authToken');
-          if (token) {
-            // 토큰이 있으면 서버에 유효성 검증 요청
-            // 유효하다면 loginSuccess 디스패치, 아니면 logout 디스패치
-          } else {
+          try {
+            const userDoc = doc(db, 'users', user.uid);
+            const docSnap = await getDoc(userDoc);
+
+            if (docSnap.exists()) {
+              const userData = docSnap.data();
+              dispatch(
+                loginSuccess({
+                  email: user.email,
+                  uid: user.uid,
+                  profileImage: userData.profileImage || null,
+                }),
+              );
+            } else {
+              console.error('사용자 문서를 찾을 수 없습니다.');
+              dispatch(logout());
+            }
+          } catch (error) {
+            console.error(
+              'Firestore에서 사용자 데이터를 불러오는 중 오류 발생:',
+              error,
+            );
             dispatch(logout());
           }
+        } else {
+          dispatch(logout());
         }
         resolve();
       });
@@ -85,6 +122,7 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // 계정 삭제 처리
       .addCase(deleteAccount.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -98,6 +136,24 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+
+      // 프로필 이미지 업데이트 처리
+      .addCase(updateProfileImage.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateProfileImage.fulfilled, (state, action) => {
+        if (state.userData) {
+          state.userData.profileImage = action.payload; // Redux 상태 업데이트
+        }
+        state.loading = false;
+      })
+      .addCase(updateProfileImage.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // 인증 초기화 처리
       .addCase(initializeAuth.pending, (state) => {
         state.loading = true;
       })
@@ -114,4 +170,5 @@ const authSlice = createSlice({
 });
 
 export const { loginSuccess, logout } = authSlice.actions;
+
 export default authSlice.reducer;

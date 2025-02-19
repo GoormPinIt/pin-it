@@ -3,10 +3,13 @@ import { useParams } from 'react-router-dom';
 import MasonryLayout from '../components/MasonryLayout';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import Pin from '../components/Pin';
 
 const AllPinsPage = (): JSX.Element => {
   const { uid } = useParams<{ uid: string }>();
-  const [allPinImages, setAllPinImages] = useState<string[]>([]);
+  const [allPins, setAllPins] = useState<{ pinId: string; imageUrl: string }[]>(
+    [],
+  );
 
   useEffect(() => {
     const fetchAllPins = async () => {
@@ -30,13 +33,17 @@ const AllPinsPage = (): JSX.Element => {
             const pinDoc = await getDoc(pinDocRef);
 
             if (pinDoc.exists()) {
-              return pinDoc.data().imageUrl;
+              return { pinId: pinId, imageUrl: pinDoc.data().imageUrl };
             }
             return null;
           }),
         );
 
-        setAllPinImages(pinData.filter((url): url is string => url !== null));
+        setAllPins(
+          pinData.filter(
+            (pin): pin is { pinId: string; imageUrl: string } => pin !== null,
+          ),
+        );
       } catch (error) {
         console.error('핀 데이터를 가져오는 중 오류 발생:', error);
       }
@@ -48,7 +55,11 @@ const AllPinsPage = (): JSX.Element => {
   return (
     <div className="p-4">
       <p className="text-center text-xl font-semibold mb-4">모든 핀</p>
-      <MasonryLayout images={allPinImages} />
+      <MasonryLayout
+        pins={allPins.map((pin) => (
+          <Pin key={pin.pinId} id={pin.pinId} src={pin.imageUrl} />
+        ))}
+      />
     </div>
   );
 };

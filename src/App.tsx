@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from 'react-router-dom';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState, store } from './store';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
@@ -21,6 +26,12 @@ import StoryPage from './pages/StoryPage';
 import CreateStory from './pages/CreateStory';
 import PhotoEditPage from './pages/PhotoEditPage';
 import OrganizePins from './pages/OrganizePins';
+import ScrollTop from './components/ScrollTop';
+import loadingCircle from './assets/loading.gif';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import SearchResultsPage from './pages/SearchResultPage';
+import { resetSearchTerm } from './features/searchSlice';
 
 const auth = getAuth();
 
@@ -28,7 +39,8 @@ const App = (): JSX.Element => {
   return (
     <Provider store={store}>
       <Router>
-        <AppRoutes />
+        <ScrollTop />
+        <AppContent />
       </Router>
     </Provider>
   );
@@ -47,12 +59,27 @@ const AppRoutes = (): JSX.Element => {
   }, [dispatch]);
 
   if (!initialized) {
-    return <div>Loading...</div>; // 또는 로딩 컴포넌트
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <img src={loadingCircle} alt="로딩 중..." className="w-12" />
+      </div>
+    );
   }
 
   return (
     <>
       <Header />
+      <ToastContainer
+        autoClose={2000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        style={{ zIndex: 9999 }}
+      />
       {initialized &&
         (isLoggedIn ? (
           <div className="flex pt-16">
@@ -60,6 +87,7 @@ const AppRoutes = (): JSX.Element => {
             <div className="flex-1 pl-16">
               <Routes>
                 <Route path="/" element={<Home />} />
+
                 <Route path="/profile/:userId" element={<UserProfile />} />
                 <Route
                   path="/profile/:uid/all-pins"
@@ -84,6 +112,7 @@ const AppRoutes = (): JSX.Element => {
                   element={<StoryPage />}
                 />
                 <Route path="/create-story" element={<CreateStory />} />
+                <Route path="/search" element={<SearchResultsPage />} />
               </Routes>
             </div>
           </div>
@@ -96,4 +125,19 @@ const AppRoutes = (): JSX.Element => {
         ))}
     </>
   );
+};
+
+const AppContent = (): JSX.Element => {
+  const location = useLocation();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    // 검색 결과 페이지가 아닐 때만 검색어 리셋
+    if (!location.pathname.startsWith('/search')) {
+      console.log('Resetting search term'); // 디버깅용
+      dispatch(resetSearchTerm());
+    }
+  }, [location.pathname, dispatch]);
+
+  return <AppRoutes />;
 };

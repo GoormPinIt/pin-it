@@ -10,11 +10,11 @@ import {
   getDoc,
   deleteDoc,
   Timestamp,
+  limit,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import useCurrentUserUid from '../hooks/useCurrentUserUid';
 import { FaPlusCircle } from 'react-icons/fa';
-import { limit } from 'firebase/firestore';
 
 const defaultProfileImage =
   'https://i.pinimg.com/736x/3b/73/a1/3b73a13983f88f8b84e130bb3fb29e17.jpg';
@@ -36,6 +36,7 @@ const StoryList = (): JSX.Element => {
     id: '',
     profileImage: defaultProfileImage,
   });
+  const [hasStory, setHasStory] = useState(false);
 
   const navigate = useNavigate();
   const currentUserUid = useCurrentUserUid();
@@ -83,6 +84,15 @@ const StoryList = (): JSX.Element => {
         } else {
           console.error('사용자 데이터를 찾을 수 없습니다.');
         }
+
+        const userStoriesQuery = query(
+          collection(db, 'stories'),
+          where('userUid', '==', currentUserUid),
+          orderBy('createdAt', 'asc'),
+          limit(1),
+        );
+        const querySnapshot = await getDocs(userStoriesQuery);
+        setHasStory(!querySnapshot.empty);
       } catch (error) {
         console.error('사용자 데이터를 가져오는 중 오류 발생:', error);
       }
@@ -193,7 +203,11 @@ const StoryList = (): JSX.Element => {
         className="relative w-20 text-center cursor-pointer"
         onClick={handleProfileClick}
       >
-        <div className="w-20 h-20 rounded-full overflow-hidden mb-1">
+        <div
+          className={`w-20 h-20 rounded-full overflow-hidden mb-1 border-4 ${
+            hasStory ? 'border-[#0098fe]' : 'border-transparent'
+          }`}
+        >
           <img
             src={userProfile.profileImage || defaultProfileImage}
             alt="현재 사용자 프로필"

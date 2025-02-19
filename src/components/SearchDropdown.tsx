@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import SaveModalItem from './SaveModalItem';
+import useCurrentUserUid from '../hooks/useCurrentUserUid';
 import { fetchBoards } from '../utils/boards';
+import SimpleBoardCreateModal from './SimpleBoardCreateModal';
 
 interface SearchDropdownProps {
   setBoard: (value: string) => void;
@@ -27,8 +29,46 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
   userId,
   setSelectedBoardId,
 }) => {
+  const uid = useCurrentUserUid();
+
   const [searchText, setSearchText] = useState('');
   const [boards, setBoards] = useState<Board[]>([]);
+  const [isBoardModalOpen, setIsBoardModalOpen] = useState<boolean>(false);
+
+  const dropdownRef = useRef<HTMLDivElement>(null); // 🔹 SearchDropdown을 감싸는 ref
+  const modalRef = useRef<HTMLDivElement>(null); // 🔹 SimpleBoardCreateModal을 감싸는 ref
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        (dropdownRef.current &&
+          dropdownRef.current.contains(event.target as Node)) ||
+        (modalRef.current && modalRef.current.contains(event.target as Node))
+      ) {
+        // 🔹 SearchDropdown 또는 모달 내부 클릭 시 아무것도 하지 않음
+        return;
+      }
+
+      // 🔹 바깥을 클릭하면 닫기
+      closeDropdown();
+      setIsBoardModalOpen(false);
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleBoardModalOpen = () => {
+    setIsBoardModalOpen(true);
+  };
+
+  const handleBoardModalClose = async () => {
+    setIsBoardModalOpen(false);
+    const updatedBoards = await fetchBoards(userId);
+    setBoards(updatedBoards);
+  };
 
   useEffect(() => {
     const loadBoards = async () => {
@@ -37,7 +77,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
     };
 
     loadBoards();
-  }, [userId]); // userId가 변경될 때만 실행
+  }, [userId]);
 
   // 검색 필터 적용
   const filteredBoards = boards.filter((board) =>
@@ -45,7 +85,10 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
   );
 
   return (
-    <div className="absolute left-0 top-full mt-2 min-w-[400px] bg-white border border-gray-300 rounded-lg shadow-lg z-50 p-4">
+    <div
+      ref={dropdownRef}
+      className="absolute left-0 top-full mt-2 min-w-[400px] bg-white border border-gray-300 rounded-lg shadow-lg z-50 p-4"
+    >
       {/* 검색 입력창 */}
       <input
         type="text"
@@ -61,11 +104,11 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
           filteredBoards.map((board) => (
             <SaveModalItem
               key={board.id}
-              icon={board.icon} // 아이콘 추가
+              icon={board.icon}
               title={board.title}
               onClick={() => {
-                setBoard(board.title); // 선택된 보드 설정
-                closeDropdown(); // 드롭다운 닫기
+                setBoard(board.title);
+                closeDropdown();
                 setSelectedBoardId(board.id);
               }}
             />
@@ -79,11 +122,22 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
       <div className="mt-4">
         <button
           className="flex items-center justify-center w-full px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
-          onClick={() => alert('보드 만들기 클릭됨')}
+          onClick={(e) => {
+            e.preventDefault();
+            handleBoardModalOpen();
+          }}
         >
           <span className="font-semibold">+ 보드 만들기</span>
         </button>
       </div>
+      {isBoardModalOpen && (
+        <div ref={modalRef}>
+          <SimpleBoardCreateModal
+            currentUserUid={uid || ''}
+            onClose={handleBoardModalClose}
+          />
+        </div>
+      )}
     </div>
   );
 };

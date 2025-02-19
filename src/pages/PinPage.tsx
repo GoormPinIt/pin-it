@@ -2,6 +2,12 @@ import { FaRegHeart } from 'react-icons/fa';
 import { RiShare2Line } from 'react-icons/ri';
 import { HiDotsHorizontal } from 'react-icons/hi';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useFetchBoardItem } from '../hooks/useFetchBoardItem';
+
+import { BoardItem } from '../types';
+import { toast } from 'react-toastify';
+import { HiOutlineSave } from 'react-icons/hi';
+
 import { db } from '../firebase';
 import { v4 as uuidv4 } from 'uuid';
 import { addCommentToFirestore } from '../utils/firestoreUtils';
@@ -9,12 +15,13 @@ import { addCommentToFirestore } from '../utils/firestoreUtils';
 // import { FaSmile } from 'react-icons/fa';
 // import { LuSticker } from 'react-icons/lu';
 // import { AiOutlinePicture } from 'react-icons/ai';
-import SaveDropdown from '../components/SaveDropdown';
+import SaveModal from '../components/SaveDropdown';
 import ProfileComment from '../components/ProfileComment';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import {
+  arrayUnion,
   doc,
   getDoc,
   getDocs,
@@ -59,6 +66,8 @@ const PinPage: React.FC = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [comment, setComment] = useState('');
   const [boardName, setBoardName] = useState<string>('');
+  const { boardItems, refresh } = useFetchBoardItem(userId || '');
+
   const [savedState, setSavedState] = useState({
     isSaved: false,
     boardName: '보드 선택',
@@ -79,6 +88,8 @@ const PinPage: React.FC = () => {
         pins: arrayRemove(pinId),
       });
       setSavedState({ isSaved: false, boardName: '보드 선택', boardId: '' });
+      toast.success(`핀이 보드에서 삭제되었습니다.`);
+
       console.log(
         `핀 ${pinId}이 보드 ${savedState.boardId}에서 삭제되었습니다.`,
       );
@@ -87,6 +98,81 @@ const PinPage: React.FC = () => {
     } catch (error) {
       console.error('핀 삭제 중 오류 발생:', error);
     }
+  };
+
+  const handleSave = async () => {
+    if (boardName === '보드 선택') {
+      toast.error(`보드가 존재하지 않습니다. 생성해주세요`);
+
+      return;
+    }
+
+    if (!userId || !pinId) {
+      console.error('userId 또는 pinId가 존재하지 않습니다.');
+      return;
+    }
+
+    try {
+      const boardRef = doc(db, 'boards', boardItems[0].id);
+      const userRef = doc(db, 'users', userId);
+
+      await updateDoc(boardRef, {
+        pins: arrayUnion(pinId),
+      });
+
+      await updateDoc(userRef, {
+        savedPins: arrayUnion(pinId),
+      });
+
+      toast.success(`핀이 보드에 저장되었습니다.`);
+
+      console.log(`핀 ${pinId}이 보드 ${boardItems[0].id}에 저장되었습니다.`);
+    } catch (error) {
+      console.error('핀 저장 중 오류 발생:', error);
+    }
+    await checkIfPinSaved();
+  };
+
+  const handleSaveImage = () => {
+    const imgURL = pinData?.imageUrl; // 이미지 URL
+
+    if (!imgURL) {
+      console.error('이미지 URL이 없습니다.');
+      return;
+    }
+
+    fetch(imgURL) // (1) CORS 모드 제거
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('이미지를 가져오는 데 실패했습니다.');
+        }
+        return response.blob(); // (2) Blob 데이터 변환
+      })
+      .then((blob) => {
+        const blobURL = window.URL.createObjectURL(blob); // (3) Blob을 Object URL로 변환
+        const link = document.createElement('a'); // (4) 다운로드 링크 생성
+        link.href = blobURL;
+
+        // 파일 이름 설정 (현재 날짜와 시간 기반)
+        const now = new Date();
+        const timestamp = now
+          .toISOString()
+          .replace(/[-:.T]/g, '')
+          .slice(0, 14);
+        link.download = `image-${timestamp}.png`; // (5) 저장될 파일명 설정
+
+        document.body.appendChild(link);
+        link.click(); // (6) 자동 클릭하여 다운로드 실행
+        document.body.removeChild(link); // (7) 링크 제거
+
+        window.URL.revokeObjectURL(blobURL); // (8) 메모리 해제
+      })
+      .catch((error) => {
+        console.error('이미지 다운로드 중 오류 발생:', error);
+
+        // 실패 시 새 탭에서 이미지 열기
+        window.open(imgURL, '_blank');
+      });
   };
 
   const checkIfPinSaved = async () => {
@@ -118,9 +204,20 @@ const PinPage: React.FC = () => {
   };
 
   useEffect(() => {
-    setBoardName('강아지');
+    // setBoardName('강아지');
+    if (boardItems.length) {
+      setBoardName(boardItems[0].title);
+    } else {
+      setBoardName('보드 선택');
+    }
     checkIfPinSaved();
-  }, []);
+  }, [boardItems]);
+
+  useEffect(() => {
+    if (userId) {
+      refresh();
+    }
+  }, [userId]);
 
   useEffect(() => {
     checkIfPinSaved();
@@ -277,7 +374,7 @@ const PinPage: React.FC = () => {
             <img
               src={pinData?.imageUrl}
               alt="이미지 설명"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
           </figure>
         </section>
@@ -290,12 +387,12 @@ const PinPage: React.FC = () => {
           <header className="sticky top-0 bg-white z-10 px-2 pt-3">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-4 text-black text-xl font-extrabold max-w-[400px]">
-                <FaRegHeart />
-                <RiShare2Line />
-                <HiDotsHorizontal />
+                <button onClick={handleSaveImage}>
+                  <HiOutlineSave />
+                </button>
               </div>
               {savedState.isSaved ? (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-x-1">
                   <div className="flex items-center bg-white hover:bg-[#e2e2e2] px-4 py-2 rounded-full">
                     <button className="text-black text-sm font-semibold">
                       {boardName}
@@ -309,17 +406,17 @@ const PinPage: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center space-x-2">
-                  <div className="flex items-center bg-white hover:bg-[#e2e2e2] px-4 py-2 rounded-full">
-                    <button
-                      onClick={handleModalOpen}
-                      className="text-black text-sm font-semibold"
-                    >
+                <div className="flex items-center gap-x-1">
+                  <div
+                    className="flex items-center bg-white hover:bg-[#e2e2e2] px-4 py-2 rounded-full"
+                    onClick={handleModalOpen}
+                  >
+                    <button className="text-black text-sm font-semibold">
                       {boardName}
                     </button>
                     <svg
                       aria-label="보드 목록 열기"
-                      className="ml-2"
+                      className="ml-2 cursor-pointer"
                       height="12"
                       role="img"
                       viewBox="0 0 24 24"
@@ -328,14 +425,20 @@ const PinPage: React.FC = () => {
                       <path d="M20.16 6.65 12 14.71 3.84 6.65a2.27 2.27 0 0 0-3.18 0 2.2 2.2 0 0 0 0 3.15L12 21 23.34 9.8a2.2 2.2 0 0 0 0-3.15 2.26 2.26 0 0 0-3.18 0"></path>
                     </svg>
                   </div>
-                  <button className="bg-[#e60023] text-white px-4 py-2 rounded-full text-sm font-semibold">
+                  <button
+                    onClick={handleSave}
+                    className="bg-[#e60023] text-white px-4 py-2 rounded-full text-sm font-semibold"
+                  >
                     저장
                   </button>
                 </div>
               )}
               {isModalOpen && (
-                <div ref={modalRef}>
-                  <SaveDropdown
+                <div
+                  ref={modalRef}
+                  className="absolute right-0 top-full mt-2 z-50"
+                >
+                  <SaveModal
                     imageUrl={pinData!.imageUrl}
                     pinId={pinId || ''}
                     onClose={handleModalClose}
@@ -406,6 +509,12 @@ const PinPage: React.FC = () => {
                   id="comment"
                   type="text"
                   placeholder="댓글을 추가..."
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault(); // 엔터 입력 시 폼 제출 방지 (필요할 경우)
+                      handleAddComment(userId || '');
+                    }
+                  }}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   className="w-full border px-[15px] py-[13px] pr-[50px] rounded-full bg-[#e9e9e9] focus:outline-none focus:ring-2 focus:ring-gray-400"

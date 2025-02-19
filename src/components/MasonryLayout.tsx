@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 type MasonryLayoutProps = {
-  images: string[];
+  pins: React.ReactNode[]; // ReactNode로 수정
 };
 
-const MasonryLayout = ({ images }: MasonryLayoutProps) => {
+const MasonryLayout = ({ pins }: MasonryLayoutProps) => {
   const [columnCount, setColumnCount] = useState<number>(6);
 
   const updateColumnCount = () => {
@@ -27,19 +28,8 @@ const MasonryLayout = ({ images }: MasonryLayoutProps) => {
         columnGap: '16px',
       }}
     >
-      {images.map((src, index) => (
-        <img
-          key={index}
-          src={src}
-          alt={`Image ${index + 1}`}
-          style={{
-            width: '100%',
-            display: 'block',
-            marginBottom: '16px',
-            objectFit: 'cover',
-            borderRadius: '1rem',
-          }}
-        />
+      {pins.map((pin, index) => (
+        <React.Fragment key={index}>{pin}</React.Fragment>
       ))}
     </div>
   );

@@ -4,6 +4,8 @@ import { BoardItem } from '../types';
 import useCurrentUserUid from '../hooks/useCurrentUserUid';
 import { useFetchBoardItem } from '../hooks/useFetchBoardItem';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { toast } from 'react-toastify';
+
 import { db } from '../firebase';
 import BoardCreateModal from './BoardCreateModal';
 
@@ -15,7 +17,7 @@ interface SaveDropdownProps {
   items?: { icon?: string; title: string }[]; // `items`를 옵셔널로 설정
 }
 
-const SaveDropdown: React.FC<SaveDropdownProps> = ({
+const SaveModal: React.FC<SaveDropdownProps> = ({
   pinId,
   onClose,
   imageUrl,
@@ -35,7 +37,16 @@ const SaveDropdown: React.FC<SaveDropdownProps> = ({
     refresh();
   };
 
-  const handleBoardClick = async (item: BoardItem, onClose: () => void) => {
+  const handleBoardClick = async (
+    item: BoardItem,
+    onClose: () => void,
+    uid: string | null,
+  ) => {
+    if (!uid) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
     try {
       console.log(`${item.title} 클릭됨`);
       setBoardName(item.title);
@@ -44,11 +55,17 @@ const SaveDropdown: React.FC<SaveDropdownProps> = ({
 
       // Firestore에서 boardId를 참조하여 문서 가져오기
       const boardRef = doc(db, 'boards', boardId);
+      const userRef = doc(db, 'users', uid);
 
       // pins 배열에 새 pinId 추가
       await updateDoc(boardRef, {
         pins: arrayUnion(pinId), // 기존 배열에 새 pinId 추가
       });
+
+      await updateDoc(userRef, {
+        savedPins: arrayUnion(pinId),
+      });
+      toast.success(`핀이 보드에 저장되었습니다.`);
 
       console.log(`Board ${boardId}의 pins에 ${pinId} 추가 완료`);
 
@@ -77,7 +94,7 @@ const SaveDropdown: React.FC<SaveDropdownProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="bg-white rounded-lg shadow-lg w-11/12 max-w-md px-3 py-6 w-[350px]"
+        className="bg-white rounded-lg shadow-lg max-w-md px-3 py-6 w-[350px]"
         ref={modalRef}
       >
         {/* 모달 헤더 */}
@@ -102,7 +119,7 @@ const SaveDropdown: React.FC<SaveDropdownProps> = ({
                 icon={item.icon}
                 title={item.title}
                 onClick={() => {
-                  handleBoardClick(item, onClose);
+                  handleBoardClick(item, onClose, uid);
                 }}
               />
             ))}
@@ -135,4 +152,4 @@ const SaveDropdown: React.FC<SaveDropdownProps> = ({
   );
 };
 
-export default SaveDropdown;
+export default SaveModal;
