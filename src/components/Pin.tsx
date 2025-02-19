@@ -38,30 +38,34 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
   const handleCloseShareModal = () => {
     setIsShareModalOpen((prev) => !prev);
   };
-
   const handleSaveImage = async () => {
     try {
-      const response = await fetch(src, {
-        mode: 'cors', // CORS 모드 명시
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-        },
-      });
+      // 이미지 파일 요청
+      const response = await fetch(src, { mode: 'cors' });
 
-      if (!response.ok) throw new Error('Network response was not ok');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      // Blob 데이터로 변환
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
 
-      // 다운로드 링크 생성
+      // 다운로드 링크 생성 및 클릭
       const link = document.createElement('a');
       link.href = url;
-      link.download = `pin-${id}.jpg`;
+      link.download = `pin-${id}.jpg`; // 파일 이름 지정
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      // Blob URL 해제
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('다운로드 실패:', error);
-      // 실패 시 새 탭에서 열기
+
+      // 실패 시 새 탭에서 이미지 열기
+      alert('이미지를 다운로드할 수 없습니다. 새 탭에서 이미지를 엽니다.');
       window.open(src, '_blank');
     }
   };
@@ -249,7 +253,7 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
                   )}
               </div>
               <Button
-                className="bg-slate-200 hover:bg-slate-300 rounded-full text-sm p-3 z-10 pointer-events-auto"
+                className="bg-slate-200 hover:bg-slate-300 rounded-full text-sm p-3 z-10 pointer-events-auto ml-2"
                 onClick={(e) => {
                   handleSaveImage();
                   e.stopPropagation();
