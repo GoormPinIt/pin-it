@@ -141,24 +141,38 @@ const PinPage: React.FC = () => {
       return;
     }
 
-    fetch(imgURL, { method: 'GET', mode: 'no-cors' }) // (1) 이미지 데이터 가져오기
-      .then((response) => response.blob()) // (2) Blob 데이터 변환
+    fetch(imgURL) // (1) CORS 모드 제거
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('이미지를 가져오는 데 실패했습니다.');
+        }
+        return response.blob(); // (2) Blob 데이터 변환
+      })
       .then((blob) => {
         const blobURL = window.URL.createObjectURL(blob); // (3) Blob을 Object URL로 변환
         const link = document.createElement('a'); // (4) 다운로드 링크 생성
         link.href = blobURL;
+
+        // 파일 이름 설정 (현재 날짜와 시간 기반)
         const now = new Date();
         const timestamp = now
           .toISOString()
           .replace(/[-:.T]/g, '')
           .slice(0, 14);
         link.download = `image-${timestamp}.png`; // (5) 저장될 파일명 설정
+
         document.body.appendChild(link);
         link.click(); // (6) 자동 클릭하여 다운로드 실행
         document.body.removeChild(link); // (7) 링크 제거
+
         window.URL.revokeObjectURL(blobURL); // (8) 메모리 해제
       })
-      .catch((error) => console.error('이미지 다운로드 중 오류 발생:', error));
+      .catch((error) => {
+        console.error('이미지 다운로드 중 오류 발생:', error);
+
+        // 실패 시 새 탭에서 이미지 열기
+        window.open(imgURL, '_blank');
+      });
   };
 
   const checkIfPinSaved = async () => {
