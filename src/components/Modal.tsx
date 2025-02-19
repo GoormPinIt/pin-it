@@ -34,7 +34,7 @@ interface Message {
 }
 
 const socket: Socket = io(
-  'http://ec2-3-39-21-117.ap-northeast-2.compute.amazonaws.com:4000/',
+  'http://ec2-3-39-21-117.ap-northeast-2.compute.amazonaws.com:4000',
 );
 const db = getFirestore();
 

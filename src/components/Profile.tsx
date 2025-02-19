@@ -1142,7 +1142,9 @@ const Profile = ({
     time: string;
   }
 
-  const socket: Socket = io('http://localhost:4000');
+  const socket: Socket = io(
+    'http://ec2-3-39-21-117.ap-northeast-2.compute.amazonaws.com:4000',
+  );
 
   const getUserName = async (uid: string): Promise<string> => {
     try {
