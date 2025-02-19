@@ -22,6 +22,7 @@ import SearchDropdown from '../components/SearchDropdown';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { addPinToBoard } from '../utils/firestoreUtils';
 import TagDropdown from '../components/TagDropdown';
+import { toast } from 'react-toastify';
 
 interface PinData {
   pinId: string;
@@ -218,6 +219,7 @@ const PinBuilder = () => {
 
       console.log('저장 완료');
       setToastVisible(true); // 토스트 메시지 표시
+      toast.success('핀이 생성되었습니다!');
 
       if (selectedBoardId) {
         await addPinToBoard(selectedBoardId, docRef.id);
