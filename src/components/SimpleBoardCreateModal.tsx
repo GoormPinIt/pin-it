@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { FaSearch } from 'react-icons/fa';
+import { createPortal } from 'react-dom';
 
 type User = {
   id: string;
@@ -81,7 +82,7 @@ const SimpleBoardCreateModal: React.FC<BoardModalProps> = ({
     }
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-[9999]">
       <div className="bg-white pt-6 rounded-lg shadow-lg w-[500px] min-h-[400px] max-w-[700px] flex flex-col relative mt-16 overflow-hidden">
         <h2 className="text-2xl font-semibold m-4 text-center">보드 만들기</h2>
@@ -149,7 +150,8 @@ const SimpleBoardCreateModal: React.FC<BoardModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 
