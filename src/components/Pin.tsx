@@ -12,6 +12,7 @@ import { CiImageOn } from 'react-icons/ci';
 import { ShareModal } from './Home/ShareModal';
 import useCurrentUserUid from '../hooks/useCurrentUserUid';
 import { createPortal } from 'react-dom';
+import { toast } from 'react-toastify';
 
 interface PinProps {
   src: string;
@@ -149,11 +150,12 @@ const Pin: React.FC<PinProps> = ({ id, src }) => {
           userId: currentUserUid,
         }),
       ).unwrap();
-      alert(`"${selectedBoard.title}"에 저장되었습니다.`);
+      toast.success(`"${selectedBoard.title}"에 저장되었습니다.`);
       setIsSaved(true);
     } catch (error) {
-      console.error('핀 저장 실패:', error);
-      alert('저장 실패');
+      // console.error('핀 저장 실패:', error);
+      // alert('저장 실패');
+      toast.error('저장에 실패하였습니다');
     }
   };
 
