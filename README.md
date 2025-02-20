@@ -4,7 +4,7 @@
 </p>
 
 
-- 배포 URL :
+- 배포 URL : http://goorm-pin-it.s3-website.ap-northeast-2.amazonaws.com/
 - Test ID : hyoju123@naver.com
 - Test PW : 123456
 
@@ -228,8 +228,5 @@ onClick={() => navigate(`/profile/${currentUserUid}`)}
 ```
 
 
-## 7. 개선 목표
-- 추가로 구현하고 싶은 기능
-    - 핀 꾸미기 사진 추가 기능
-    - 핀 상세 페이지에서 바로 핀 꾸미기
-    - 핀 숨기기 기능
+## 7. 이슈 리포트
+🔗 https://sage-fifth-38a.notion.site/6cbc3abc246248d5856efd88ee80798a
