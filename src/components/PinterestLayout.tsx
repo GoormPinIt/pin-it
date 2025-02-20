@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Pin from './Pin';
 // import { getStorage } from 'firebase/storage';
 import {
@@ -9,12 +9,18 @@ import {
   setDoc,
   query,
   where,
+  QueryDocumentSnapshot,
+  DocumentData,
+  orderBy,
+  startAfter,
+  limit,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 // import { useParams } from 'react-router-dom';
 import { getDownloadURL, getStorage, ref } from '@firebase/storage';
 import { AppDispatch } from '../store';
 import { setCreatedBoards } from '../features/boardSlice';
+import { m } from 'framer-motion';
 
 interface PinData {
   id: string; // 고유 ID
@@ -94,13 +100,41 @@ const saveImageToFirestore = async (imageName: string, userId: string) => {
   }
 };
 
-export const fetchPins = async (): Promise<PinData[]> => {
+export const fetchPins = async (
+  lastVisibleDoc: QueryDocumentSnapshot<DocumentData> | null = null,
+): Promise<{
+  pins: PinData[];
+  lastVisible: QueryDocumentSnapshot<DocumentData> | null;
+}> => {
   const pinsCollection = collection(db, 'pins');
-  const pinSnapshot = await getDocs(pinsCollection);
+  let pinsQuery = query(pinsCollection, orderBy('createdAt'), limit(20));
+
+  if (lastVisibleDoc) {
+    pinsQuery = query(
+      pinsCollection,
+      orderBy('createdAt'),
+      startAfter(lastVisibleDoc),
+      limit(20),
+    );
+  }
+  const pinSnapshot = await getDocs(pinsQuery);
+  const lastVisible =
+    pinSnapshot.docs.length > 0
+      ? pinSnapshot.docs[pinSnapshot.docs.length - 1]
+      : null;
+  // const next = async () => {
+  //   const nextQuery = query(
+  //     collection(db, 'pins'),
+  //     orderBy('createdAt'),
+  //     startAfter(lastVisible),
+  //     limit(15),
+  //   );
+  //   const pinSnapshot = await getDocs(nextQuery);
+  // };
   const pins: PinData[] = pinSnapshot.docs.map((doc) => {
     const data = doc.data();
     return {
-      id: doc.id, // Firestore 문서 ID를 id로 설정
+      id: doc.id, // Firestore 문서 ID를 id로 설정qq
       src: data.imageUrl || '', // imageUrl을 src로 매핑
       allowComments: data.allowComments || false,
       board: data.board || '',
@@ -112,35 +146,107 @@ export const fetchPins = async (): Promise<PinData[]> => {
       title: data.title || '',
     };
   });
-  return pins;
+  return { pins, lastVisible };
 };
 
 const PinterestLayout: React.FC = () => {
   const [pins, setPins] = useState<PinData[]>([]);
+  const [lastVisible, setLastVisible] =
+    useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const observerTarget = useRef<HTMLDivElement | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [showObserver, setShowObserver] = useState(false);
+
+  const isFetching = useRef(false);
+  const loadMorePins = async () => {
+    if (loading || isFetching.current || !hasMore) return;
+    isFetching.current = true;
+    console.log('loading', loading);
+    console.log('hasMore', hasMore);
+    setLoading(true);
+    const fetchedPins = await fetchPins(lastVisible);
+    // setPins((prevPins) => [...prevPins, ...fetchedPins.pins]);
+    if (fetchedPins.pins.length === 0) {
+      console.log('no more pins to load');
+      setHasMore(false);
+    }
+
+    setPins((prevPins) => {
+      const newPins = fetchedPins.pins.filter(
+        (newPin) => !prevPins.some((pin) => pin.id === newPin.id),
+      );
+      return [...prevPins, ...newPins];
+    });
+    setLastVisible(fetchedPins.lastVisible);
+    setLoading(false);
+
+    isFetching.current = false;
+    console.log('Fetching ended');
+  };
+
   useEffect(() => {
-    const getPins = async () => {
-      const fetchedPins = await fetchPins();
-      setPins(fetchedPins);
+    const timer = setTimeout(() => setShowObserver(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const fetchInitialPins = async () => {
+      if (!isFirstLoad) return;
+      await loadMorePins();
+      setIsFirstLoad(false);
     };
 
-    getPins();
-  }, []);
+    fetchInitialPins();
+  }, [isFirstLoad]);
+
+  useEffect(() => {
+    if (!observerTarget.current || isFirstLoad) return;
+    console.log('observer target:', observerTarget.current);
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        if (entries[0].isIntersecting && !loading) {
+          observer.disconnect();
+          await loadMorePins();
+          // setTimeout(() => {
+          //   observer.observe(observerTarget.current!);
+          // }, 2000);
+        }
+      },
+      { threshold: 1 },
+    );
+
+    observer.observe(observerTarget.current);
+
+    return () => observer.disconnect();
+  }, [loading]);
 
   return (
     <div className="columns-2 sm:columns-3 lg:columns-5 py-2 md:py-5 gap-4 px-2 mt-0">
       {pins.map((pin) => (
-        <div
-          key={pin.id}
-          className="mb-4 break-inside-avoid"
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            return;
-          }}
-        >
+        <div key={pin.id} className="mb-4 break-inside-avoid">
           <Pin src={pin.src} id={pin.id} />
         </div>
       ))}
+      {!loading && (
+        <div
+          ref={observerTarget}
+          style={{ opacity: showObserver ? 1 : 0, transition: 'opacity 1s' }}
+          className="h-24"
+        ></div>
+      )}
+      {loading && hasMore && (
+        <p
+          className="text-center mt-4"
+          style={{ opacity: showObserver ? 1 : 0, transition: 'opacity 1s' }}
+        >
+          Loading...
+        </p>
+      )}
+      <div style={{ opacity: loading ? 1 : 0, transition: 'opacity 1s' }}>
+        <span>skeleton Loading..</span>
+      </div>
     </div>
   );
 };
